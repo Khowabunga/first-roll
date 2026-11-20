@@ -1,0 +1,15 @@
+/* Cloudflare settings for First Roll. Deploy with:  npx wrangler deploy
+   Then add two secrets in the dashboard (Worker > Settings > Variables and Secrets):
+   OPENAI_API_KEY and DM_PASSCODE. */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "first-roll",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-01",
+  // the app's pages, pictures and scripts; anything under /api goes to worker.js
+  "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": ["/api/*"] },
+  // one small stateful object per table: players, handouts, painted pictures
+  "durable_objects": { "bindings": [{ "name": "TABLES", "class_name": "Table" }] },
+  "exports": { "Table": { "type": "durable-object", "storage": "sqlite" } },
+  "observability": { "enabled": true }
+}

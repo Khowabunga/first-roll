@@ -1,0 +1,16 @@
+# Render reads this file when you choose New > Blueprint and pick this repository.
+services:
+  - type: web
+    name: first-roll
+    runtime: node
+    plan: free
+    buildCommand: node build.js
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: OPENAI_API_KEY   # Render asks you for this when you create the service
+        sync: false
+      - key: DM_PASSCODE      # a word only the DM knows; needed to open a table
+        sync: false

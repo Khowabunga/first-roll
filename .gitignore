@@ -1,0 +1,12 @@
+.env
+.dev.vars
+.wrangler/
+node_modules/
+dist/
+public/offline.html
+test/shots*/
+test/preview/
+test/*.png
+test/*.jpg
+*.zip
+.DS_Store

@@ -1,0 +1,8 @@
+.env
+.dev.vars
+.wrangler
+.git
+node_modules
+dist
+test
+*.zip

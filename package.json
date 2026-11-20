@@ -1,0 +1,19 @@
+{
+  "name": "first-roll",
+  "version": "0.2.0",
+  "private": true,
+  "description": "A beginner's D&D companion: personality quiz, AI-painted characters, physical dice, and a DM's table that players join from their phones.",
+  "scripts": {
+    "start": "node server.js",
+    "build": "node build.js",
+    "dev": "wrangler dev",
+    "deploy": "node build.js && wrangler deploy",
+    "test:table": "node test/table.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "wrangler": "^4.165.0"
+  }
+}

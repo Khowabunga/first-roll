@@ -1,0 +1,11 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;height:100%;background:#000}canvas{width:390px;height:844px;display:block}</style></head><body>
+<canvas id="c"></canvas>
+<script src="../public/vendor/three.min.js"></script><script src="../public/vendor/cannon.min.js"></script><script src="../src/dice.js"></script>
+<script>
+window.errs=[]; window.onerror=function(m){errs.push(String(m));};
+var cv=document.getElementById('c');
+FR.Dice.init(cv,{floorImage:'../public/img/table.webp'});
+FR.Dice.setBounds({left:0,top:120,right:390,bottom:600});
+window.go=function(spec){ return new Promise(function(res){ var t0=performance.now(); FR.Dice.roll(spec,null,function(v){ res({v:v, flat:FR.Dice.values().map(function(x){return +x.flat.toFixed(3)}), ms: Math.round(performance.now()-t0)}); }); FR.Dice.stop(); var t=FR.Dice.simulate(14); window.simT=t; (window.zs=window.zs||[]); }); };
+window.mid=function(spec,steps){ FR.Dice.roll(spec,null,null); FR.Dice.stop(); FR.Dice.simulate(steps); };
+</script></body></html>
