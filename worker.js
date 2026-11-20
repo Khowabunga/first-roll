@@ -4,7 +4,7 @@
      every /api call that belongs to a table is handed to that table's Durable Object.
    - Table (a Durable Object, one per table code) keeps the players, what the DM has shown
      them and the pictures, and makes the OpenAI calls. Its state is saved, so a table
-     survives being put to sleep between requests. It deletes itself after twelve idle hours.
+     survives being put to sleep between requests. It deletes itself after thirty idle days.
 
    Secrets (Worker > Settings > Variables and Secrets): OPENAI_API_KEY and DM_PASSCODE.
    Without both, the site still runs but shows sample pictures only. */
@@ -12,7 +12,7 @@ import { DurableObject } from 'cloudflare:workers';
 import { Buffer } from 'node:buffer';
 
 const LIMIT = { players: 8, portraits: 6, images: 150, texts: 800, feed: 300, stored: 220 };
-const IDLE = 12 * 3600 * 1000;
+const IDLE = 30 * 24 * 3600 * 1000;        // a campaign keeps its table, and its code, between sessions
 const SIZES = ['1024x1536', '1536x1024', '1024x1024'];
 const LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 
@@ -92,7 +92,7 @@ export class Table extends DurableObject {
   async load() { if (this.t === undefined) { this.t = (await this.ctx.storage.get('t')) || null; } return this.t; }
   save() { return this.ctx.storage.put('t', this.t); }
   stayOpen() { return this.ctx.storage.setAlarm(Date.now() + IDLE); }
-  async alarm() { await this.ctx.storage.deleteAll(); this.t = null; }       // twelve quiet hours: the table is cleared away
+  async alarm() { await this.ctx.storage.deleteAll(); this.t = null; }       // thirty quiet days: the table is cleared away
 
   async fetch(request) {
     const url = new URL(request.url);
@@ -148,6 +148,14 @@ export class Table extends DurableObject {
   async join(body) {
     const t = this.t, name = clean(body.name, 24);
     if (!name) { throw new Bad(400, 'Tell the table your name first.'); }
+    /* Someone who joins under a name already at the table takes that seat back: a new session, or
+       another phone. They get the character they left here; the device they used before lets go. */
+    const seat = t.players.find((x) => x.name.toLowerCase() === name.toLowerCase());
+    if (seat) {
+      seat.token = rnd(16);
+      await this.save(); await this.stayOpen();
+      return { code: t.code, id: seat.id, token: seat.token, name: seat.name, back: true, save: (await this.ctx.storage.get('save:' + seat.id)) || '', portrait: seat.portrait };
+    }
     if (t.players.length >= LIMIT.players) { throw new Bad(409, 'This table is full.'); }
     const p = { id: rnd(4), token: rnd(16), name, char: null, portrait: '', portraits: 0 };
     t.players.push(p);
@@ -159,12 +167,14 @@ export class Table extends DurableObject {
     if (w.dm) { throw new Bad(400, 'The DM has no character.'); }
     if (body.char) { const c = body.char; w.char = { name: clean(c.name, 40), race: clean(c.race, 30), cls: clean(c.cls, 30), line: clean(c.line, 80), look: clean(c.look, 400) }; }
     if (body.name) { w.name = clean(body.name, 24); }
-    if (body.portrait === '' || body.portrait) {
+    if (typeof body.save === 'string' && body.save.length <= 20000) { await this.ctx.storage.put('save:' + w.id, body.save); }   // the whole character, for taking the seat back later
+    if (body.portrait && body.portrait === w.portrait) { /* the picture already kept here */ }
+    else if (body.portrait === '' || body.portrait) {
       const old = w.portrait;
       w.portrait = body.portrait === '' ? '' : (/^img\//.test(body.portrait) ? clean(body.portrait, 80) : await this.storeImage(body.portrait));
       await this.forget(old);
     }
-    await this.save();
+    await this.save(); await this.stayOpen();
     return { ok: true, portrait: w.portrait };
   }
   state(body) {

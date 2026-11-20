@@ -6,10 +6,10 @@
   var A = FR.app, $ = A.$, el = A.el, clear = A.clear;
   var KEY = 'firstroll.table';
   var T = { can: false, passcode: false, code: '', token: '', role: '', id: '', name: '', last: 0, seen: 0, players: [], feed: [] };
-  var timer = 0, sentPortrait = '', sentChar = '', listeners = [];
+  var timer = 0, sentPortrait = '', sentChar = '', sentSave = '', listeners = [];
 
   function keep() { A.store.set(KEY, JSON.stringify({ code: T.code, token: T.token, role: T.role, id: T.id, name: T.name, seen: T.seen })); }
-  function forget() { T.code = ''; T.token = ''; T.role = ''; T.id = ''; T.name = ''; T.last = 0; T.seen = 0; T.players = []; T.feed = []; A.store.set(KEY, ''); clearInterval(timer); sentPortrait = ''; sentChar = ''; changed(); }
+  function forget() { T.code = ''; T.token = ''; T.role = ''; T.id = ''; T.name = ''; T.last = 0; T.seen = 0; T.players = []; T.feed = []; A.store.set(KEY, ''); clearInterval(timer); sentPortrait = ''; sentChar = ''; sentSave = ''; changed(); }
   function post(act, body) { var b = { code: T.code, token: T.token }; Object.keys(body || {}).forEach(function (k) { b[k] = body[k]; }); return A.fetchJson('api/table/' + act + '?c=' + T.code, b, 25000); }
   function changed() { listeners.forEach(function (fn) { try { fn(); } catch (e) { /* keep going */ } }); inbox(); }
 
@@ -32,8 +32,8 @@
   function join(code, name) {
     code = String(code).toUpperCase().replace(/[^A-Z]/g, '');
     return A.fetchJson('api/table/join?c=' + code, { code: code, name: name }, 20000).then(function (j) {
-      T.code = j.code; T.token = j.token; T.id = j.id; T.role = 'player'; T.name = name; T.last = 0; T.seen = 0; T.players = []; T.feed = [];
-      sentPortrait = ''; sentChar = '';          // a new table has not met this character yet
+      T.code = j.code; T.token = j.token; T.id = j.id; T.role = 'player'; T.name = j.name || name; T.last = 0; T.seen = 0; T.players = []; T.feed = [];
+      sentPortrait = ''; sentChar = ''; sentSave = '';          // a new table has not met this character yet
       keep(); start(); changed(); if (FR.Dice && FR.Dice.Sound && FR.Dice.Sound.dingdong) { FR.Dice.Sound.dingdong(); } return j;
     });
   }
@@ -45,8 +45,10 @@
     if (sig !== sentChar) { body.char = { name: c.name, race: c.race, cls: c.cls, line: c.line, look: c.look }; }
     var pic = c.portrait || '';
     if (pic.length + ':' + pic.slice(0, 60) !== sentPortrait) { body.portrait = pic; }
-    if (!body.char && body.portrait === undefined) { return; }
-    post('me', body).then(function () { if (body.char) { sentChar = sig; } if (body.portrait !== undefined) { sentPortrait = pic.length + ':' + pic.slice(0, 60); } }).catch(function () { /* next sync will try again */ });
+    var blob = A.saveBlob();                  // the whole character stays with the seat, so it can be taken up again later or on another phone
+    if (blob && blob !== sentSave && blob.length <= 20000) { body.save = blob; }
+    if (!body.char && body.portrait === undefined && !body.save) { return; }
+    post('me', body).then(function () { if (body.save) { sentSave = blob; } if (body.char) { sentChar = sig; } if (body.portrait !== undefined) { sentPortrait = pic.length + ':' + pic.slice(0, 60); } }).catch(function () { /* next sync will try again */ });
   }
 
   /* handouts: what the DM has shown the table */
@@ -79,24 +81,40 @@
   $('pl-inbox').addEventListener('click', function () { show(T.feed.length - 1); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('handout').hidden) { $('handout').hidden = true; } });
 
+  /* ---------- welcome back: the seat this name left still has a character ---------- */
+  function welcome(j, fresh) {
+    var k; try { k = JSON.parse(j.save); } catch (e) { return false; }
+    if (!k || !k.name || !k.cls) { return false; }
+    var first = k.name.split(' ')[0], close = function () { $('back').hidden = true; };
+    $('bk-title').textContent = 'Welcome back, ' + T.name + '!';
+    $('bk-text').textContent = k.name + ', your ' + k.race + ' ' + k.cls + ', is still at table ' + T.code + '.';
+    $('bk-yes').textContent = 'Continue as ' + first;
+    $('bk-yes').onclick = function () { close(); if (!A.restore(j.save, j.portrait)) { fresh(); } };
+    $('bk-no').onclick = function () { close(); fresh(); };
+    $('back').hidden = false; $('bk-yes').focus();
+    return true;
+  }
+
   /* ---------- changing tables: a player can move to another code, or leave ---------- */
   function switcher() {
     var mine = T.role === 'player' && !!T.code;
-    $('sw-title').textContent = mine ? 'You are at table ' + T.code : 'Join your DM’s table';
+    var k = A.saved(), who = k ? k.name.split(' ')[0] : '';
+    $('sw-title').textContent = mine ? 'You are at table ' + T.code : (who && A.screen() === 'title' ? 'Join the table as ' + who + '?' : 'Join your DM’s table');
     $('sw-lbl').textContent = mine ? 'A different table code' : 'Table code';
     $('sw-join').textContent = mine ? 'Switch to this table' : 'Join this table';
+    $('sw-who').hidden = !(mine && T.name); $('sw-who').textContent = mine && T.name ? 'You are seated as ' + T.name + '. Use the same name and this code to come back later, or on another phone.' : '';
     $('sw-leave').hidden = !mine; $('sw-code').value = ''; $('sw-err').hidden = true;
     $('switch').hidden = false; $('sw-code').focus();
   }
   function switchTo() {
     var code = $('sw-code').value.trim(), err = $('sw-err'), b = $('sw-join'), c = A.character();
-    var name = T.name || $('j-name').value.trim() || (c && c.name) || 'Player';
+    var k = A.saved(), name = T.name || A.player() || $('j-name').value.trim() || ((c && c.name) || (k && k.name) || 'Player').split(' ')[0];
     var say = function (m) { err.textContent = m; err.hidden = false; $('sw-code').focus(); };
     err.hidden = true;
     if (code.length !== 4) { say('A table code is four letters. Ask your DM to read it out again.'); return; }
     if (T.role === 'player' && code === T.code) { say('You are already at that table.'); return; }
     b.disabled = true;
-    join(code, name).then(function () { $('switch').hidden = true; sync(); })
+    join(code, name).then(function () { $('switch').hidden = true; if (A.screen() === 'title' && A.saved()) { A.resume(); } sync(); })   // from a table link: straight to the game with the saved character
       .catch(function (x) { say((x && x.message) || 'Could not join that table. Check the code and try again.'); })
       .then(function () { b.disabled = false; });
   }
@@ -129,10 +147,12 @@
     if (!T.can) { changed(); return; }
     try { var k = JSON.parse(A.store.get(KEY) || 'null'); if (k && k.code && k.token) { T.code = k.code; T.token = k.token; T.role = k.role; T.id = k.id || ''; T.name = k.name || ''; T.seen = k.seen || 0; start(); } } catch (e) { /* no table remembered */ }
     changed();
+    /* a table link (?t=CODE) opened by someone who already made a character: offer to join now, no retyping */
+    if (q && T.role !== 'dm' && q[1].toUpperCase() !== T.code && A.saved() && A.screen() === 'title') { switcher(); $('sw-code').value = q[1].toUpperCase(); }
   }
 
   FR.table = {
-    ready: ready, join: join, sync: sync, open: open, send: send, stash: stash, leave: forget, show: show,
+    ready: ready, join: join, sync: sync, welcome: welcome, open: open, send: send, stash: stash, leave: forget, show: show,
     can: function () { return T.can; }, needsPasscode: function () { return T.passcode; },
     active: function () { return !!T.code; }, isDM: function () { return T.role === 'dm' && !!T.code; }, isPlayer: function () { return T.role === 'player' && !!T.code; },
     code: function () { return T.code; }, players: function () { return T.players; }, feed: function () { return T.feed; },

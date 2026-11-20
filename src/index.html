@@ -212,7 +212,7 @@
     <canvas id="tray"></canvas>
     <div class="vignette" aria-hidden="true"></div>
     <div id="badges" aria-hidden="true"></div>
-    <p class="tray-warn" id="d-warn" role="status" hidden>This browser cannot draw the 3D dice, so the roll is made for you. To see the dice, turn on graphics acceleration (WebGL) in your browser settings, then reload.</p>
+    <div class="flat" id="flat" aria-hidden="true" hidden></div>
     <header class="tray-top pad" id="tray-top">
       <div class="tray-bar">
         <button type="button" class="icon" id="d-close" aria-label="Back to the table"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -333,10 +333,20 @@
       <button type="button" class="btn wax" id="au-x">Done</button>
     </div>
   </div>
+  <div class="handout" id="back" hidden>
+    <div class="handout-card" role="dialog" aria-modal="true" aria-labelledby="bk-title">
+      <div class="handout-k">Welcome back</div>
+      <h3 id="bk-title"></h3>
+      <p id="bk-text"></p>
+      <button type="button" class="btn wax" id="bk-yes"></button>
+      <button type="button" class="btn ink" id="bk-no">Make a new character</button>
+    </div>
+  </div>
   <div class="handout" id="switch" hidden>
     <div class="handout-card" role="dialog" aria-modal="true" aria-labelledby="sw-title">
       <div class="handout-k">Your table</div>
       <h3 id="sw-title"></h3>
+      <p id="sw-who" hidden></p>
       <label class="lbl" for="sw-code" id="sw-lbl">Table code</label>
       <input class="field code" id="sw-code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="4" placeholder="ABCD">
       <p class="err" id="sw-err" role="alert" hidden></p>

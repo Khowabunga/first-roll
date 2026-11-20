@@ -219,7 +219,19 @@ h1, h2, h3, p, dl, dd { margin: 0; }
 #tray { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
 .vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 46%, transparent 45%, rgba(5, 3, 2, 0.55) 100%); }
 #badges { position: absolute; inset: 0; pointer-events: none; }
-.tray-warn { position: absolute; left: 28px; right: 28px; top: 50%; transform: translateY(-50%); text-align: center; font-family: var(--f-ui); font-size: 16px; line-height: 1.45; color: var(--mute); text-wrap: balance; }
+/* flat dice: drawn without 3D where the browser has no WebGL */
+.flat { position: absolute; left: 0; right: 0; top: 20%; bottom: 32%; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 18px; padding: 0 24px; pointer-events: none; background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 68%); }
+.fd { position: relative; width: var(--s, 140px); height: var(--s, 140px); display: grid; place-items: center; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.5)); }
+.fd svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.fd .body { fill: var(--die); stroke: rgba(255, 255, 255, 0.6); stroke-width: 2.5; stroke-linejoin: round; }
+.fd .facet { fill: none; stroke: rgba(255, 255, 255, 0.24); stroke-width: 1.5; stroke-linejoin: round; }
+.fd b { position: relative; font-family: var(--f-display); font-weight: 800; font-size: calc(var(--s, 140px) * 0.36); line-height: 1; color: var(--ink); text-shadow: 0 2px 3px rgba(0, 0, 0, 0.45); }
+.fd.d4 b { transform: translateY(16%); font-size: calc(var(--s, 140px) * 0.3); }
+.fd.roll { animation: fd-tumble 0.5s linear infinite; }
+.fd.land { animation: fd-land 0.45s var(--ease) both; }
+.fd.drop { opacity: 0.4; }
+@keyframes fd-tumble { 0% { transform: translateY(0) rotate(0); } 25% { transform: translateY(-22%) rotate(90deg); } 50% { transform: translateY(0) rotate(180deg); } 75% { transform: translateY(-12%) rotate(270deg); } 100% { transform: translateY(0) rotate(360deg); } }
+@keyframes fd-land { 0% { transform: scale(1.25) rotate(-12deg); } 60% { transform: scale(0.94) rotate(3deg); } 100% { transform: scale(1) rotate(0); } }
 .badge { position: absolute; min-width: 30px; height: 30px; padding: 0 7px; margin: -15px 0 0 -15px; display: grid; place-items: center; border-radius: 15px; background: rgba(var(--night-rgb), 0.88); border: 1px solid var(--gilt); color: var(--gilt-hi); font-family: var(--f-display); font-weight: 700; font-size: 19px; line-height: 1; animation: pop 0.4s var(--ease) both; }
 .badge.drop { opacity: 0.5; border-color: rgba(var(--gilt-rgb), 0.4); text-decoration: line-through; }
 @keyframes pop { from { opacity: 0; transform: translateY(8px) scale(0.6); } to { opacity: 1; transform: none; } }
@@ -766,7 +778,7 @@ body[data-theme="northpole"] .handout-card p { font-weight: 700; font-size: 18px
     <canvas id="tray"></canvas>
     <div class="vignette" aria-hidden="true"></div>
     <div id="badges" aria-hidden="true"></div>
-    <p class="tray-warn" id="d-warn" role="status" hidden>This browser cannot draw the 3D dice, so the roll is made for you. To see the dice, turn on graphics acceleration (WebGL) in your browser settings, then reload.</p>
+    <div class="flat" id="flat" aria-hidden="true" hidden></div>
     <header class="tray-top pad" id="tray-top">
       <div class="tray-bar">
         <button type="button" class="icon" id="d-close" aria-label="Back to the table"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -887,10 +899,20 @@ body[data-theme="northpole"] .handout-card p { font-weight: 700; font-size: 18px
       <button type="button" class="btn wax" id="au-x">Done</button>
     </div>
   </div>
+  <div class="handout" id="back" hidden>
+    <div class="handout-card" role="dialog" aria-modal="true" aria-labelledby="bk-title">
+      <div class="handout-k">Welcome back</div>
+      <h3 id="bk-title"></h3>
+      <p id="bk-text"></p>
+      <button type="button" class="btn wax" id="bk-yes"></button>
+      <button type="button" class="btn ink" id="bk-no">Make a new character</button>
+    </div>
+  </div>
   <div class="handout" id="switch" hidden>
     <div class="handout-card" role="dialog" aria-modal="true" aria-labelledby="sw-title">
       <div class="handout-k">Your table</div>
       <h3 id="sw-title"></h3>
+      <p id="sw-who" hidden></p>
       <label class="lbl" for="sw-code" id="sw-lbl">Table code</label>
       <input class="field code" id="sw-code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="4" placeholder="ABCD">
       <p class="err" id="sw-err" role="alert" hidden></p>
@@ -2827,6 +2849,24 @@ FR.Dice = (function () {
       portraitNote: S.portraitNote, portrait: S.portrait && S.portrait.length < 700000 ? S.portrait : '' };
     store.set('firstroll.v3.' + TH.id, JSON.stringify(keep));
   }
+  /* the character without its picture: small enough to leave with the table (see table.js) */
+  function saveBlob() {
+    if (!S.cls) { return ''; }
+    return JSON.stringify({ theme: TH.id, answers: S.answers, cls: S.cls, race: S.race, look: S.look, desc: S.desc, name: S.name, origin: S.origin, originKey: S.originKey, originName: S.originName, portraitNote: S.portraitNote });
+  }
+  /* take up a character that was left at a table: on a new phone, or in a new session */
+  function restore(blob, portrait) {
+    var k; try { k = JSON.parse(blob); } catch (e) { return false; }
+    if (!k || !FR.CLASSES[k.cls] || !FR.RACES[k.race]) { return false; }
+    if (k.theme && k.theme !== TH.id && FR.THEMES[k.theme]) { applyTheme(k.theme, true); }
+    k.portrait = ''; adopt(k); save(); go('play');
+    if (portrait && portrait.indexOf('data:') !== 0) {      // fetch the picture once and keep it on this device
+      fetch(portrait).then(function (r) { if (!r.ok) { throw new Error('gone'); } return r.blob(); }).then(function (b) {
+        return new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(fr.result); }; fr.onerror = rej; fr.readAsDataURL(b); });
+      }).then(function (data) { S.portrait = data; save(); if (S.screen === 'play') { renderPlay(); } tableSync(); }).catch(function () { /* no picture: the sheet still works */ });
+    }
+    return true;
+  }
   function load() {
     try {
       var k = JSON.parse(store.get('firstroll.v3.' + TH.id) || 'null');
@@ -2967,6 +3007,7 @@ FR.Dice = (function () {
   /* ---------- 2. sign in, then the story so far ---------- */
   /* Sign in: a name, and the DM's table code when there is one. */
   function renderJoin() {
+    if (!$('j-name').value && store.get('firstroll.player')) { $('j-name').value = store.get('firstroll.player'); }
     var has = !!(FR.table && FR.table.can()), code = $('j-code').value.trim();
     $('j-lede').textContent = has ? tx('ledgerLedeTable') : tx('ledgerLede');
     $('b-join').textContent = has && code ? tx('ledgerJoin') : tx('ledgerSign');
@@ -2976,12 +3017,12 @@ FR.Dice = (function () {
   $('ledger').addEventListener('submit', function (e) {
     e.preventDefault();
     var name = $('j-name').value.trim(), code = $('j-code').value.trim(), err = $('j-err'), b = $('b-join');
-    err.hidden = true; S.player = name;
+    err.hidden = true; S.player = name; if (name) { store.set('firstroll.player', name); }
     if (!(FR.table && FR.table.can() && code)) { afterLedger(); return; }
     if (!name) { err.textContent = 'Tell the table your name first.'; err.hidden = false; $('j-name').focus(); return; }
     if (code.length !== 4) { err.textContent = 'A table code is four letters. Ask your DM to read it out again.'; err.hidden = false; $('j-code').focus(); return; }
     b.disabled = true;
-    FR.table.join(code, name).then(function () { afterLedger(); }).catch(function (x) { err.textContent = x.message || 'Could not join that table. Check the code and try again.'; err.hidden = false; }).then(function () { b.disabled = false; });
+    FR.table.join(code, name).then(function (j) { if (!(j && j.back && j.save && FR.table.welcome(j, afterLedger))) { afterLedger(); } }).catch(function (x) { err.textContent = x.message || 'Could not join that table. Check the code and try again.'; err.hidden = false; }).then(function () { b.disabled = false; });
   });
   $('b-skip-ledger').addEventListener('click', function () { afterLedger(); });
   var story = { i: 0 };
@@ -3319,7 +3360,7 @@ FR.Dice = (function () {
         try { FR.Dice.init($('tray'), {}); D.booted = true; FR.Dice.onFrame(placeBadges); FR.Dice.setScene(TH.dice, TH.art.floor); }
         catch (e) { D.booted = false; }
       }
-      $('d-warn').hidden = D.booted;            // no WebGL here: say so instead of showing an empty tray
+      if (D.booted) { $('flat').hidden = true; }  // no WebGL here: the dice are drawn flat instead (see flatRoll)
       if (D.booted) { FR.Dice.resize(); trayBounds(); }
       throwDice(null);
     }, 60);
@@ -3370,6 +3411,44 @@ FR.Dice = (function () {
       b.style.left = p.x + 'px'; b.style.top = Math.max(top.height * 0.12, p.y - p.r - 20) + 'px'; box.appendChild(b);
     });
   }
+  /* ---------- flat dice ----------
+     Where the browser cannot draw the 3D tray (no WebGL), the same dice are drawn flat: they
+     tumble, flicker through numbers and land, so nobody is left looking at an empty tray. */
+  var FLAT = { 4: '<polygon class="body" points="50,10 93,86 7,86"/>',
+    6: '<rect class="body" x="11" y="11" width="78" height="78" rx="14"/>',
+    8: '<polygon class="body" points="50,4 93,50 50,96 7,50"/><polyline class="facet" points="7,50 50,36 93,50"/>',
+    10: '<polygon class="body" points="50,4 92,44 50,96 8,44"/><polyline class="facet" points="8,44 50,60 92,44"/>',
+    12: '<polygon class="body" points="50,4 95,37 78,93 22,93 5,37"/><polygon class="facet" points="50,24 75,43 66,73 34,73 25,43"/>',
+    20: '<polygon class="body" points="50,3 91,26 91,74 50,97 9,74 9,26"/><polygon class="facet" points="50,22 78,68 22,68"/>' };
+  var flatT = { tick: 0, done: 0 };
+  function flatDraw(sp, vals) {
+    var box = $('flat'), c = D.ctx, fightish = c.kind === 'attack' || c.kind === 'damage' || c.kind === 'init';
+    var r = vals ? result() : null, n = sp.length, size = n === 1 ? 150 : n === 2 ? 124 : n <= 4 ? 100 : n <= 6 ? 84 : 66;
+    clear(box); box.hidden = false;
+    sp.forEach(function (sides, i) {
+      var d = el('div', 'fd d' + sides + (reduced ? '' : (vals ? ' land' : ' roll')) + (r && r.two && i !== r.keptIx ? ' drop' : ''));
+      d.style.setProperty('--s', size + 'px'); d.style.setProperty('--die', fightish ? TH.dice.fight : FR.CLASSES[S.cls].color); d.style.setProperty('--ink', fightish ? TH.dice.fightInk : TH.dice.ink);
+      if (!vals) { d.style.animationDelay = (-i * 130) + 'ms'; }
+      d.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true">' + (FLAT[sides] || FLAT[20]) + '</svg>';
+      d.appendChild(el('b', '', vals ? String(vals[i]) : String(1 + Math.floor(Math.random() * sides))));
+      box.appendChild(d);
+    });
+  }
+  function flatRoll(sp, land) {
+    clearInterval(flatT.tick); clearTimeout(flatT.done);
+    var any = function (s) { return 1 + Math.floor(Math.random() * s); }, beat = 0;
+    flatDraw(sp, null);
+    flatT.tick = setInterval(function () {
+      Array.prototype.forEach.call($('flat').querySelectorAll('b'), function (b, i) { b.textContent = String(any(sp[i])); });
+      if (++beat % 2 === 0) { FR.Dice.Sound.hit(beat % 4 ? 'felt' : 'die', 0.5 + Math.random() * 0.4, Math.random() - 0.5); }
+    }, 70);
+    flatT.done = setTimeout(function () {
+      clearInterval(flatT.tick);
+      var vals = sp.map(any);
+      FR.Dice.Sound.hit('wood', 0.9, 0);
+      land(vals); flatDraw(sp, vals);
+    }, reduced ? 120 : 950);
+  }
   function throwDice(flick) {
     var sp = spec();
     D.rolling = true; D.shown = false; D.values = []; clear($('badges')); renderTray();
@@ -3381,7 +3460,7 @@ FR.Dice = (function () {
       if (D.ctx.kind === 'init') { S.init = r.total; }
       renderTray();
     };
-    if (!D.booted) { setTimeout(function () { land(sp.map(function (s) { return 1 + Math.floor(Math.random() * s); })); }, 500); return; }
+    if (!D.booted) { flatRoll(sp, land); return; }
     var c = D.ctx, fightish = c.kind === 'attack' || c.kind === 'damage' || c.kind === 'init';
     FR.Dice.setTheme(fightish ? TH.dice.fight : FR.CLASSES[S.cls].color, fightish ? TH.dice.fightInk : TH.dice.ink);
     FR.Dice.roll(sp, flick, land);
@@ -3397,7 +3476,7 @@ FR.Dice = (function () {
   var bump = function (d) { var c = D.ctx; D.ctx = free(c.sides, (c.kind === 'free' ? c.count : 1) + d); D.adv = 'normal'; renderTray(); if (D.booted) { trayBounds(); } throwDice(null); };
   $('d-less').addEventListener('click', function () { if (D.ctx.kind === 'free' && D.ctx.count > 1) { bump(-1); } });
   $('d-more').addEventListener('click', function () { if (D.ctx.count < 6) { bump(1); } });
-  $('d-close').addEventListener('click', function () { if (D.booted) { FR.Dice.stop(); } go('play'); });
+  $('d-close').addEventListener('click', function () { if (D.booted) { FR.Dice.stop(); } clearInterval(flatT.tick); clearTimeout(flatT.done); D.rolling = false; go('play'); });
   /* ---------- music and sound: one sheet, two switches ---------- */
   function renderAudio() {
     var has = FR.Music.has();
@@ -3468,6 +3547,7 @@ FR.Dice = (function () {
   if (document.fonts && document.fonts.load) { document.fonts.load("800 40px 'Alegreya'"); }
   window.FRState = function () { return S; }; window.FRGo = go; window.FRTheme = applyTheme;
   FR.app = { $: $, el: el, clear: clear, go: go, fetchJson: fetchJson, text: AI.text, image: AI.image, store: store, reduced: reduced, isLive: function () { return G.live; }, screen: function () { return S.screen; },
+    saved: function () { var k = load(); return k && k.name ? k : null; }, saveBlob: saveBlob, restore: restore, player: function () { return store.get('firstroll.player') || ''; }, resume: function () { var k = load(); if (k) { adopt(k); go('play'); } },
     character: function () { return S.cls ? { name: S.name, race: S.race, cls: S.cls, line: S.sheet ? S.sheet.alignment : '', look: FR.portraitSubject(character()).slice(0, 380), portrait: S.portrait } : null; } };
 
   /* ---------- connect OpenAI (only when this copy runs on your own computer) ---------- */
@@ -3509,10 +3589,10 @@ FR.Dice = (function () {
   var A = FR.app, $ = A.$, el = A.el, clear = A.clear;
   var KEY = 'firstroll.table';
   var T = { can: false, passcode: false, code: '', token: '', role: '', id: '', name: '', last: 0, seen: 0, players: [], feed: [] };
-  var timer = 0, sentPortrait = '', sentChar = '', listeners = [];
+  var timer = 0, sentPortrait = '', sentChar = '', sentSave = '', listeners = [];
 
   function keep() { A.store.set(KEY, JSON.stringify({ code: T.code, token: T.token, role: T.role, id: T.id, name: T.name, seen: T.seen })); }
-  function forget() { T.code = ''; T.token = ''; T.role = ''; T.id = ''; T.name = ''; T.last = 0; T.seen = 0; T.players = []; T.feed = []; A.store.set(KEY, ''); clearInterval(timer); sentPortrait = ''; sentChar = ''; changed(); }
+  function forget() { T.code = ''; T.token = ''; T.role = ''; T.id = ''; T.name = ''; T.last = 0; T.seen = 0; T.players = []; T.feed = []; A.store.set(KEY, ''); clearInterval(timer); sentPortrait = ''; sentChar = ''; sentSave = ''; changed(); }
   function post(act, body) { var b = { code: T.code, token: T.token }; Object.keys(body || {}).forEach(function (k) { b[k] = body[k]; }); return A.fetchJson('api/table/' + act + '?c=' + T.code, b, 25000); }
   function changed() { listeners.forEach(function (fn) { try { fn(); } catch (e) { /* keep going */ } }); inbox(); }
 
@@ -3535,8 +3615,8 @@ FR.Dice = (function () {
   function join(code, name) {
     code = String(code).toUpperCase().replace(/[^A-Z]/g, '');
     return A.fetchJson('api/table/join?c=' + code, { code: code, name: name }, 20000).then(function (j) {
-      T.code = j.code; T.token = j.token; T.id = j.id; T.role = 'player'; T.name = name; T.last = 0; T.seen = 0; T.players = []; T.feed = [];
-      sentPortrait = ''; sentChar = '';          // a new table has not met this character yet
+      T.code = j.code; T.token = j.token; T.id = j.id; T.role = 'player'; T.name = j.name || name; T.last = 0; T.seen = 0; T.players = []; T.feed = [];
+      sentPortrait = ''; sentChar = ''; sentSave = '';          // a new table has not met this character yet
       keep(); start(); changed(); if (FR.Dice && FR.Dice.Sound && FR.Dice.Sound.dingdong) { FR.Dice.Sound.dingdong(); } return j;
     });
   }
@@ -3548,8 +3628,10 @@ FR.Dice = (function () {
     if (sig !== sentChar) { body.char = { name: c.name, race: c.race, cls: c.cls, line: c.line, look: c.look }; }
     var pic = c.portrait || '';
     if (pic.length + ':' + pic.slice(0, 60) !== sentPortrait) { body.portrait = pic; }
-    if (!body.char && body.portrait === undefined) { return; }
-    post('me', body).then(function () { if (body.char) { sentChar = sig; } if (body.portrait !== undefined) { sentPortrait = pic.length + ':' + pic.slice(0, 60); } }).catch(function () { /* next sync will try again */ });
+    var blob = A.saveBlob();                  // the whole character stays with the seat, so it can be taken up again later or on another phone
+    if (blob && blob !== sentSave && blob.length <= 20000) { body.save = blob; }
+    if (!body.char && body.portrait === undefined && !body.save) { return; }
+    post('me', body).then(function () { if (body.save) { sentSave = blob; } if (body.char) { sentChar = sig; } if (body.portrait !== undefined) { sentPortrait = pic.length + ':' + pic.slice(0, 60); } }).catch(function () { /* next sync will try again */ });
   }
 
   /* handouts: what the DM has shown the table */
@@ -3582,24 +3664,40 @@ FR.Dice = (function () {
   $('pl-inbox').addEventListener('click', function () { show(T.feed.length - 1); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('handout').hidden) { $('handout').hidden = true; } });
 
+  /* ---------- welcome back: the seat this name left still has a character ---------- */
+  function welcome(j, fresh) {
+    var k; try { k = JSON.parse(j.save); } catch (e) { return false; }
+    if (!k || !k.name || !k.cls) { return false; }
+    var first = k.name.split(' ')[0], close = function () { $('back').hidden = true; };
+    $('bk-title').textContent = 'Welcome back, ' + T.name + '!';
+    $('bk-text').textContent = k.name + ', your ' + k.race + ' ' + k.cls + ', is still at table ' + T.code + '.';
+    $('bk-yes').textContent = 'Continue as ' + first;
+    $('bk-yes').onclick = function () { close(); if (!A.restore(j.save, j.portrait)) { fresh(); } };
+    $('bk-no').onclick = function () { close(); fresh(); };
+    $('back').hidden = false; $('bk-yes').focus();
+    return true;
+  }
+
   /* ---------- changing tables: a player can move to another code, or leave ---------- */
   function switcher() {
     var mine = T.role === 'player' && !!T.code;
-    $('sw-title').textContent = mine ? 'You are at table ' + T.code : 'Join your DM’s table';
+    var k = A.saved(), who = k ? k.name.split(' ')[0] : '';
+    $('sw-title').textContent = mine ? 'You are at table ' + T.code : (who && A.screen() === 'title' ? 'Join the table as ' + who + '?' : 'Join your DM’s table');
     $('sw-lbl').textContent = mine ? 'A different table code' : 'Table code';
     $('sw-join').textContent = mine ? 'Switch to this table' : 'Join this table';
+    $('sw-who').hidden = !(mine && T.name); $('sw-who').textContent = mine && T.name ? 'You are seated as ' + T.name + '. Use the same name and this code to come back later, or on another phone.' : '';
     $('sw-leave').hidden = !mine; $('sw-code').value = ''; $('sw-err').hidden = true;
     $('switch').hidden = false; $('sw-code').focus();
   }
   function switchTo() {
     var code = $('sw-code').value.trim(), err = $('sw-err'), b = $('sw-join'), c = A.character();
-    var name = T.name || $('j-name').value.trim() || (c && c.name) || 'Player';
+    var k = A.saved(), name = T.name || A.player() || $('j-name').value.trim() || ((c && c.name) || (k && k.name) || 'Player').split(' ')[0];
     var say = function (m) { err.textContent = m; err.hidden = false; $('sw-code').focus(); };
     err.hidden = true;
     if (code.length !== 4) { say('A table code is four letters. Ask your DM to read it out again.'); return; }
     if (T.role === 'player' && code === T.code) { say('You are already at that table.'); return; }
     b.disabled = true;
-    join(code, name).then(function () { $('switch').hidden = true; sync(); })
+    join(code, name).then(function () { $('switch').hidden = true; if (A.screen() === 'title' && A.saved()) { A.resume(); } sync(); })   // from a table link: straight to the game with the saved character
       .catch(function (x) { say((x && x.message) || 'Could not join that table. Check the code and try again.'); })
       .then(function () { b.disabled = false; });
   }
@@ -3632,10 +3730,12 @@ FR.Dice = (function () {
     if (!T.can) { changed(); return; }
     try { var k = JSON.parse(A.store.get(KEY) || 'null'); if (k && k.code && k.token) { T.code = k.code; T.token = k.token; T.role = k.role; T.id = k.id || ''; T.name = k.name || ''; T.seen = k.seen || 0; start(); } } catch (e) { /* no table remembered */ }
     changed();
+    /* a table link (?t=CODE) opened by someone who already made a character: offer to join now, no retyping */
+    if (q && T.role !== 'dm' && q[1].toUpperCase() !== T.code && A.saved() && A.screen() === 'title') { switcher(); $('sw-code').value = q[1].toUpperCase(); }
   }
 
   FR.table = {
-    ready: ready, join: join, sync: sync, open: open, send: send, stash: stash, leave: forget, show: show,
+    ready: ready, join: join, sync: sync, welcome: welcome, open: open, send: send, stash: stash, leave: forget, show: show,
     can: function () { return T.can; }, needsPasscode: function () { return T.passcode; },
     active: function () { return !!T.code; }, isDM: function () { return T.role === 'dm' && !!T.code; }, isPlayer: function () { return T.role === 'player' && !!T.code; },
     code: function () { return T.code; }, players: function () { return T.players; }, feed: function () { return T.feed; },
@@ -3956,7 +4056,7 @@ FR.Dice = (function () {
       toast('You left table ' + old + '. Tap the table button to join it again or start a new one.');
     });
     bye.appendChild(lb);
-    bye.appendChild(el('small', '', 'The table stays open, with its players and pictures, so you can join it again with this code. It clears itself after twelve quiet hours.'));
+    bye.appendChild(el('small', '', 'The table stays open, with its players and pictures, so you can join it again with this code. Players come back with the same name and code, on any phone. It clears itself after thirty quiet days.'));
     box.appendChild(bye);
     tableLive();
     sh.hidden = false; box.scrollTop = 0; $('dm-sheet-x').focus();

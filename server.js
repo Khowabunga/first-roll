@@ -70,7 +70,7 @@ async function text(body) {
 
 
 /* ---------------- tables: one DM, their players, and what the DM has shown them ----------------
-   Kept in memory. A table lasts until it has been idle for twelve hours or the server restarts. */
+   Kept in memory. A table lasts until it has been idle for thirty days or the server restarts. */
 const tables = new Map();
 const LIMIT = { players: 8, portraits: 6, images: 150, texts: 800, feed: 300, tables: 40 };
 const rnd = (n) => crypto.randomBytes(n).toString('hex');
@@ -110,6 +110,9 @@ const TABLE = {
   join(body) {
     const t = tableOf(body), name = clean(body.name, 24);
     if (!name) { throw bad(400, 'Tell the table your name first.'); }
+    /* a name already at the table takes that seat back (a new session, or another phone) */
+    const seat = Array.from(t.players.values()).find((x) => x.name.toLowerCase() === name.toLowerCase());
+    if (seat) { seat.token = rnd(16); return { code: t.code, id: seat.id, token: seat.token, name: seat.name, back: true, save: seat.save || '', portrait: seat.portrait }; }
     if (t.players.size >= LIMIT.players) { throw bad(409, 'This table is full.'); }
     const p = { id: rnd(4), token: rnd(16), name, char: null, portrait: '', portraits: 0 };
     t.players.set(p.id, p);
@@ -120,7 +123,9 @@ const TABLE = {
     if (w.dm) { throw bad(400, 'The DM has no character.'); }
     if (body.char) { const c = body.char; w.char = { name: clean(c.name, 40), race: clean(c.race, 30), cls: clean(c.cls, 30), line: clean(c.line, 80), look: clean(c.look, 400) }; }
     if (body.name) { w.name = clean(body.name, 24); }
+    if (typeof body.save === 'string' && body.save.length <= 20000) { w.save = body.save; }
     if (body.portrait === '') { w.portrait = ''; }
+    else if (body.portrait && body.portrait === w.portrait) { /* already kept here */ }
     else if (body.portrait) { w.portrait = /^img\//.test(body.portrait) ? clean(body.portrait, 80) : storeImage(t, body.portrait); }
     return { ok: true, portrait: w.portrait };
   },
@@ -153,7 +158,7 @@ function spend(body, kind) {
   } else if (t.spend.texts >= LIMIT.texts) { throw bad(429, 'This table has reached its story-help limit.'); }
   t.spend[kind]++;
 }
-setInterval(() => { const cut = Date.now() - 12 * 3600 * 1000; for (const [c, t] of tables) { if (t.touched < cut) { tables.delete(c); } } for (const [ip, m] of misses) { if (Date.now() - m.t > 60000) { misses.delete(ip); } } }, 600000).unref();
+setInterval(() => { const cut = Date.now() - 30 * 24 * 3600 * 1000; for (const [c, t] of tables) { if (t.touched < cut) { tables.delete(c); } } for (const [ip, m] of misses) { if (Date.now() - m.t > 60000) { misses.delete(ip); } } }, 600000).unref();
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.webp': 'image/webp', '.png': 'image/png', '.json': 'application/json', '.svg': 'image/svg+xml' };
 

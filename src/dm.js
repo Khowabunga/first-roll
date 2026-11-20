@@ -309,7 +309,7 @@
       toast('You left table ' + old + '. Tap the table button to join it again or start a new one.');
     });
     bye.appendChild(lb);
-    bye.appendChild(el('small', '', 'The table stays open, with its players and pictures, so you can join it again with this code. It clears itself after twelve quiet hours.'));
+    bye.appendChild(el('small', '', 'The table stays open, with its players and pictures, so you can join it again with this code. Players come back with the same name and code, on any phone. It clears itself after thirty quiet days.'));
     box.appendChild(bye);
     tableLive();
     sh.hidden = false; box.scrollTop = 0; $('dm-sheet-x').focus();

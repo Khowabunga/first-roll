@@ -45,6 +45,24 @@
       portraitNote: S.portraitNote, portrait: S.portrait && S.portrait.length < 700000 ? S.portrait : '' };
     store.set('firstroll.v3.' + TH.id, JSON.stringify(keep));
   }
+  /* the character without its picture: small enough to leave with the table (see table.js) */
+  function saveBlob() {
+    if (!S.cls) { return ''; }
+    return JSON.stringify({ theme: TH.id, answers: S.answers, cls: S.cls, race: S.race, look: S.look, desc: S.desc, name: S.name, origin: S.origin, originKey: S.originKey, originName: S.originName, portraitNote: S.portraitNote });
+  }
+  /* take up a character that was left at a table: on a new phone, or in a new session */
+  function restore(blob, portrait) {
+    var k; try { k = JSON.parse(blob); } catch (e) { return false; }
+    if (!k || !FR.CLASSES[k.cls] || !FR.RACES[k.race]) { return false; }
+    if (k.theme && k.theme !== TH.id && FR.THEMES[k.theme]) { applyTheme(k.theme, true); }
+    k.portrait = ''; adopt(k); save(); go('play');
+    if (portrait && portrait.indexOf('data:') !== 0) {      // fetch the picture once and keep it on this device
+      fetch(portrait).then(function (r) { if (!r.ok) { throw new Error('gone'); } return r.blob(); }).then(function (b) {
+        return new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(fr.result); }; fr.onerror = rej; fr.readAsDataURL(b); });
+      }).then(function (data) { S.portrait = data; save(); if (S.screen === 'play') { renderPlay(); } tableSync(); }).catch(function () { /* no picture: the sheet still works */ });
+    }
+    return true;
+  }
   function load() {
     try {
       var k = JSON.parse(store.get('firstroll.v3.' + TH.id) || 'null');
@@ -185,6 +203,7 @@
   /* ---------- 2. sign in, then the story so far ---------- */
   /* Sign in: a name, and the DM's table code when there is one. */
   function renderJoin() {
+    if (!$('j-name').value && store.get('firstroll.player')) { $('j-name').value = store.get('firstroll.player'); }
     var has = !!(FR.table && FR.table.can()), code = $('j-code').value.trim();
     $('j-lede').textContent = has ? tx('ledgerLedeTable') : tx('ledgerLede');
     $('b-join').textContent = has && code ? tx('ledgerJoin') : tx('ledgerSign');
@@ -194,12 +213,12 @@
   $('ledger').addEventListener('submit', function (e) {
     e.preventDefault();
     var name = $('j-name').value.trim(), code = $('j-code').value.trim(), err = $('j-err'), b = $('b-join');
-    err.hidden = true; S.player = name;
+    err.hidden = true; S.player = name; if (name) { store.set('firstroll.player', name); }
     if (!(FR.table && FR.table.can() && code)) { afterLedger(); return; }
     if (!name) { err.textContent = 'Tell the table your name first.'; err.hidden = false; $('j-name').focus(); return; }
     if (code.length !== 4) { err.textContent = 'A table code is four letters. Ask your DM to read it out again.'; err.hidden = false; $('j-code').focus(); return; }
     b.disabled = true;
-    FR.table.join(code, name).then(function () { afterLedger(); }).catch(function (x) { err.textContent = x.message || 'Could not join that table. Check the code and try again.'; err.hidden = false; }).then(function () { b.disabled = false; });
+    FR.table.join(code, name).then(function (j) { if (!(j && j.back && j.save && FR.table.welcome(j, afterLedger))) { afterLedger(); } }).catch(function (x) { err.textContent = x.message || 'Could not join that table. Check the code and try again.'; err.hidden = false; }).then(function () { b.disabled = false; });
   });
   $('b-skip-ledger').addEventListener('click', function () { afterLedger(); });
   var story = { i: 0 };
@@ -537,7 +556,7 @@
         try { FR.Dice.init($('tray'), {}); D.booted = true; FR.Dice.onFrame(placeBadges); FR.Dice.setScene(TH.dice, TH.art.floor); }
         catch (e) { D.booted = false; }
       }
-      $('d-warn').hidden = D.booted;            // no WebGL here: say so instead of showing an empty tray
+      if (D.booted) { $('flat').hidden = true; }  // no WebGL here: the dice are drawn flat instead (see flatRoll)
       if (D.booted) { FR.Dice.resize(); trayBounds(); }
       throwDice(null);
     }, 60);
@@ -588,6 +607,44 @@
       b.style.left = p.x + 'px'; b.style.top = Math.max(top.height * 0.12, p.y - p.r - 20) + 'px'; box.appendChild(b);
     });
   }
+  /* ---------- flat dice ----------
+     Where the browser cannot draw the 3D tray (no WebGL), the same dice are drawn flat: they
+     tumble, flicker through numbers and land, so nobody is left looking at an empty tray. */
+  var FLAT = { 4: '<polygon class="body" points="50,10 93,86 7,86"/>',
+    6: '<rect class="body" x="11" y="11" width="78" height="78" rx="14"/>',
+    8: '<polygon class="body" points="50,4 93,50 50,96 7,50"/><polyline class="facet" points="7,50 50,36 93,50"/>',
+    10: '<polygon class="body" points="50,4 92,44 50,96 8,44"/><polyline class="facet" points="8,44 50,60 92,44"/>',
+    12: '<polygon class="body" points="50,4 95,37 78,93 22,93 5,37"/><polygon class="facet" points="50,24 75,43 66,73 34,73 25,43"/>',
+    20: '<polygon class="body" points="50,3 91,26 91,74 50,97 9,74 9,26"/><polygon class="facet" points="50,22 78,68 22,68"/>' };
+  var flatT = { tick: 0, done: 0 };
+  function flatDraw(sp, vals) {
+    var box = $('flat'), c = D.ctx, fightish = c.kind === 'attack' || c.kind === 'damage' || c.kind === 'init';
+    var r = vals ? result() : null, n = sp.length, size = n === 1 ? 150 : n === 2 ? 124 : n <= 4 ? 100 : n <= 6 ? 84 : 66;
+    clear(box); box.hidden = false;
+    sp.forEach(function (sides, i) {
+      var d = el('div', 'fd d' + sides + (reduced ? '' : (vals ? ' land' : ' roll')) + (r && r.two && i !== r.keptIx ? ' drop' : ''));
+      d.style.setProperty('--s', size + 'px'); d.style.setProperty('--die', fightish ? TH.dice.fight : FR.CLASSES[S.cls].color); d.style.setProperty('--ink', fightish ? TH.dice.fightInk : TH.dice.ink);
+      if (!vals) { d.style.animationDelay = (-i * 130) + 'ms'; }
+      d.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true">' + (FLAT[sides] || FLAT[20]) + '</svg>';
+      d.appendChild(el('b', '', vals ? String(vals[i]) : String(1 + Math.floor(Math.random() * sides))));
+      box.appendChild(d);
+    });
+  }
+  function flatRoll(sp, land) {
+    clearInterval(flatT.tick); clearTimeout(flatT.done);
+    var any = function (s) { return 1 + Math.floor(Math.random() * s); }, beat = 0;
+    flatDraw(sp, null);
+    flatT.tick = setInterval(function () {
+      Array.prototype.forEach.call($('flat').querySelectorAll('b'), function (b, i) { b.textContent = String(any(sp[i])); });
+      if (++beat % 2 === 0) { FR.Dice.Sound.hit(beat % 4 ? 'felt' : 'die', 0.5 + Math.random() * 0.4, Math.random() - 0.5); }
+    }, 70);
+    flatT.done = setTimeout(function () {
+      clearInterval(flatT.tick);
+      var vals = sp.map(any);
+      FR.Dice.Sound.hit('wood', 0.9, 0);
+      land(vals); flatDraw(sp, vals);
+    }, reduced ? 120 : 950);
+  }
   function throwDice(flick) {
     var sp = spec();
     D.rolling = true; D.shown = false; D.values = []; clear($('badges')); renderTray();
@@ -599,7 +656,7 @@
       if (D.ctx.kind === 'init') { S.init = r.total; }
       renderTray();
     };
-    if (!D.booted) { setTimeout(function () { land(sp.map(function (s) { return 1 + Math.floor(Math.random() * s); })); }, 500); return; }
+    if (!D.booted) { flatRoll(sp, land); return; }
     var c = D.ctx, fightish = c.kind === 'attack' || c.kind === 'damage' || c.kind === 'init';
     FR.Dice.setTheme(fightish ? TH.dice.fight : FR.CLASSES[S.cls].color, fightish ? TH.dice.fightInk : TH.dice.ink);
     FR.Dice.roll(sp, flick, land);
@@ -615,7 +672,7 @@
   var bump = function (d) { var c = D.ctx; D.ctx = free(c.sides, (c.kind === 'free' ? c.count : 1) + d); D.adv = 'normal'; renderTray(); if (D.booted) { trayBounds(); } throwDice(null); };
   $('d-less').addEventListener('click', function () { if (D.ctx.kind === 'free' && D.ctx.count > 1) { bump(-1); } });
   $('d-more').addEventListener('click', function () { if (D.ctx.count < 6) { bump(1); } });
-  $('d-close').addEventListener('click', function () { if (D.booted) { FR.Dice.stop(); } go('play'); });
+  $('d-close').addEventListener('click', function () { if (D.booted) { FR.Dice.stop(); } clearInterval(flatT.tick); clearTimeout(flatT.done); D.rolling = false; go('play'); });
   /* ---------- music and sound: one sheet, two switches ---------- */
   function renderAudio() {
     var has = FR.Music.has();
@@ -686,6 +743,7 @@
   if (document.fonts && document.fonts.load) { document.fonts.load("800 40px 'Alegreya'"); }
   window.FRState = function () { return S; }; window.FRGo = go; window.FRTheme = applyTheme;
   FR.app = { $: $, el: el, clear: clear, go: go, fetchJson: fetchJson, text: AI.text, image: AI.image, store: store, reduced: reduced, isLive: function () { return G.live; }, screen: function () { return S.screen; },
+    saved: function () { var k = load(); return k && k.name ? k : null; }, saveBlob: saveBlob, restore: restore, player: function () { return store.get('firstroll.player') || ''; }, resume: function () { var k = load(); if (k) { adopt(k); go('play'); } },
     character: function () { return S.cls ? { name: S.name, race: S.race, cls: S.cls, line: S.sheet ? S.sheet.alignment : '', look: FR.portraitSubject(character()).slice(0, 380), portrait: S.portrait } : null; } };
 
   /* ---------- connect OpenAI (only when this copy runs on your own computer) ---------- */

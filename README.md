@@ -51,7 +51,10 @@ Things to know:
 - Until both secrets are set the site works but shows sample pictures, and tables are off.
 - Only someone with the passcode can open a table, and only people sitting at a table can use
   your OpenAI key. Each table is capped at 150 pictures and each player at 6 portraits.
-- A table is cleared away twelve hours after its last activity.
+- A table is cleared away thirty days after its last activity, so a campaign keeps one code.
+- A player who joins again under the same name, in a later session or on another phone, gets
+  their seat and their character back. Anyone at the table who types that name takes the seat,
+  so this suits friends and family, not strangers.
 - The free plan allows 100,000 requests a day. Each open phone checks in every three seconds, so
   a DM and five players use about 22,000 in a three-hour game.
 
