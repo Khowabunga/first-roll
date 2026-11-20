@@ -271,15 +271,20 @@
       <form class="page" id="dmgate" novalidate>
         <h2 class="h-ox">The DM&rsquo;s door</h2>
         <p class="lede">Behind this page is the whole story: every secret, every twist and every ending. Players, this door is not for you.</p>
-        <p class="lede" id="dm-door-note" hidden>Opening a table gives you a four-letter code. Your players type it on their own phones, and then you can send everyone pictures and notes as the story goes.</p>
+        <p class="lede" id="dm-door-note" hidden>A table has a four-letter code. Your players type it on their own phones, and then you can send everyone pictures and notes as the story goes. Go back to a table you already opened, or start a new one.</p>
+        <button type="button" class="btn wax" id="b-dm-back" hidden></button>
         <div class="stack" id="dm-pass-wrap" hidden>
           <label class="lbl" for="dm-pass">DM passcode</label>
           <input class="field" id="dm-pass" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
         </div>
+        <div class="stack" id="dm-code-wrap" hidden>
+          <label class="lbl" for="dm-code">Table code, to join a table you already opened</label>
+          <input class="field code" id="dm-code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="4" placeholder="ABCD">
+        </div>
         <p class="err" id="dm-err" role="alert" hidden></p>
         <button type="submit" class="btn wax" id="b-dm-in">I am the DM. Let me in</button>
+        <button type="button" class="btn ink" id="b-dm-new" hidden>Start a new table</button>
         <button type="button" class="btn ink" id="b-dm-skip" hidden>Go in without a table</button>
-        <button type="button" class="btn ink" id="b-dm-new" hidden>Leave this table and open a new one</button>
       </form>
     </div>
   </section>

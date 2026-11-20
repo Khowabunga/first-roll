@@ -306,10 +306,10 @@
     var bye = el('div', 'tb-bye'), sure = false, lb = btn('chipd', 'Leave this table', function () {
       if (!sure) { sure = true; lb.textContent = 'Tap again to leave table ' + TB.code(); return; }
       var old = TB.code(); TB.leave(); wasAt = false; sh.hidden = true; render();
-      toast('You left table ' + old + '. Tap the table button to open a new one.');
+      toast('You left table ' + old + '. Tap the table button to join it again or start a new one.');
     });
     bye.appendChild(lb);
-    bye.appendChild(el('small', '', 'Your players stay at this table until they change codes, so give them the new one. This table clears itself after twelve quiet hours.'));
+    bye.appendChild(el('small', '', 'The table stays open, with its players and pictures, so you can join it again with this code. It clears itself after twelve quiet hours.'));
     box.appendChild(bye);
     tableLive();
     sh.hidden = false; box.scrollTop = 0; $('dm-sheet-x').focus();
@@ -328,10 +328,7 @@
       im.src = u;
     });
   }
-  function reopen() {
-    if (TB.needsPasscode() && !pass) { doorSetup(); A.go('dmgate'); return; }
-    TB.open(pass).then(function () { render(); openTable(); }).catch(function (e) { toast((e && e.message) || 'Could not open a table.'); });
-  }
+  function reopen() { doorSetup(); A.go('dmgate'); }           // no table: the door asks whether to join one or start a new one
   $('dm-table').addEventListener('click', function () { if (atTable()) { openTable(); } else { reopen(); } });
   if (TB) {
     TB.onChange(function () {
@@ -727,27 +724,42 @@
 
   /* ---------- the door ---------- */
   function enterDM() { load(); ui.tab = 'run'; A.go('dm'); render(); setTimeout(function () { var b = $('dm-body'); b.scrollTop = DM.feed.length > 1 ? b.scrollHeight : 0; }, 60); }
+  /* The door. With tables on, the DM either joins a table that is already open (by its code)
+     or starts a new one; a table this browser is already at is one tap away. */
   function doorSetup() {
-    var can = !!(TB && TB.can()), mine = atTable();
-    $('dm-pass-wrap').hidden = !(can && TB.needsPasscode() && !mine);
+    var can = !!(TB && TB.can()), mine = atTable(), code = $('dm-code').value.trim();
+    $('b-dm-back').hidden = !(can && mine); $('b-dm-back').textContent = mine ? 'Back to table ' + TB.code() : '';
+    $('dm-pass-wrap').hidden = !(can && TB.needsPasscode());
+    if (pass && !$('dm-pass').value) { $('dm-pass').value = pass; }          // typed once already this visit
+    $('dm-code-wrap').hidden = !can;
     $('b-dm-skip').hidden = !(can && !TB.needsPasscode() && !mine);
-    $('b-dm-new').hidden = !(can && mine);
-    $('dm-door-note').hidden = !can || mine;
-    $('b-dm-in').textContent = !can ? 'I am the DM. Let me in' : (mine ? 'Back to table ' + TB.code() : 'Open a table and let me in');
+    $('dm-door-note').hidden = !can;
+    $('b-dm-in').textContent = !can ? 'I am the DM. Let me in' : (code ? 'Join table ' + code : 'Join a table');
+    $('b-dm-in').className = 'btn ' + (can && mine ? 'ink' : 'wax');
+    $('b-dm-new').hidden = !can;
     $('dm-err').hidden = true;
   }
+  function doorGo(code) {
+    var err = $('dm-err'), say = function (m, focus) { err.textContent = m; err.hidden = false; if (focus) { $(focus).focus(); } };
+    err.hidden = true; pass = $('dm-pass').value;
+    if (TB.needsPasscode() && !pass) { say('Type the DM passcode first.', 'dm-pass'); return; }
+    if (code !== null && code.length !== 4) { say('Type the four-letter code of the table you want to join, or start a new table.', 'dm-code'); return; }
+    if (code && atTable() && code === TB.code()) { enterDM(); return; }
+    var bs = [$('b-dm-in'), $('b-dm-new')]; bs.forEach(function (x) { x.disabled = true; });
+    TB.open(pass, code || '').then(function () { $('dm-code').value = ''; wasAt = true; enterDM(); openTable(); })
+      .catch(function (x) { if (x && x.status === 403) { pass = ''; } say((x && x.message) || 'Could not open a table. Try again.'); })
+      .then(function () { bs.forEach(function (x) { x.disabled = false; }); });
+  }
   $('b-dm').addEventListener('click', function () { doorSetup(); A.go('dmgate'); });
+  $('dm-code').addEventListener('input', function () { $('dm-code').value = $('dm-code').value.toUpperCase().replace(/[^A-Z]/g, ''); var c = $('dm-code').value; $('b-dm-in').textContent = c ? 'Join table ' + c : 'Join a table'; });
   $('dmgate').addEventListener('submit', function (e) {
     e.preventDefault();
-    if (!(TB && TB.can()) || atTable()) { enterDM(); return; }
-    var b = $('b-dm-in'), err = $('dm-err'); err.hidden = true; b.disabled = true;
-    pass = $('dm-pass').value;
-    TB.open(pass).then(function () { $('dm-pass').value = ''; enterDM(); openTable(); })
-      .catch(function (x) { err.textContent = (x && x.message) || 'Could not open a table. Try again.'; err.hidden = false; })
-      .then(function () { b.disabled = false; });
+    if (!(TB && TB.can())) { enterDM(); return; }
+    doorGo($('dm-code').value.trim());
   });
+  $('b-dm-new').addEventListener('click', function () { doorGo(null); });
+  $('b-dm-back').addEventListener('click', enterDM);
   $('b-dm-skip').addEventListener('click', enterDM);
-  $('b-dm-new').addEventListener('click', function () { TB.leave(); wasAt = false; doorSetup(); if (!$('dm-pass-wrap').hidden) { $('dm-pass').focus(); } });
   $('dm-exit').addEventListener('click', function () { if (Voice.tts && Voice.tts.active()) { Voice.tts.stop().catch(function () { /* quiet */ }); } A.go('title'); });
   FR.dm = { state: function () { return DM; }, prompt: prompt, render: render };
 })();

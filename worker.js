@@ -61,6 +61,11 @@ export default {
         if (!env.DM_PASSCODE) { throw new Bad(503, 'This site has no DM_PASSCODE set, so tables are switched off.'); }
         const body = await readJson(request, 2000);
         if (String(body.passcode || '') !== env.DM_PASSCODE) { strike(ip); throw new Bad(403, 'That is not the DM passcode.'); }
+        if (body.code) {                         // the DM coming back to a table that is already open
+          const back = String(body.code).toUpperCase();
+          if (!/^[A-Z]{4}$/.test(back)) { throw new Bad(404, 'No table with that code. A table code is four letters.'); }
+          return table(back).fetch(new Request('https://table/api/table/dm?c=' + back, { method: 'POST' }));
+        }
         for (let i = 0; i < 6; i++) {           // pick a code nobody is using
           const code = newCode(), r = await table(code).fetch(new Request('https://table/api/table/open?c=' + code, { method: 'POST' }));
           if (r.status !== 409) { return r; }
@@ -99,7 +104,8 @@ export class Table extends DurableObject {
         await this.save(); await this.stayOpen();
         return reply({ code: this.t.code, token: this.t.dm });
       }
-      if (!t) { throw new Bad(404, 'No table with that code. Check it with your DM.'); }
+      if (!t) { throw new Bad(404, url.pathname === '/api/table/dm' ? 'No table with that code. It may have been cleared away; start a new one.' : 'No table with that code. Check it with your DM.'); }
+      if (url.pathname === '/api/table/dm') { await this.stayOpen(); return reply({ code: t.code, token: t.dm, players: t.players.length }); }   // only reachable through /api/table/open, after the passcode
       if (url.pathname === '/api/table/img') {
         const im = await this.ctx.storage.get('img:' + String(url.searchParams.get('id') || '').slice(0, 32));
         return im ? new Response(im.buf, { headers: { 'Content-Type': im.type, 'Cache-Control': 'private, max-age=86400' } }) : new Response('Not found', { status: 404 });

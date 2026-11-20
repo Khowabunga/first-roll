@@ -96,6 +96,12 @@ const pubPlayer = (p) => ({ id: p.id, name: p.name, char: p.char, portrait: p.po
 const TABLE = {
   open(body) {
     if (DM_PASSCODE && String(body.passcode || '') !== DM_PASSCODE) { throw bad(403, 'That is not the DM passcode.'); }
+    if (body.code) {                             // the DM coming back to a table that is already open
+      const back = tables.get(String(body.code).toUpperCase());
+      if (!back) { throw bad(404, 'No table with that code. It may have been cleared away; start a new one.'); }
+      back.touched = Date.now();
+      return { code: back.code, token: back.dm, players: back.players.size };
+    }
     if (tables.size >= LIMIT.tables) { throw bad(429, 'Too many tables are open right now. Try again later.'); }
     const t = { code: newCode(), dm: rnd(16), created: Date.now(), touched: Date.now(), players: new Map(), feed: [], imgs: new Map(), seq: 0, spend: { images: 0, texts: 0 } };
     tables.set(t.code, t);

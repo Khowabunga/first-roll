@@ -110,8 +110,10 @@
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('switch').hidden) { $('switch').hidden = true; } });
 
   /* ---------- the DM's side ---------- */
-  function open(passcode) {
-    return A.fetchJson('api/table/open', { passcode: passcode || '' }, 20000).then(function (j) {
+  /* Open a new table, or with a code come back as DM to one that is already open. */
+  function open(passcode, code) {
+    var body = { passcode: passcode || '' }; if (code) { body.code = String(code).toUpperCase().replace(/[^A-Z]/g, ''); }
+    return A.fetchJson('api/table/open', body, 20000).then(function (j) {
       T.code = j.code; T.token = j.token; T.role = 'dm'; T.id = ''; T.last = 0; T.feed = []; T.players = []; keep(); start(); changed(); return j;
     });
   }
