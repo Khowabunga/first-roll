@@ -27,12 +27,13 @@
   S = blank();
   /* How pictures and writing get made: 'server' (server.js holds the key), 'direct' (this browser calls
      OpenAI with a key kept on this computer) or 'preview' (no AI: ready-made samples). */
-  var G = { live: false, mode: 'preview', muted: store.get('firstroll.muted') === '1' };
+  /* sound effects and music have a switch each; an old 'muted' choice still counts for effects */
+  var G = { live: false, mode: 'preview', muted: (store.get('firstroll.sfx') || (store.get('firstroll.muted') === '1' ? '0' : '1')) === '0', music: store.get('firstroll.music') !== '0' };
   var OPENAI = { image: 'gpt-image-2', quality: 'medium', text: 'gpt-4.1-mini' };
   var hosted = !!window.claude;
   var canDirect = !hosted && (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname));
   var directKey = function () { return canDirect ? (store.get('firstroll.openai') || '') : ''; };
-  FR.Dice.Sound.muted = G.muted;
+  FR.Dice.Sound.muted = G.muted; FR.Music.enable(G.music);
   var D = { ctx: null, adv: 'normal', values: [], rolling: false, shown: false, lucky: false, booted: false };
 
   var crestOf = function (cls) { return TH.art.crest(cls); };
@@ -118,6 +119,7 @@
     if (fresh) { var scr = S.screen; S = blank(); S.screen = scr; }
     document.querySelectorAll('[data-t]').forEach(function (n) { n.textContent = tx(n.getAttribute('data-t')); });
     $('t-wordmark').src = TH.art.wordmark;
+    FR.Music.use(TH.music || null); renderAudio();
     $('p-desc').setAttribute('placeholder', tx('descHint'));
     $('b-surprise-t').textContent = tx('surprise');
     var k = load();
@@ -145,14 +147,21 @@
     document.querySelectorAll('.screen').forEach(function (s) { s.classList.toggle('on', s.id === 's-' + name); });
     app.setAttribute('data-screen', name); S.screen = name;
     if (enter[name]) { enter[name](); }
+    tune();
+  }
+  /* which music fits where the player is: the way in, the game itself, or a fight */
+  function tune() {
+    var s = S.screen, rolling = s === 'dice' && D && D.ctx, k = rolling ? D.ctx.kind : '';
+    var fight = (s === 'play' && S.tab === 'fight') || (rolling && (k === 'attack' || k === 'damage' || k === 'init' || S.tab === 'fight'));
+    FR.Music.scene(fight ? 'fight' : (s === 'title' || s === 'ledger' || s === 'story' || s === 'dmgate' || s === 'connect' ? 'intro' : 'game'));
   }
   document.addEventListener('click', function (e) {
     var b = e.target.closest ? e.target.closest('[data-back]') : null;
     if (b) { go(b.getAttribute('data-back')); }
   });
   document.addEventListener('pointerdown', function (e) {
-    FR.Dice.Sound.unlock();
-    if (e.target.closest && e.target.closest('.btn, .ans, .chip, .row, .tab, .icon, .theme-card, .seg button, .rail-dice button, .stepper button')) { FR.Dice.Sound.tick(); }
+    FR.Dice.Sound.unlock(); FR.Music.unlock();
+    if (e.target.closest && e.target.closest('.btn, .ans, .chip, .row, .tab, .icon, .theme-card, .seg button, .rail-dice button, .stepper button, .switch, .tablechip')) { if (TH.id === 'northpole') { FR.Dice.Sound.tink(); } else { FR.Dice.Sound.tick(); } }
   });
 
   /* ---------- 1. title ---------- */
@@ -246,7 +255,7 @@
   }
   function answer(ai, btn) {
     if (busy) { return; }
-    busy = true; S.answers[S.qi] = ai;
+    busy = true; S.answers[S.qi] = ai; FR.Dice.Sound.step(S.qi);
     Array.prototype.forEach.call($('q-answers').children, function (c) { c.classList.toggle('on', c === btn); });
     renderLean();
     setTimeout(function () {
@@ -266,7 +275,7 @@
     S.clsRank = FR.rank(S.u, FR.CLASSES); S.raceRank = FR.rank(S.u, FR.RACES);
     if (pick) { S.cls = S.clsRank[0].name; S.race = S.raceRank[0].name; }
   }
-  var cheer = function () { if (TH.id === 'northpole') { FR.Dice.Sound.jingle(); } else { FR.Dice.Sound.chime(true); } };
+  var cheer = function () { if (TH.id === 'northpole') { FR.Dice.Sound.jingle(); FR.Dice.Sound.fanfare(); } else { FR.Dice.Sound.chime(true); } };
   var tableSync = function () { if (FR.table) { FR.table.sync(); } };
   function showReveal(intro) {
     renderReveal(); go('reveal'); $('reveal-scroll').scrollTop = 0; tableSync();
@@ -380,7 +389,7 @@
     var lines = tx('work'), li = 0;
     painting = true; $('p-err').hidden = true; $('p-work-text').textContent = lines[0]; renderEasel();
     workTimer = setInterval(function () { li = Math.min(lines.length - 1, li + 1); $('p-work-text').textContent = lines[li]; }, G.live ? 5200 : 520);
-    var finish = function (src, note) { clearInterval(workTimer); painting = false; S.portrait = src; S.portraitNote = note; S.stale = false; renderEasel(); save(); tableSync(); };
+    var finish = function (src, note) { clearInterval(workTimer); painting = false; S.portrait = src; S.portraitNote = note; S.stale = false; renderEasel(); save(); tableSync(); FR.Dice.Sound.sparkle(); };
     var fail = function (msg) { clearInterval(workTimer); painting = false; renderEasel(); $('p-err').textContent = msg; $('p-err').hidden = false; };
     if (!G.live) {
       var cls = S.cls;
@@ -464,7 +473,7 @@
     var bar = $('pl-tabs'); clear(bar);
     ['do', 'checks', 'fight'].forEach(function (id, i) {
       var b = el('button', 'tab' + (id === 'fight' ? ' fight' : '') + (S.tab === id ? ' on' : ''), tabs[i]); b.type = 'button'; b.setAttribute('aria-pressed', S.tab === id ? 'true' : 'false');
-      b.addEventListener('click', function () { S.tab = id; renderPlay(); $('pl-list').scrollTop = 0; });
+      b.addEventListener('click', function () { S.tab = id; renderPlay(); $('pl-list').scrollTop = 0; tune(); });
       bar.appendChild(b);
     });
     var list = $('pl-list'); clear(list);
@@ -522,12 +531,13 @@
   }
   function openDice(ctx) {
     D.ctx = ctx; D.adv = 'normal'; D.values = []; D.shown = false; D.rolling = false; D.lucky = false;
-    go('dice'); renderTray();
+    go('dice'); renderTray(); tune();
     setTimeout(function () {
       if (!D.booted) {
         try { FR.Dice.init($('tray'), {}); D.booted = true; FR.Dice.onFrame(placeBadges); FR.Dice.setScene(TH.dice, TH.art.floor); }
         catch (e) { D.booted = false; }
       }
+      $('d-warn').hidden = D.booted;            // no WebGL here: say so instead of showing an empty tray
       if (D.booted) { FR.Dice.resize(); trayBounds(); }
       throwDice(null);
     }, 60);
@@ -565,8 +575,6 @@
       rail.appendChild(b);
     });
     $('d-count').textContent = String(c.count);
-    $('d-sound').setAttribute('aria-pressed', G.muted ? 'false' : 'true'); $('d-sound').setAttribute('aria-label', G.muted ? 'Sound off' : 'Sound on');
-    $('d-sound').style.opacity = G.muted ? '0.5' : '1';
   }
   function placeBadges() {
     var box = $('badges');
@@ -587,7 +595,7 @@
       D.values = vals; D.rolling = false; D.shown = true;
       var r = result();
       if (r.two && D.booted) { FR.Dice.dim(r.keptIx === 0 ? 1 : 0, true); }
-      if (r.nat === 20) { cheer(); } else if (r.nat === 1) { FR.Dice.Sound.chime(false); }
+      if (r.nat === 20) { cheer(); } else if (r.nat === 1) { if (TH.id === 'northpole') { FR.Dice.Sound.womp(); } else { FR.Dice.Sound.chime(false); } }
       if (D.ctx.kind === 'init') { S.init = r.total; }
       renderTray();
     };
@@ -608,7 +616,22 @@
   $('d-less').addEventListener('click', function () { if (D.ctx.kind === 'free' && D.ctx.count > 1) { bump(-1); } });
   $('d-more').addEventListener('click', function () { if (D.ctx.count < 6) { bump(1); } });
   $('d-close').addEventListener('click', function () { if (D.booted) { FR.Dice.stop(); } go('play'); });
-  $('d-sound').addEventListener('click', function () { G.muted = !G.muted; FR.Dice.Sound.muted = G.muted; store.set('firstroll.muted', G.muted ? '1' : '0'); renderTray(); });
+  /* ---------- music and sound: one sheet, two switches ---------- */
+  function renderAudio() {
+    var has = FR.Music.has();
+    $('au-music').setAttribute('aria-checked', G.music && has ? 'true' : 'false'); $('au-music').disabled = !has;
+    $('au-music-note').textContent = has ? tx('musicNote') : 'This theme has no music yet';
+    $('au-sfx').setAttribute('aria-checked', G.muted ? 'false' : 'true');
+    var cr = (TH.music && TH.music.credit) || ''; $('au-credit').textContent = cr; $('au-credit').hidden = !cr;
+    var quiet = G.muted && !(G.music && has);
+    document.querySelectorAll('.audio-open').forEach(function (b) { b.classList.toggle('off', quiet); });
+  }
+  document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('.audio-open')) { renderAudio(); $('audio').hidden = false; $('au-x').focus(); } });
+  $('au-music').addEventListener('click', function () { G.music = !G.music; store.set('firstroll.music', G.music ? '1' : '0'); FR.Music.enable(G.music); renderAudio(); });
+  $('au-sfx').addEventListener('click', function () { G.muted = !G.muted; FR.Dice.Sound.muted = G.muted; store.set('firstroll.sfx', G.muted ? '0' : '1'); renderAudio(); if (!G.muted) { FR.Dice.Sound.tink(); } });
+  $('au-x').addEventListener('click', function () { $('audio').hidden = true; });
+  $('audio').addEventListener('click', function (e) { if (e.target === $('audio')) { $('audio').hidden = true; } });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('audio').hidden) { $('audio').hidden = true; } });
   (function () {
     var cv = $('tray'), pts = [];
     cv.addEventListener('pointerdown', function (e) { pts = [{ x: e.clientX, y: e.clientY, t: performance.now() }]; if (cv.setPointerCapture) { cv.setPointerCapture(e.pointerId); } });
@@ -658,6 +681,7 @@
   // nothing may scroll the stage itself (focus and scroll-into-view can try)
   app.addEventListener('scroll', function () { app.scrollTop = 0; app.scrollLeft = 0; });
   applyTheme(TH.id, false);
+  tune();                                  // the title screen has music too, from the first tap
   checkServer();
   if (document.fonts && document.fonts.load) { document.fonts.load("800 40px 'Alegreya'"); }
   window.FRState = function () { return S; }; window.FRGo = go; window.FRTheme = applyTheme;

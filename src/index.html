@@ -20,6 +20,7 @@
 
   <!-- 1. Title -->
   <section class="screen on" id="s-title">
+    <button type="button" class="icon audio-open title-audio" aria-label="Music and sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button>
     <div class="title-wrap pad">
       <h1 class="wordmark"><img id="t-wordmark" alt="First Roll" width="900" height="560"></h1>
       <p class="tagline" data-t="tagline"></p>
@@ -198,7 +199,7 @@
       </div>
       <div class="hero-stats" id="pl-stats"></div>
     </header>
-    <div class="inbox pad"><span class="tablechip quiet" id="pl-table" hidden></span><button type="button" class="btn ghost slim" id="pl-inbox" hidden></button></div>
+    <div class="inbox pad"><button type="button" class="tablechip quiet" id="pl-table" hidden></button><button type="button" class="btn ghost slim" id="pl-inbox" hidden></button><button type="button" class="icon audio-open pl-audio" aria-label="Music and sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button></div>
     <nav class="tabs pad" id="pl-tabs" aria-label="What are you doing?"></nav>
     <div class="scroll list" id="pl-list"></div>
     <footer class="dock pad play-dock">
@@ -211,6 +212,7 @@
     <canvas id="tray"></canvas>
     <div class="vignette" aria-hidden="true"></div>
     <div id="badges" aria-hidden="true"></div>
+    <p class="tray-warn" id="d-warn" role="status" hidden>This browser cannot draw the 3D dice, so the roll is made for you. To see the dice, turn on graphics acceleration (WebGL) in your browser settings, then reload.</p>
     <header class="tray-top pad" id="tray-top">
       <div class="tray-bar">
         <button type="button" class="icon" id="d-close" aria-label="Back to the table"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -218,7 +220,7 @@
           <div class="tray-title" id="d-title"></div>
           <div class="tray-note" id="d-note"></div>
         </div>
-        <button type="button" class="icon" id="d-sound" aria-label="Sound on" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button>
+        <button type="button" class="icon audio-open" id="d-sound" aria-label="Music and sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button>
       </div>
       <div class="seg" id="d-adv" role="group" aria-label="Advantage"></div>
     </header>
@@ -277,6 +279,7 @@
         <p class="err" id="dm-err" role="alert" hidden></p>
         <button type="submit" class="btn wax" id="b-dm-in">I am the DM. Let me in</button>
         <button type="button" class="btn ink" id="b-dm-skip" hidden>Go in without a table</button>
+        <button type="button" class="btn ink" id="b-dm-new" hidden>Leave this table and open a new one</button>
       </form>
     </div>
   </section>
@@ -289,6 +292,7 @@
         <div class="dm-title" id="dm-title"></div>
         <div class="dm-sub" id="dm-sub"></div>
       </div>
+      <button type="button" class="icon audio-open" aria-label="Music and sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button>
       <button type="button" class="tablechip" id="dm-table" hidden></button>
     </header>
     <div class="toast" id="dm-toast" role="status" hidden></div>
@@ -312,6 +316,28 @@
       <p id="ho-text"></p>
       <div class="handout-nav" id="ho-nav"><button type="button" class="btn ink" id="ho-prev">Older</button><span id="ho-count"></span><button type="button" class="btn ink" id="ho-next">Newer</button></div>
       <button type="button" class="btn wax" id="ho-ok">Got it</button>
+    </div>
+  </div>
+  <div class="handout" id="audio" hidden>
+    <div class="handout-card" role="dialog" aria-modal="true" aria-labelledby="au-title">
+      <div class="handout-k">Music and sound</div>
+      <h3 id="au-title">What would you like to hear?</h3>
+      <button type="button" class="switch" id="au-music" role="switch" aria-checked="true"><span><b>Music</b><small id="au-music-note"></small></span><i aria-hidden="true"></i></button>
+      <button type="button" class="switch" id="au-sfx" role="switch" aria-checked="true"><span><b>Sound effects</b><small>Dice, bells and button taps</small></span><i aria-hidden="true"></i></button>
+      <small class="credit" id="au-credit" hidden></small>
+      <button type="button" class="btn wax" id="au-x">Done</button>
+    </div>
+  </div>
+  <div class="handout" id="switch" hidden>
+    <div class="handout-card" role="dialog" aria-modal="true" aria-labelledby="sw-title">
+      <div class="handout-k">Your table</div>
+      <h3 id="sw-title"></h3>
+      <label class="lbl" for="sw-code" id="sw-lbl">Table code</label>
+      <input class="field code" id="sw-code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="4" placeholder="ABCD">
+      <p class="err" id="sw-err" role="alert" hidden></p>
+      <button type="button" class="btn wax" id="sw-join"></button>
+      <button type="button" class="btn ink" id="sw-leave" hidden>Leave this table and play on my own</button>
+      <button type="button" class="btn ink" id="sw-x">Close</button>
     </div>
   </div>
 </div>

@@ -201,6 +201,14 @@ if (typeof module !== 'undefined' && typeof require === 'function' && !FR.THEMES
       crest: function (cls) { return 'img/np_badge_' + FR.slug(cls) + '.webp'; },
       sample: function (cls) { return 'img/np_sample_' + FR.slug(cls) + '.webp'; }
     },
+    /* Music by scene. A scene with several pieces plays them in turn. The files live in public/audio/;
+       a missing file is skipped. The credit is shown on the Music and sound sheet (the licence asks for it). */
+    music: {
+      intro: ['audio/np_intro.mp3'],
+      game: ['audio/np_game_jingle.mp3', 'audio/np_game_sugarplum.mp3', 'audio/np_game_tree.mp3'],
+      fight: ['audio/np_fight_breakdown.mp3', 'audio/np_fight_dark.mp3'],
+      credit: 'Music: “We Wish You a Merry Christmas”, “Jingle Bells (Calm)”, “Dance of the Sugar Plum Fairies”, “Oh, Christmas Tree”, “Sugar Plum Breakdown” and “Sugar Plum Dark Mix” by Kevin MacLeod (incompetech.com), licensed under Creative Commons: By Attribution 3.0.'
+    },
     dice: { ink: '#ffffff', inkMetal: 0.05, fleck: '#ffffff', fight: '#c8102e', fightInk: '#ffffff', rim: { color: 0xb5121f, wood: false, metal: 0.55, rough: 0.34 }, floorTint: 0xe6efe9, floorBase: 0x0f4a30, exposure: 1.05 },
     particles: 'snow', adventure: 'cookie',
     ai: {
@@ -226,7 +234,7 @@ if (typeof module !== 'undefined' && typeof require === 'function' && !FR.THEMES
       tagline: 'Something is wrong with the Christmas cookies, and the North Pole needs its best bakers.',
       begin: 'Open the cookie box', have: 'I have a character', dm: 'I am the DM',
       liveNote: 'Pictures are rendered live by OpenAI.', tableNote: 'Join your DM’s table and your picture is made live, just for you. On your own you will see samples.', directNote: 'Pictures are rendered live with your OpenAI key.', previewNote: 'Pictures here are ready-made samples. They do not use your choices.',
-      connect: 'Connect OpenAI to make your own', sampleBtn: 'Show a sample picture', sampleTag: 'Sample', stale: 'Your choices changed. Make another to see them.',
+      connect: 'Connect OpenAI to make your own', sampleBtn: 'Show a sample picture', sampleTag: 'Sample', musicNote: 'Carols for the title, the game and the snow fights', stale: 'Your choices changed. Make another to see them.',
       ledgerTitle: 'Sign the bake-off entry sheet', ledgerLede: 'Tell us what to call you.', ledgerLedeTable: 'Your DM has a four-letter table code. Enter it to sit at their table, or leave it empty to play on your own.', ledgerSign: 'Continue', ledgerJoin: 'Join the table', ledgerSkip: 'Play on my own',
       storyNext: 'Next', storySkip: 'Skip the story', storyGo: 'Take a nibble',
       omen: 'Snow. Sleigh bells. You open your eyes at the North Pole, and you are not quite yourself.', howRead: 'How the cookie read you', closestClasses: 'Closest callings', closestRaces: 'Closest shapes',

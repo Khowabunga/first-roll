@@ -302,6 +302,15 @@
         r.appendChild(t); sent.appendChild(r);
       });
     };
+    /* leaving: this browser forgets the table, so the DM can open a new one */
+    var bye = el('div', 'tb-bye'), sure = false, lb = btn('chipd', 'Leave this table', function () {
+      if (!sure) { sure = true; lb.textContent = 'Tap again to leave table ' + TB.code(); return; }
+      var old = TB.code(); TB.leave(); wasAt = false; sh.hidden = true; render();
+      toast('You left table ' + old + '. Tap the table button to open a new one.');
+    });
+    bye.appendChild(lb);
+    bye.appendChild(el('small', '', 'Your players stay at this table until they change codes, so give them the new one. This table clears itself after twelve quiet hours.'));
+    box.appendChild(bye);
     tableLive();
     sh.hidden = false; box.scrollTop = 0; $('dm-sheet-x').focus();
   }
@@ -722,6 +731,7 @@
     var can = !!(TB && TB.can()), mine = atTable();
     $('dm-pass-wrap').hidden = !(can && TB.needsPasscode() && !mine);
     $('b-dm-skip').hidden = !(can && !TB.needsPasscode() && !mine);
+    $('b-dm-new').hidden = !(can && mine);
     $('dm-door-note').hidden = !can || mine;
     $('b-dm-in').textContent = !can ? 'I am the DM. Let me in' : (mine ? 'Back to table ' + TB.code() : 'Open a table and let me in');
     $('dm-err').hidden = true;
@@ -737,6 +747,7 @@
       .then(function () { b.disabled = false; });
   });
   $('b-dm-skip').addEventListener('click', enterDM);
+  $('b-dm-new').addEventListener('click', function () { TB.leave(); wasAt = false; doorSetup(); if (!$('dm-pass-wrap').hidden) { $('dm-pass').focus(); } });
   $('dm-exit').addEventListener('click', function () { if (Voice.tts && Voice.tts.active()) { Voice.tts.stop().catch(function () { /* quiet */ }); } A.go('title'); });
   FR.dm = { state: function () { return DM; }, prompt: prompt, render: render };
 })();

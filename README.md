@@ -101,3 +101,15 @@ Phones on the same Wi-Fi can join at `http://<your computer's address>:8787`.
 - `src/app.js`, `src/styles.css`, `src/index.html` are the screens.
 - `node build.js` rebuilds `public/index.html` after you edit anything in `src/`. Commit the rebuilt file with your change.
 - `node test/table.js http://localhost:8787/ <passcode>` plays a DM and two players against a running server (needs Playwright).
+
+## Music and sound
+
+Sound effects are made in the browser, so they need no files. Music is ordinary MP3 files in
+`public/audio/`, listed per scene (intro, game, fight) in each theme's `music` entry. Players
+switch music and sound effects on or off separately from the speaker button.
+
+The North Pole music is by Kevin MacLeod (incompetech.com), licensed under Creative Commons:
+By Attribution 3.0 (https://creativecommons.org/licenses/by/3.0/), re-encoded here at 128 kbps:
+"We Wish You a Merry Christmas", "Jingle Bells (Calm)", "Dance of the Sugar Plum Fairies",
+"Oh, Christmas Tree", "Sugar Plum Breakdown" and "Sugar Plum Dark Mix". The same credit is shown
+in the app on the Music and sound sheet; keep it there if you keep the music.

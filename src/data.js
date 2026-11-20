@@ -381,7 +381,7 @@ FR.THEMES.tavern = {
     tagline: 'Answer a few questions. Meet your hero. Let the dice decide the rest.',
     begin: 'Begin your tale', have: 'I already have a character', dm: 'I am the DM',
     liveNote: 'Portraits are painted live by OpenAI.', tableNote: 'Sit at your DM’s table and your portrait is painted live. On your own you will see samples.', directNote: 'Portraits are painted live with your OpenAI key.', previewNote: 'Portraits here are ready-made samples. They do not use your choices.',
-    connect: 'Connect OpenAI to paint your own', sampleBtn: 'Show a sample portrait', sampleTag: 'Sample', stale: 'Your choices changed. Paint another to see them.',
+    connect: 'Connect OpenAI to paint your own', sampleBtn: 'Show a sample portrait', sampleTag: 'Sample', musicNote: 'Music for the title, the game and the fights', stale: 'Your choices changed. Paint another to see them.',
     ledgerTitle: 'Sign the guest ledger', ledgerLede: 'Tell us what to call you.', ledgerLedeTable: 'Your DM has a four-letter table code. Enter it to sit at their table, or leave it empty to play on your own.', ledgerSign: 'Continue', ledgerJoin: 'Join the table', ledgerSkip: 'Play on my own',
     storyNext: 'Next', storySkip: 'Skip the story', storyGo: 'Begin',
     omen: 'The table has taken your measure.', howRead: 'How the table read you', closestClasses: 'Closest classes', closestRaces: 'Closest peoples',

@@ -5,11 +5,11 @@
   'use strict';
   var A = FR.app, $ = A.$, el = A.el, clear = A.clear;
   var KEY = 'firstroll.table';
-  var T = { can: false, passcode: false, code: '', token: '', role: '', id: '', last: 0, seen: 0, players: [], feed: [] };
+  var T = { can: false, passcode: false, code: '', token: '', role: '', id: '', name: '', last: 0, seen: 0, players: [], feed: [] };
   var timer = 0, sentPortrait = '', sentChar = '', listeners = [];
 
-  function keep() { A.store.set(KEY, JSON.stringify({ code: T.code, token: T.token, role: T.role, id: T.id, seen: T.seen })); }
-  function forget() { T.code = ''; T.token = ''; T.role = ''; T.id = ''; T.last = 0; T.seen = 0; T.players = []; T.feed = []; A.store.set(KEY, ''); clearInterval(timer); sentPortrait = ''; sentChar = ''; changed(); }
+  function keep() { A.store.set(KEY, JSON.stringify({ code: T.code, token: T.token, role: T.role, id: T.id, name: T.name, seen: T.seen })); }
+  function forget() { T.code = ''; T.token = ''; T.role = ''; T.id = ''; T.name = ''; T.last = 0; T.seen = 0; T.players = []; T.feed = []; A.store.set(KEY, ''); clearInterval(timer); sentPortrait = ''; sentChar = ''; changed(); }
   function post(act, body) { var b = { code: T.code, token: T.token }; Object.keys(body || {}).forEach(function (k) { b[k] = body[k]; }); return A.fetchJson('api/table/' + act + '?c=' + T.code, b, 25000); }
   function changed() { listeners.forEach(function (fn) { try { fn(); } catch (e) { /* keep going */ } }); inbox(); }
 
@@ -32,7 +32,9 @@
   function join(code, name) {
     code = String(code).toUpperCase().replace(/[^A-Z]/g, '');
     return A.fetchJson('api/table/join?c=' + code, { code: code, name: name }, 20000).then(function (j) {
-      T.code = j.code; T.token = j.token; T.id = j.id; T.role = 'player'; T.last = 0; T.seen = 0; T.feed = []; keep(); start(); changed(); return j;
+      T.code = j.code; T.token = j.token; T.id = j.id; T.role = 'player'; T.name = name; T.last = 0; T.seen = 0; T.players = []; T.feed = [];
+      sentPortrait = ''; sentChar = '';          // a new table has not met this character yet
+      keep(); start(); changed(); if (FR.Dice && FR.Dice.Sound && FR.Dice.Sound.dingdong) { FR.Dice.Sound.dingdong(); } return j;
     });
   }
   /* Send this player's character (and portrait, when it changes) to the table. */
@@ -68,13 +70,44 @@
     b.hidden = !(T.role === 'player' && T.feed.length);
     var unread = T.feed.filter(function (f) { return f.n > T.seen; }).length;
     b.textContent = unread ? 'From your DM (' + unread + ' new)' : 'From your DM';
-    var chip = $('pl-table'); if (chip) { chip.hidden = T.role !== 'player'; chip.textContent = 'Table ' + T.code; }
+    var chip = $('pl-table'), mine = T.role === 'player' && !!T.code;
+    if (chip) { chip.hidden = T.role === 'dm' || !(mine || T.can); chip.textContent = mine ? 'Table ' + T.code + ' · Change' : 'Join a table'; }
   }
   $('ho-ok').addEventListener('click', function () { $('handout').hidden = true; });
   $('ho-prev').addEventListener('click', function () { show(at - 1); });
   $('ho-next').addEventListener('click', function () { show(at + 1); });
   $('pl-inbox').addEventListener('click', function () { show(T.feed.length - 1); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('handout').hidden) { $('handout').hidden = true; } });
+
+  /* ---------- changing tables: a player can move to another code, or leave ---------- */
+  function switcher() {
+    var mine = T.role === 'player' && !!T.code;
+    $('sw-title').textContent = mine ? 'You are at table ' + T.code : 'Join your DM’s table';
+    $('sw-lbl').textContent = mine ? 'A different table code' : 'Table code';
+    $('sw-join').textContent = mine ? 'Switch to this table' : 'Join this table';
+    $('sw-leave').hidden = !mine; $('sw-code').value = ''; $('sw-err').hidden = true;
+    $('switch').hidden = false; $('sw-code').focus();
+  }
+  function switchTo() {
+    var code = $('sw-code').value.trim(), err = $('sw-err'), b = $('sw-join'), c = A.character();
+    var name = T.name || $('j-name').value.trim() || (c && c.name) || 'Player';
+    var say = function (m) { err.textContent = m; err.hidden = false; $('sw-code').focus(); };
+    err.hidden = true;
+    if (code.length !== 4) { say('A table code is four letters. Ask your DM to read it out again.'); return; }
+    if (T.role === 'player' && code === T.code) { say('You are already at that table.'); return; }
+    b.disabled = true;
+    join(code, name).then(function () { $('switch').hidden = true; sync(); })
+      .catch(function (x) { say((x && x.message) || 'Could not join that table. Check the code and try again.'); })
+      .then(function () { b.disabled = false; });
+  }
+  $('pl-table').addEventListener('click', switcher);
+  $('sw-code').addEventListener('input', function () { $('sw-code').value = $('sw-code').value.toUpperCase().replace(/[^A-Z]/g, ''); });
+  $('sw-code').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); switchTo(); } });
+  $('sw-join').addEventListener('click', switchTo);
+  $('sw-leave').addEventListener('click', function () { forget(); $('switch').hidden = true; });
+  $('sw-x').addEventListener('click', function () { $('switch').hidden = true; });
+  $('switch').addEventListener('click', function (e) { if (e.target === $('switch')) { $('switch').hidden = true; } });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('switch').hidden) { $('switch').hidden = true; } });
 
   /* ---------- the DM's side ---------- */
   function open(passcode) {
@@ -92,7 +125,7 @@
     var q = /[?&]t=([A-Za-z]{4})/.exec(location.search || '');
     if (q && T.can) { $('j-code').value = q[1].toUpperCase(); }
     if (!T.can) { changed(); return; }
-    try { var k = JSON.parse(A.store.get(KEY) || 'null'); if (k && k.code && k.token) { T.code = k.code; T.token = k.token; T.role = k.role; T.id = k.id || ''; T.seen = k.seen || 0; start(); } } catch (e) { /* no table remembered */ }
+    try { var k = JSON.parse(A.store.get(KEY) || 'null'); if (k && k.code && k.token) { T.code = k.code; T.token = k.token; T.role = k.role; T.id = k.id || ''; T.name = k.name || ''; T.seen = k.seen || 0; start(); } } catch (e) { /* no table remembered */ }
     changed();
   }
 

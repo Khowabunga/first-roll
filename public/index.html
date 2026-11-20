@@ -219,6 +219,7 @@ h1, h2, h3, p, dl, dd { margin: 0; }
 #tray { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
 .vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 46%, transparent 45%, rgba(5, 3, 2, 0.55) 100%); }
 #badges { position: absolute; inset: 0; pointer-events: none; }
+.tray-warn { position: absolute; left: 28px; right: 28px; top: 50%; transform: translateY(-50%); text-align: center; font-family: var(--f-ui); font-size: 16px; line-height: 1.45; color: var(--mute); text-wrap: balance; }
 .badge { position: absolute; min-width: 30px; height: 30px; padding: 0 7px; margin: -15px 0 0 -15px; display: grid; place-items: center; border-radius: 15px; background: rgba(var(--night-rgb), 0.88); border: 1px solid var(--gilt); color: var(--gilt-hi); font-family: var(--f-display); font-weight: 700; font-size: 19px; line-height: 1; animation: pop 0.4s var(--ease) both; }
 .badge.drop { opacity: 0.5; border-color: rgba(var(--gilt-rgb), 0.4); text-decoration: line-through; }
 @keyframes pop { from { opacity: 0; transform: translateY(8px) scale(0.6); } to { opacity: 1; transform: none; } }
@@ -480,6 +481,21 @@ body[data-theme="northpole"] .tray-actions .btn { font-size: 17px; padding: 0 10
 .tablechip b { font-family: var(--f-display); font-weight: 800; font-size: 17px; letter-spacing: 0.14em; }
 .tablechip span { min-width: 24px; height: 24px; padding: 0 6px; display: grid; place-items: center; border-radius: 999px; background: var(--gilt); color: #1c1108; font-size: 14px; }
 .tablechip em { font-style: normal; }
+button.tablechip { cursor: pointer; }
+.title-audio { position: absolute; right: 14px; top: max(14px, env(safe-area-inset-top, 0px)); z-index: 2; }
+.inbox .pl-audio { margin-left: auto; width: 36px; height: 36px; }
+.inbox .pl-audio svg { width: 17px; height: 17px; }
+.audio-open.off { opacity: 0.5; }
+.switch { display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; min-height: 58px; padding: 8px 14px; text-align: left; color: var(--ink); background: rgba(255, 250, 235, 0.55); border: 1.5px solid rgba(var(--ox-rgb), 0.4); border-radius: max(var(--r-chip), 8px); cursor: pointer; }
+.switch b { display: block; font-family: var(--f-display); font-weight: 800; font-size: 20px; line-height: 1.15; color: var(--oxblood); }
+.switch small { display: block; font-family: var(--f-ui); font-size: 14px; line-height: 1.3; color: var(--ink-soft); }
+.switch i { flex-shrink: 0; position: relative; width: 52px; height: 30px; border-radius: 999px; background: rgba(0, 0, 0, 0.25); transition: background 0.2s ease; }
+.switch i::after { content: ''; position: absolute; left: 3px; top: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); transition: transform 0.2s ease; }
+.switch[aria-checked="true"] i { background: var(--wax); }
+.switch[aria-checked="true"] i::after { transform: translateX(22px); }
+.handout-card .credit { font-family: var(--f-ui); font-size: 12.5px; line-height: 1.4; color: var(--ink-soft); text-align: center; }
+.tb-bye { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.16); }
+.tb-bye small { font-family: var(--f-ui); font-size: 14.5px; line-height: 1.35; color: var(--mute); }
 .tablechip.quiet { min-height: 36px; font-size: 14px; letter-spacing: 0.06em; }
 .toast { position: absolute; left: 16px; right: 16px; top: 70px; z-index: 9; padding: 12px 16px; border-radius: var(--r-chip); background: var(--gilt); color: #1c1108; font-family: var(--f-ui); font-weight: 800; font-size: 16px; line-height: 1.3; text-align: center; box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5); animation: drop 0.28s var(--ease); }
 @keyframes drop { from { opacity: 0; transform: translateY(-10px); } }
@@ -558,6 +574,7 @@ body[data-theme="northpole"] .handout-card p { font-weight: 700; font-size: 18px
 
   <!-- 1. Title -->
   <section class="screen on" id="s-title">
+    <button type="button" class="icon audio-open title-audio" aria-label="Music and sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button>
     <div class="title-wrap pad">
       <h1 class="wordmark"><img id="t-wordmark" alt="First Roll" width="900" height="560"></h1>
       <p class="tagline" data-t="tagline"></p>
@@ -736,7 +753,7 @@ body[data-theme="northpole"] .handout-card p { font-weight: 700; font-size: 18px
       </div>
       <div class="hero-stats" id="pl-stats"></div>
     </header>
-    <div class="inbox pad"><span class="tablechip quiet" id="pl-table" hidden></span><button type="button" class="btn ghost slim" id="pl-inbox" hidden></button></div>
+    <div class="inbox pad"><button type="button" class="tablechip quiet" id="pl-table" hidden></button><button type="button" class="btn ghost slim" id="pl-inbox" hidden></button><button type="button" class="icon audio-open pl-audio" aria-label="Music and sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button></div>
     <nav class="tabs pad" id="pl-tabs" aria-label="What are you doing?"></nav>
     <div class="scroll list" id="pl-list"></div>
     <footer class="dock pad play-dock">
@@ -749,6 +766,7 @@ body[data-theme="northpole"] .handout-card p { font-weight: 700; font-size: 18px
     <canvas id="tray"></canvas>
     <div class="vignette" aria-hidden="true"></div>
     <div id="badges" aria-hidden="true"></div>
+    <p class="tray-warn" id="d-warn" role="status" hidden>This browser cannot draw the 3D dice, so the roll is made for you. To see the dice, turn on graphics acceleration (WebGL) in your browser settings, then reload.</p>
     <header class="tray-top pad" id="tray-top">
       <div class="tray-bar">
         <button type="button" class="icon" id="d-close" aria-label="Back to the table"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -756,7 +774,7 @@ body[data-theme="northpole"] .handout-card p { font-weight: 700; font-size: 18px
           <div class="tray-title" id="d-title"></div>
           <div class="tray-note" id="d-note"></div>
         </div>
-        <button type="button" class="icon" id="d-sound" aria-label="Sound on" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button>
+        <button type="button" class="icon audio-open" id="d-sound" aria-label="Music and sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button>
       </div>
       <div class="seg" id="d-adv" role="group" aria-label="Advantage"></div>
     </header>
@@ -815,6 +833,7 @@ body[data-theme="northpole"] .handout-card p { font-weight: 700; font-size: 18px
         <p class="err" id="dm-err" role="alert" hidden></p>
         <button type="submit" class="btn wax" id="b-dm-in">I am the DM. Let me in</button>
         <button type="button" class="btn ink" id="b-dm-skip" hidden>Go in without a table</button>
+        <button type="button" class="btn ink" id="b-dm-new" hidden>Leave this table and open a new one</button>
       </form>
     </div>
   </section>
@@ -827,6 +846,7 @@ body[data-theme="northpole"] .handout-card p { font-weight: 700; font-size: 18px
         <div class="dm-title" id="dm-title"></div>
         <div class="dm-sub" id="dm-sub"></div>
       </div>
+      <button type="button" class="icon audio-open" aria-label="Music and sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button>
       <button type="button" class="tablechip" id="dm-table" hidden></button>
     </header>
     <div class="toast" id="dm-toast" role="status" hidden></div>
@@ -850,6 +870,28 @@ body[data-theme="northpole"] .handout-card p { font-weight: 700; font-size: 18px
       <p id="ho-text"></p>
       <div class="handout-nav" id="ho-nav"><button type="button" class="btn ink" id="ho-prev">Older</button><span id="ho-count"></span><button type="button" class="btn ink" id="ho-next">Newer</button></div>
       <button type="button" class="btn wax" id="ho-ok">Got it</button>
+    </div>
+  </div>
+  <div class="handout" id="audio" hidden>
+    <div class="handout-card" role="dialog" aria-modal="true" aria-labelledby="au-title">
+      <div class="handout-k">Music and sound</div>
+      <h3 id="au-title">What would you like to hear?</h3>
+      <button type="button" class="switch" id="au-music" role="switch" aria-checked="true"><span><b>Music</b><small id="au-music-note"></small></span><i aria-hidden="true"></i></button>
+      <button type="button" class="switch" id="au-sfx" role="switch" aria-checked="true"><span><b>Sound effects</b><small>Dice, bells and button taps</small></span><i aria-hidden="true"></i></button>
+      <small class="credit" id="au-credit" hidden></small>
+      <button type="button" class="btn wax" id="au-x">Done</button>
+    </div>
+  </div>
+  <div class="handout" id="switch" hidden>
+    <div class="handout-card" role="dialog" aria-modal="true" aria-labelledby="sw-title">
+      <div class="handout-k">Your table</div>
+      <h3 id="sw-title"></h3>
+      <label class="lbl" for="sw-code" id="sw-lbl">Table code</label>
+      <input class="field code" id="sw-code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="4" placeholder="ABCD">
+      <p class="err" id="sw-err" role="alert" hidden></p>
+      <button type="button" class="btn wax" id="sw-join"></button>
+      <button type="button" class="btn ink" id="sw-leave" hidden>Leave this table and play on my own</button>
+      <button type="button" class="btn ink" id="sw-x">Close</button>
     </div>
   </div>
 </div>
@@ -1241,7 +1283,7 @@ FR.THEMES.tavern = {
     tagline: 'Answer a few questions. Meet your hero. Let the dice decide the rest.',
     begin: 'Begin your tale', have: 'I already have a character', dm: 'I am the DM',
     liveNote: 'Portraits are painted live by OpenAI.', tableNote: 'Sit at your DM’s table and your portrait is painted live. On your own you will see samples.', directNote: 'Portraits are painted live with your OpenAI key.', previewNote: 'Portraits here are ready-made samples. They do not use your choices.',
-    connect: 'Connect OpenAI to paint your own', sampleBtn: 'Show a sample portrait', sampleTag: 'Sample', stale: 'Your choices changed. Paint another to see them.',
+    connect: 'Connect OpenAI to paint your own', sampleBtn: 'Show a sample portrait', sampleTag: 'Sample', musicNote: 'Music for the title, the game and the fights', stale: 'Your choices changed. Paint another to see them.',
     ledgerTitle: 'Sign the guest ledger', ledgerLede: 'Tell us what to call you.', ledgerLedeTable: 'Your DM has a four-letter table code. Enter it to sit at their table, or leave it empty to play on your own.', ledgerSign: 'Continue', ledgerJoin: 'Join the table', ledgerSkip: 'Play on my own',
     storyNext: 'Next', storySkip: 'Skip the story', storyGo: 'Begin',
     omen: 'The table has taken your measure.', howRead: 'How the table read you', closestClasses: 'Closest classes', closestRaces: 'Closest peoples',
@@ -1477,6 +1519,14 @@ if (typeof module !== 'undefined' && typeof require === 'function' && !FR.THEMES
       crest: function (cls) { return 'img/np_badge_' + FR.slug(cls) + '.webp'; },
       sample: function (cls) { return 'img/np_sample_' + FR.slug(cls) + '.webp'; }
     },
+    /* Music by scene. A scene with several pieces plays them in turn. The files live in public/audio/;
+       a missing file is skipped. The credit is shown on the Music and sound sheet (the licence asks for it). */
+    music: {
+      intro: ['audio/np_intro.mp3'],
+      game: ['audio/np_game_jingle.mp3', 'audio/np_game_sugarplum.mp3', 'audio/np_game_tree.mp3'],
+      fight: ['audio/np_fight_breakdown.mp3', 'audio/np_fight_dark.mp3'],
+      credit: 'Music: “We Wish You a Merry Christmas”, “Jingle Bells (Calm)”, “Dance of the Sugar Plum Fairies”, “Oh, Christmas Tree”, “Sugar Plum Breakdown” and “Sugar Plum Dark Mix” by Kevin MacLeod (incompetech.com), licensed under Creative Commons: By Attribution 3.0.'
+    },
     dice: { ink: '#ffffff', inkMetal: 0.05, fleck: '#ffffff', fight: '#c8102e', fightInk: '#ffffff', rim: { color: 0xb5121f, wood: false, metal: 0.55, rough: 0.34 }, floorTint: 0xe6efe9, floorBase: 0x0f4a30, exposure: 1.05 },
     particles: 'snow', adventure: 'cookie',
     ai: {
@@ -1502,7 +1552,7 @@ if (typeof module !== 'undefined' && typeof require === 'function' && !FR.THEMES
       tagline: 'Something is wrong with the Christmas cookies, and the North Pole needs its best bakers.',
       begin: 'Open the cookie box', have: 'I have a character', dm: 'I am the DM',
       liveNote: 'Pictures are rendered live by OpenAI.', tableNote: 'Join your DM’s table and your picture is made live, just for you. On your own you will see samples.', directNote: 'Pictures are rendered live with your OpenAI key.', previewNote: 'Pictures here are ready-made samples. They do not use your choices.',
-      connect: 'Connect OpenAI to make your own', sampleBtn: 'Show a sample picture', sampleTag: 'Sample', stale: 'Your choices changed. Make another to see them.',
+      connect: 'Connect OpenAI to make your own', sampleBtn: 'Show a sample picture', sampleTag: 'Sample', musicNote: 'Carols for the title, the game and the snow fights', stale: 'Your choices changed. Make another to see them.',
       ledgerTitle: 'Sign the bake-off entry sheet', ledgerLede: 'Tell us what to call you.', ledgerLedeTable: 'Your DM has a four-letter table code. Enter it to sit at their table, or leave it empty to play on your own.', ledgerSign: 'Continue', ledgerJoin: 'Join the table', ledgerSkip: 'Play on my own',
       storyNext: 'Next', storySkip: 'Skip the story', storyGo: 'Take a nibble',
       omen: 'Snow. Sleigh bells. You open your eyes at the North Pole, and you are not quite yourself.', howRead: 'How the cookie read you', closestClasses: 'Closest callings', closestRaces: 'Closest shapes',
@@ -2615,6 +2665,116 @@ FR.Dice = (function () {
   };
 })();
 
+/* First Roll: music, and the cheerful little sounds.
+   The sounds are made on the spot with the same Web Audio set-up the dice use (FR.Dice.Sound),
+   so they need no files. Music is ordinary audio files named by the theme (theme.music); a
+   theme without music is simply quiet. Sound effects and music have separate switches. */
+(function () {
+  'use strict';
+  var Sound = FR.Dice.Sound;
+
+  /* ---------- voices ---------- */
+  var ready = function () { return Sound.ctx && !Sound.muted ? Sound.ctx : null; };
+  /* a celesta-like bell: a clear note with two quiet overtones that die away faster */
+  function bell(f, at, dur, gain) {
+    var ctx = Sound.ctx, t0 = ctx.currentTime + (at || 0);
+    [[1, 1, 1], [2, 0.32, 0.6], [4.16, 0.1, 0.25]].forEach(function (p) {
+      var o = ctx.createOscillator(), g = ctx.createGain(), d = dur * p[2];
+      o.type = 'sine'; o.frequency.value = f * p[0];
+      g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(gain * p[1], t0 + 0.005); g.gain.exponentialRampToValueAtTime(0.0004, t0 + d);
+      o.connect(g); g.connect(Sound.out); g.connect(Sound.rev); o.start(t0); o.stop(t0 + d + 0.05);
+    });
+  }
+  var C = [523.25, 587.33, 659.25, 698.46, 783.99, 880, 987.77, 1046.5, 1174.66, 1318.51, 1396.91, 1567.98, 1760, 2093];   // C major from C5
+
+  /* a festive tap for buttons: one soft high bell, never the same twice in a row */
+  var lastTink = -1;
+  Sound.tink = function () {
+    if (!ready()) { return; }
+    var pick = [7, 9, 11, 12, 13], i; do { i = Math.floor(Math.random() * pick.length); } while (i === lastTink); lastTink = i;
+    bell(C[pick[i]], 0, 0.22, 0.045);
+  };
+  /* one step up the scale for each quiz answer */
+  Sound.step = function (i) { if (!ready()) { return; } bell(C[Math.max(0, Math.min(C.length - 1, i))], 0, 0.6, 0.11); };
+  /* ta-da: a rising chord, held */
+  Sound.fanfare = function () {
+    if (!ready()) { return; }
+    [0, 2, 4, 7].forEach(function (n, k) { bell(C[n], k * 0.085, 0.9, 0.12); });
+    [7, 9, 11].forEach(function (n) { bell(C[n], 0.42, 1.6, 0.1); });
+  };
+  /* a run of high bells, like glitter falling */
+  Sound.sparkle = function () {
+    if (!ready()) { return; }
+    for (var k = 0; k < 9; k++) { bell(C[5 + Math.floor(Math.random() * 9)] * 2, k * 0.055 + Math.random() * 0.02, 0.35, 0.035); }
+  };
+  /* a doorbell: someone has arrived */
+  Sound.dingdong = function () { if (!ready()) { return; } bell(C[9], 0, 1.1, 0.13); bell(C[7], 0.36, 1.5, 0.13); };
+  /* oh no: two sagging brassy notes */
+  Sound.womp = function () {
+    var ctx = ready(); if (!ctx) { return; }
+    [[233.1, 0], [196, 0.3]].forEach(function (n, k) {
+      var t0 = ctx.currentTime + n[1], dur = k ? 0.75 : 0.26, o = ctx.createOscillator(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(n[0], t0); o.frequency.exponentialRampToValueAtTime(n[0] * (k ? 0.8 : 0.97), t0 + dur);
+      f.type = 'lowpass'; f.frequency.value = 900; f.Q.value = 2;
+      g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.12, t0 + 0.03); g.gain.exponentialRampToValueAtTime(0.0005, t0 + dur);
+      o.connect(f); f.connect(g); g.connect(Sound.out); g.connect(Sound.rev); o.start(t0); o.stop(t0 + dur + 0.05);
+    });
+  };
+
+  /* ---------- music ---------- */
+  /* One piece plays at a time. Each part of the app asks for a scene ('intro', 'game', 'fight');
+     a scene with several pieces plays them in turn, a scene with one loops it. Browsers only
+     allow sound after a tap, so nothing starts until unlock() has been called from one. */
+  var VOL = 0.34, FADE = 900;
+  var M = { on: true, tracks: null, scene: '', el: null, src: '', at: {}, bad: {}, unlocked: false, fades: [] };
+  function fade(el, to, then) {
+    var from = el.volume, t0 = Date.now(), id = setInterval(function () {
+      var k = Math.min(1, (Date.now() - t0) / FADE);
+      try { el.volume = Math.max(0, Math.min(1, from + (to - from) * k)); } catch (e) { /* some phones fix the volume */ }
+      if (k >= 1) { clearInterval(id); M.fades = M.fades.filter(function (x) { return x !== id; }); if (then) { then(); } }
+    }, 40);
+    M.fades.push(id);
+  }
+  function hush() {
+    var old = M.el; M.el = null; M.src = '';
+    if (old) { old.onended = null; old.onerror = null; fade(old, 0, function () { old.pause(); old.removeAttribute('src'); }); }
+  }
+  function list() { var l = (M.tracks && M.tracks[M.scene]) || []; return l.filter(function (s) { return !M.bad[s]; }); }
+  function play(src, loop) {
+    hush();
+    var el = new Audio(); el.preload = 'auto'; el.loop = loop; el.volume = 0; el.src = src;
+    el.onended = function () { next(); };
+    el.onerror = function () { M.bad[src] = true; if (M.el === el) { M.el = null; M.src = ''; next(); } };   // a missing file is skipped, not fatal
+    M.el = el; M.src = src;
+    var p = el.play(); if (p && p.catch) { p.catch(function () { /* not allowed yet: the next tap tries again */ if (M.el === el) { M.el = null; M.src = ''; } }); }
+    fade(el, VOL);
+  }
+  function next() {
+    var l = list(); if (!l.length) { hush(); return; }
+    var i = ((M.at[M.scene] === undefined ? -1 : M.at[M.scene]) + 1) % l.length; M.at[M.scene] = i;
+    play(l[i], l.length === 1);
+  }
+  function tune() {
+    if (!M.on || !M.unlocked || document.hidden) { if (M.el) { hush(); } return; }
+    var l = list();
+    if (!l.length) { if (M.el) { hush(); } return; }
+    if (M.el && l.indexOf(M.src) >= 0) { return; }          // already playing something for this scene
+    var i = M.at[M.scene] === undefined ? 0 : M.at[M.scene] % l.length; M.at[M.scene] = i;
+    play(l[i], l.length === 1);
+  }
+  document.addEventListener('visibilitychange', tune);
+
+  FR.Music = {
+    /* tracks: { intro: [...], game: [...], fight: [...] } or null for none */
+    use: function (tracks) { if (tracks !== M.tracks) { M.tracks = tracks || null; M.at = {}; tune(); } },
+    scene: function (name) { if (name !== M.scene) { M.scene = name; tune(); } },
+    enable: function (on) { M.on = !!on; tune(); },
+    unlock: function () { if (!M.unlocked) { M.unlocked = true; } if (!M.el) { tune(); } },
+    has: function () { return !!M.tracks; },
+    playing: function () { return M.el ? M.src : ''; }
+  };
+})();
+
 /* First Roll: screens and flow. Everything a theme can change (cast, copy, art, dice
    dressing) is read from FR.theme, so adding a theme means adding one data file. */
 (function () {
@@ -2644,12 +2804,13 @@ FR.Dice = (function () {
   S = blank();
   /* How pictures and writing get made: 'server' (server.js holds the key), 'direct' (this browser calls
      OpenAI with a key kept on this computer) or 'preview' (no AI: ready-made samples). */
-  var G = { live: false, mode: 'preview', muted: store.get('firstroll.muted') === '1' };
+  /* sound effects and music have a switch each; an old 'muted' choice still counts for effects */
+  var G = { live: false, mode: 'preview', muted: (store.get('firstroll.sfx') || (store.get('firstroll.muted') === '1' ? '0' : '1')) === '0', music: store.get('firstroll.music') !== '0' };
   var OPENAI = { image: 'gpt-image-2', quality: 'medium', text: 'gpt-4.1-mini' };
   var hosted = !!window.claude;
   var canDirect = !hosted && (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname));
   var directKey = function () { return canDirect ? (store.get('firstroll.openai') || '') : ''; };
-  FR.Dice.Sound.muted = G.muted;
+  FR.Dice.Sound.muted = G.muted; FR.Music.enable(G.music);
   var D = { ctx: null, adv: 'normal', values: [], rolling: false, shown: false, lucky: false, booted: false };
 
   var crestOf = function (cls) { return TH.art.crest(cls); };
@@ -2735,6 +2896,7 @@ FR.Dice = (function () {
     if (fresh) { var scr = S.screen; S = blank(); S.screen = scr; }
     document.querySelectorAll('[data-t]').forEach(function (n) { n.textContent = tx(n.getAttribute('data-t')); });
     $('t-wordmark').src = TH.art.wordmark;
+    FR.Music.use(TH.music || null); renderAudio();
     $('p-desc').setAttribute('placeholder', tx('descHint'));
     $('b-surprise-t').textContent = tx('surprise');
     var k = load();
@@ -2762,14 +2924,21 @@ FR.Dice = (function () {
     document.querySelectorAll('.screen').forEach(function (s) { s.classList.toggle('on', s.id === 's-' + name); });
     app.setAttribute('data-screen', name); S.screen = name;
     if (enter[name]) { enter[name](); }
+    tune();
+  }
+  /* which music fits where the player is: the way in, the game itself, or a fight */
+  function tune() {
+    var s = S.screen, rolling = s === 'dice' && D && D.ctx, k = rolling ? D.ctx.kind : '';
+    var fight = (s === 'play' && S.tab === 'fight') || (rolling && (k === 'attack' || k === 'damage' || k === 'init' || S.tab === 'fight'));
+    FR.Music.scene(fight ? 'fight' : (s === 'title' || s === 'ledger' || s === 'story' || s === 'dmgate' || s === 'connect' ? 'intro' : 'game'));
   }
   document.addEventListener('click', function (e) {
     var b = e.target.closest ? e.target.closest('[data-back]') : null;
     if (b) { go(b.getAttribute('data-back')); }
   });
   document.addEventListener('pointerdown', function (e) {
-    FR.Dice.Sound.unlock();
-    if (e.target.closest && e.target.closest('.btn, .ans, .chip, .row, .tab, .icon, .theme-card, .seg button, .rail-dice button, .stepper button')) { FR.Dice.Sound.tick(); }
+    FR.Dice.Sound.unlock(); FR.Music.unlock();
+    if (e.target.closest && e.target.closest('.btn, .ans, .chip, .row, .tab, .icon, .theme-card, .seg button, .rail-dice button, .stepper button, .switch, .tablechip')) { if (TH.id === 'northpole') { FR.Dice.Sound.tink(); } else { FR.Dice.Sound.tick(); } }
   });
 
   /* ---------- 1. title ---------- */
@@ -2863,7 +3032,7 @@ FR.Dice = (function () {
   }
   function answer(ai, btn) {
     if (busy) { return; }
-    busy = true; S.answers[S.qi] = ai;
+    busy = true; S.answers[S.qi] = ai; FR.Dice.Sound.step(S.qi);
     Array.prototype.forEach.call($('q-answers').children, function (c) { c.classList.toggle('on', c === btn); });
     renderLean();
     setTimeout(function () {
@@ -2883,7 +3052,7 @@ FR.Dice = (function () {
     S.clsRank = FR.rank(S.u, FR.CLASSES); S.raceRank = FR.rank(S.u, FR.RACES);
     if (pick) { S.cls = S.clsRank[0].name; S.race = S.raceRank[0].name; }
   }
-  var cheer = function () { if (TH.id === 'northpole') { FR.Dice.Sound.jingle(); } else { FR.Dice.Sound.chime(true); } };
+  var cheer = function () { if (TH.id === 'northpole') { FR.Dice.Sound.jingle(); FR.Dice.Sound.fanfare(); } else { FR.Dice.Sound.chime(true); } };
   var tableSync = function () { if (FR.table) { FR.table.sync(); } };
   function showReveal(intro) {
     renderReveal(); go('reveal'); $('reveal-scroll').scrollTop = 0; tableSync();
@@ -2997,7 +3166,7 @@ FR.Dice = (function () {
     var lines = tx('work'), li = 0;
     painting = true; $('p-err').hidden = true; $('p-work-text').textContent = lines[0]; renderEasel();
     workTimer = setInterval(function () { li = Math.min(lines.length - 1, li + 1); $('p-work-text').textContent = lines[li]; }, G.live ? 5200 : 520);
-    var finish = function (src, note) { clearInterval(workTimer); painting = false; S.portrait = src; S.portraitNote = note; S.stale = false; renderEasel(); save(); tableSync(); };
+    var finish = function (src, note) { clearInterval(workTimer); painting = false; S.portrait = src; S.portraitNote = note; S.stale = false; renderEasel(); save(); tableSync(); FR.Dice.Sound.sparkle(); };
     var fail = function (msg) { clearInterval(workTimer); painting = false; renderEasel(); $('p-err').textContent = msg; $('p-err').hidden = false; };
     if (!G.live) {
       var cls = S.cls;
@@ -3081,7 +3250,7 @@ FR.Dice = (function () {
     var bar = $('pl-tabs'); clear(bar);
     ['do', 'checks', 'fight'].forEach(function (id, i) {
       var b = el('button', 'tab' + (id === 'fight' ? ' fight' : '') + (S.tab === id ? ' on' : ''), tabs[i]); b.type = 'button'; b.setAttribute('aria-pressed', S.tab === id ? 'true' : 'false');
-      b.addEventListener('click', function () { S.tab = id; renderPlay(); $('pl-list').scrollTop = 0; });
+      b.addEventListener('click', function () { S.tab = id; renderPlay(); $('pl-list').scrollTop = 0; tune(); });
       bar.appendChild(b);
     });
     var list = $('pl-list'); clear(list);
@@ -3139,12 +3308,13 @@ FR.Dice = (function () {
   }
   function openDice(ctx) {
     D.ctx = ctx; D.adv = 'normal'; D.values = []; D.shown = false; D.rolling = false; D.lucky = false;
-    go('dice'); renderTray();
+    go('dice'); renderTray(); tune();
     setTimeout(function () {
       if (!D.booted) {
         try { FR.Dice.init($('tray'), {}); D.booted = true; FR.Dice.onFrame(placeBadges); FR.Dice.setScene(TH.dice, TH.art.floor); }
         catch (e) { D.booted = false; }
       }
+      $('d-warn').hidden = D.booted;            // no WebGL here: say so instead of showing an empty tray
       if (D.booted) { FR.Dice.resize(); trayBounds(); }
       throwDice(null);
     }, 60);
@@ -3182,8 +3352,6 @@ FR.Dice = (function () {
       rail.appendChild(b);
     });
     $('d-count').textContent = String(c.count);
-    $('d-sound').setAttribute('aria-pressed', G.muted ? 'false' : 'true'); $('d-sound').setAttribute('aria-label', G.muted ? 'Sound off' : 'Sound on');
-    $('d-sound').style.opacity = G.muted ? '0.5' : '1';
   }
   function placeBadges() {
     var box = $('badges');
@@ -3204,7 +3372,7 @@ FR.Dice = (function () {
       D.values = vals; D.rolling = false; D.shown = true;
       var r = result();
       if (r.two && D.booted) { FR.Dice.dim(r.keptIx === 0 ? 1 : 0, true); }
-      if (r.nat === 20) { cheer(); } else if (r.nat === 1) { FR.Dice.Sound.chime(false); }
+      if (r.nat === 20) { cheer(); } else if (r.nat === 1) { if (TH.id === 'northpole') { FR.Dice.Sound.womp(); } else { FR.Dice.Sound.chime(false); } }
       if (D.ctx.kind === 'init') { S.init = r.total; }
       renderTray();
     };
@@ -3225,7 +3393,22 @@ FR.Dice = (function () {
   $('d-less').addEventListener('click', function () { if (D.ctx.kind === 'free' && D.ctx.count > 1) { bump(-1); } });
   $('d-more').addEventListener('click', function () { if (D.ctx.count < 6) { bump(1); } });
   $('d-close').addEventListener('click', function () { if (D.booted) { FR.Dice.stop(); } go('play'); });
-  $('d-sound').addEventListener('click', function () { G.muted = !G.muted; FR.Dice.Sound.muted = G.muted; store.set('firstroll.muted', G.muted ? '1' : '0'); renderTray(); });
+  /* ---------- music and sound: one sheet, two switches ---------- */
+  function renderAudio() {
+    var has = FR.Music.has();
+    $('au-music').setAttribute('aria-checked', G.music && has ? 'true' : 'false'); $('au-music').disabled = !has;
+    $('au-music-note').textContent = has ? tx('musicNote') : 'This theme has no music yet';
+    $('au-sfx').setAttribute('aria-checked', G.muted ? 'false' : 'true');
+    var cr = (TH.music && TH.music.credit) || ''; $('au-credit').textContent = cr; $('au-credit').hidden = !cr;
+    var quiet = G.muted && !(G.music && has);
+    document.querySelectorAll('.audio-open').forEach(function (b) { b.classList.toggle('off', quiet); });
+  }
+  document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('.audio-open')) { renderAudio(); $('audio').hidden = false; $('au-x').focus(); } });
+  $('au-music').addEventListener('click', function () { G.music = !G.music; store.set('firstroll.music', G.music ? '1' : '0'); FR.Music.enable(G.music); renderAudio(); });
+  $('au-sfx').addEventListener('click', function () { G.muted = !G.muted; FR.Dice.Sound.muted = G.muted; store.set('firstroll.sfx', G.muted ? '0' : '1'); renderAudio(); if (!G.muted) { FR.Dice.Sound.tink(); } });
+  $('au-x').addEventListener('click', function () { $('audio').hidden = true; });
+  $('audio').addEventListener('click', function (e) { if (e.target === $('audio')) { $('audio').hidden = true; } });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('audio').hidden) { $('audio').hidden = true; } });
   (function () {
     var cv = $('tray'), pts = [];
     cv.addEventListener('pointerdown', function (e) { pts = [{ x: e.clientX, y: e.clientY, t: performance.now() }]; if (cv.setPointerCapture) { cv.setPointerCapture(e.pointerId); } });
@@ -3275,6 +3458,7 @@ FR.Dice = (function () {
   // nothing may scroll the stage itself (focus and scroll-into-view can try)
   app.addEventListener('scroll', function () { app.scrollTop = 0; app.scrollLeft = 0; });
   applyTheme(TH.id, false);
+  tune();                                  // the title screen has music too, from the first tap
   checkServer();
   if (document.fonts && document.fonts.load) { document.fonts.load("800 40px 'Alegreya'"); }
   window.FRState = function () { return S; }; window.FRGo = go; window.FRTheme = applyTheme;
@@ -3319,11 +3503,11 @@ FR.Dice = (function () {
   'use strict';
   var A = FR.app, $ = A.$, el = A.el, clear = A.clear;
   var KEY = 'firstroll.table';
-  var T = { can: false, passcode: false, code: '', token: '', role: '', id: '', last: 0, seen: 0, players: [], feed: [] };
+  var T = { can: false, passcode: false, code: '', token: '', role: '', id: '', name: '', last: 0, seen: 0, players: [], feed: [] };
   var timer = 0, sentPortrait = '', sentChar = '', listeners = [];
 
-  function keep() { A.store.set(KEY, JSON.stringify({ code: T.code, token: T.token, role: T.role, id: T.id, seen: T.seen })); }
-  function forget() { T.code = ''; T.token = ''; T.role = ''; T.id = ''; T.last = 0; T.seen = 0; T.players = []; T.feed = []; A.store.set(KEY, ''); clearInterval(timer); sentPortrait = ''; sentChar = ''; changed(); }
+  function keep() { A.store.set(KEY, JSON.stringify({ code: T.code, token: T.token, role: T.role, id: T.id, name: T.name, seen: T.seen })); }
+  function forget() { T.code = ''; T.token = ''; T.role = ''; T.id = ''; T.name = ''; T.last = 0; T.seen = 0; T.players = []; T.feed = []; A.store.set(KEY, ''); clearInterval(timer); sentPortrait = ''; sentChar = ''; changed(); }
   function post(act, body) { var b = { code: T.code, token: T.token }; Object.keys(body || {}).forEach(function (k) { b[k] = body[k]; }); return A.fetchJson('api/table/' + act + '?c=' + T.code, b, 25000); }
   function changed() { listeners.forEach(function (fn) { try { fn(); } catch (e) { /* keep going */ } }); inbox(); }
 
@@ -3346,7 +3530,9 @@ FR.Dice = (function () {
   function join(code, name) {
     code = String(code).toUpperCase().replace(/[^A-Z]/g, '');
     return A.fetchJson('api/table/join?c=' + code, { code: code, name: name }, 20000).then(function (j) {
-      T.code = j.code; T.token = j.token; T.id = j.id; T.role = 'player'; T.last = 0; T.seen = 0; T.feed = []; keep(); start(); changed(); return j;
+      T.code = j.code; T.token = j.token; T.id = j.id; T.role = 'player'; T.name = name; T.last = 0; T.seen = 0; T.players = []; T.feed = [];
+      sentPortrait = ''; sentChar = '';          // a new table has not met this character yet
+      keep(); start(); changed(); if (FR.Dice && FR.Dice.Sound && FR.Dice.Sound.dingdong) { FR.Dice.Sound.dingdong(); } return j;
     });
   }
   /* Send this player's character (and portrait, when it changes) to the table. */
@@ -3382,13 +3568,44 @@ FR.Dice = (function () {
     b.hidden = !(T.role === 'player' && T.feed.length);
     var unread = T.feed.filter(function (f) { return f.n > T.seen; }).length;
     b.textContent = unread ? 'From your DM (' + unread + ' new)' : 'From your DM';
-    var chip = $('pl-table'); if (chip) { chip.hidden = T.role !== 'player'; chip.textContent = 'Table ' + T.code; }
+    var chip = $('pl-table'), mine = T.role === 'player' && !!T.code;
+    if (chip) { chip.hidden = T.role === 'dm' || !(mine || T.can); chip.textContent = mine ? 'Table ' + T.code + ' · Change' : 'Join a table'; }
   }
   $('ho-ok').addEventListener('click', function () { $('handout').hidden = true; });
   $('ho-prev').addEventListener('click', function () { show(at - 1); });
   $('ho-next').addEventListener('click', function () { show(at + 1); });
   $('pl-inbox').addEventListener('click', function () { show(T.feed.length - 1); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('handout').hidden) { $('handout').hidden = true; } });
+
+  /* ---------- changing tables: a player can move to another code, or leave ---------- */
+  function switcher() {
+    var mine = T.role === 'player' && !!T.code;
+    $('sw-title').textContent = mine ? 'You are at table ' + T.code : 'Join your DM’s table';
+    $('sw-lbl').textContent = mine ? 'A different table code' : 'Table code';
+    $('sw-join').textContent = mine ? 'Switch to this table' : 'Join this table';
+    $('sw-leave').hidden = !mine; $('sw-code').value = ''; $('sw-err').hidden = true;
+    $('switch').hidden = false; $('sw-code').focus();
+  }
+  function switchTo() {
+    var code = $('sw-code').value.trim(), err = $('sw-err'), b = $('sw-join'), c = A.character();
+    var name = T.name || $('j-name').value.trim() || (c && c.name) || 'Player';
+    var say = function (m) { err.textContent = m; err.hidden = false; $('sw-code').focus(); };
+    err.hidden = true;
+    if (code.length !== 4) { say('A table code is four letters. Ask your DM to read it out again.'); return; }
+    if (T.role === 'player' && code === T.code) { say('You are already at that table.'); return; }
+    b.disabled = true;
+    join(code, name).then(function () { $('switch').hidden = true; sync(); })
+      .catch(function (x) { say((x && x.message) || 'Could not join that table. Check the code and try again.'); })
+      .then(function () { b.disabled = false; });
+  }
+  $('pl-table').addEventListener('click', switcher);
+  $('sw-code').addEventListener('input', function () { $('sw-code').value = $('sw-code').value.toUpperCase().replace(/[^A-Z]/g, ''); });
+  $('sw-code').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); switchTo(); } });
+  $('sw-join').addEventListener('click', switchTo);
+  $('sw-leave').addEventListener('click', function () { forget(); $('switch').hidden = true; });
+  $('sw-x').addEventListener('click', function () { $('switch').hidden = true; });
+  $('switch').addEventListener('click', function (e) { if (e.target === $('switch')) { $('switch').hidden = true; } });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('switch').hidden) { $('switch').hidden = true; } });
 
   /* ---------- the DM's side ---------- */
   function open(passcode) {
@@ -3406,7 +3623,7 @@ FR.Dice = (function () {
     var q = /[?&]t=([A-Za-z]{4})/.exec(location.search || '');
     if (q && T.can) { $('j-code').value = q[1].toUpperCase(); }
     if (!T.can) { changed(); return; }
-    try { var k = JSON.parse(A.store.get(KEY) || 'null'); if (k && k.code && k.token) { T.code = k.code; T.token = k.token; T.role = k.role; T.id = k.id || ''; T.seen = k.seen || 0; start(); } } catch (e) { /* no table remembered */ }
+    try { var k = JSON.parse(A.store.get(KEY) || 'null'); if (k && k.code && k.token) { T.code = k.code; T.token = k.token; T.role = k.role; T.id = k.id || ''; T.name = k.name || ''; T.seen = k.seen || 0; start(); } } catch (e) { /* no table remembered */ }
     changed();
   }
 
@@ -3725,6 +3942,15 @@ FR.Dice = (function () {
         r.appendChild(t); sent.appendChild(r);
       });
     };
+    /* leaving: this browser forgets the table, so the DM can open a new one */
+    var bye = el('div', 'tb-bye'), sure = false, lb = btn('chipd', 'Leave this table', function () {
+      if (!sure) { sure = true; lb.textContent = 'Tap again to leave table ' + TB.code(); return; }
+      var old = TB.code(); TB.leave(); wasAt = false; sh.hidden = true; render();
+      toast('You left table ' + old + '. Tap the table button to open a new one.');
+    });
+    bye.appendChild(lb);
+    bye.appendChild(el('small', '', 'Your players stay at this table until they change codes, so give them the new one. This table clears itself after twelve quiet hours.'));
+    box.appendChild(bye);
     tableLive();
     sh.hidden = false; box.scrollTop = 0; $('dm-sheet-x').focus();
   }
@@ -4145,6 +4371,7 @@ FR.Dice = (function () {
     var can = !!(TB && TB.can()), mine = atTable();
     $('dm-pass-wrap').hidden = !(can && TB.needsPasscode() && !mine);
     $('b-dm-skip').hidden = !(can && !TB.needsPasscode() && !mine);
+    $('b-dm-new').hidden = !(can && mine);
     $('dm-door-note').hidden = !can || mine;
     $('b-dm-in').textContent = !can ? 'I am the DM. Let me in' : (mine ? 'Back to table ' + TB.code() : 'Open a table and let me in');
     $('dm-err').hidden = true;
@@ -4160,6 +4387,7 @@ FR.Dice = (function () {
       .then(function () { b.disabled = false; });
   });
   $('b-dm-skip').addEventListener('click', enterDM);
+  $('b-dm-new').addEventListener('click', function () { TB.leave(); wasAt = false; doorSetup(); if (!$('dm-pass-wrap').hidden) { $('dm-pass').focus(); } });
   $('dm-exit').addEventListener('click', function () { if (Voice.tts && Voice.tts.active()) { Voice.tts.stop().catch(function () { /* quiet */ }); } A.go('title'); });
   FR.dm = { state: function () { return DM; }, prompt: prompt, render: render };
 })();
