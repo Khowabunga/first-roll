@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>First Roll: effects and flat dice test page</title>
+<!-- Serve the repo root (python3 -m http.server 8792 --bind 127.0.0.1) and open /test/fx.html.
+     This page loads the modules straight from src/ and needs nothing built and no 3D libraries:
+     src/dice.js is loaded only for its sound set-up (FR.Dice.Sound), which works without them. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;0,800;1,400&family=Alegreya+Sans:wght@400;500;700&family=Alegreya+Sans+SC:wght@500;700&family=Baskervville+SC:wght@400;600;700&family=Grandstander:wght@500;700;800;900&family=Nunito:ital,wght@0,500;0,700;0,800;1,500&display=swap">
+<style>
+  /* the two colour sets, copied from the app's themes so this page does not depend on src/styles.css */
+  body {
+    --night: #0b0705; --soot: #17100b; --bone: #efe3c8; --mute: #b9a88a; --parch: #e8d6b0; --ink: #2a1b10;
+    --oxblood: #6b170f; --wax: #8f1d14; --wax-hi: #b23a2c; --gilt: #c9a45c; --gilt-hi: #f3dc9c;
+    --f-display: 'Baskervville SC', 'Baskervville', 'Times New Roman', serif; --f-body: 'Alegreya', Georgia, serif;
+    --f-ui: 'Alegreya Sans', 'Segoe UI', Helvetica, Arial, sans-serif; --f-sc: 'Alegreya Sans SC', 'Alegreya Sans', sans-serif;
+    --night-rgb: 11, 7, 5; --gilt-rgb: 201, 164, 92; --r-btn: 3px; --r-page: 2px; --r-chip: 2px;
+    --num: linear-gradient(180deg, #fff0c4 0%, #dcb766 50%, #a87c33 100%);
+    --num-crit: linear-gradient(180deg, #fff 0%, #ffe58a 45%, #e09a1f 100%);
+    --scene: radial-gradient(90% 60% at 50% 30%, #4a2412 0%, #1c0e07 60%, #0b0705 100%);
+  }
+  body[data-theme="northpole"] {
+    --night: #0a1626; --soot: #10233a; --bone: #f6faff; --mute: #b6c8de; --parch: #fbf3e4; --ink: #22324b;
+    --oxblood: #b3122b; --wax: #c8102e; --wax-hi: #ef3b4f; --gilt: #f2b84b; --gilt-hi: #ffe7a6;
+    --f-display: 'Grandstander', 'Trebuchet MS', sans-serif; --f-body: 'Nunito', 'Segoe UI', sans-serif;
+    --f-ui: 'Nunito', 'Segoe UI', sans-serif; --f-sc: 'Grandstander', 'Trebuchet MS', sans-serif;
+    --night-rgb: 8, 18, 34; --gilt-rgb: 242, 184, 75; --r-btn: 18px; --r-page: 22px; --r-chip: 14px;
+    --num: linear-gradient(180deg, #ffffff 0%, #ffe7a6 45%, #f2b84b 100%);
+    --num-crit: linear-gradient(180deg, #ffffff 0%, #ffe7a6 45%, #f2b84b 100%);
+    --scene: radial-gradient(90% 60% at 50% 30%, #1d4a7a 0%, #0f2742 60%, #0a1626 100%);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body { display: flex; gap: 20px; align-items: flex-start; padding: 16px; background: #1b1b1f; color: #e7e7ea; font: 14px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif; }
+
+  /* ---- the controls ---- */
+  #panel { flex: none; width: 344px; }
+  #panel h1 { margin: 0 0 4px; font-size: 17px; }
+  #panel h2 { margin: 16px 0 6px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #9b9ba6; }
+  #panel p { margin: 4px 0; color: #b4b4be; }
+  .rowx { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  #panel button, #panel select { min-height: 34px; padding: 0 11px; border-radius: 7px; border: 1px solid #4a4a55; background: #2a2a31; color: #f0f0f3; font: inherit; cursor: pointer; }
+  #panel button:hover { background: #34343d; }
+  #panel button.on { background: #e7c66a; border-color: #e7c66a; color: #1b1505; font-weight: 600; }
+  #panel button.big { background: #7c1f17; border-color: #b9483b; font-weight: 600; }
+  #panel label { display: inline-flex; gap: 6px; align-items: center; color: #d4d4dc; }
+  #panel input[type=range] { width: 100%; }
+  #read { margin-top: 10px; padding: 9px 11px; border-radius: 7px; background: #111114; font: 12.5px/1.5 ui-monospace, Menlo, monospace; white-space: pre-wrap; color: #cfe3c9; }
+  #voices { margin-top: 8px; font: 12px/1.45 ui-monospace, Menlo, monospace; white-space: pre; color: #c9d4e3; overflow-x: auto; }
+
+  /* ---- the phone ---- */
+  #stagewrap { flex: none; }
+  #app { position: relative; width: 390px; height: 844px; overflow: hidden; isolation: isolate; border-radius: 18px; background: var(--night); color: var(--bone); font-family: var(--f-body); font-size: 17px; line-height: 1.45; box-shadow: 0 30px 90px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(var(--gilt-rgb), 0.28); }
+  #scene { position: absolute; inset: 0; z-index: -1; background: var(--scene); }
+  .tray-top { position: absolute; left: 0; right: 0; top: 0; padding: 14px 20px 22px; text-align: center; background: linear-gradient(rgba(var(--night-rgb), 0.96) 0%, rgba(var(--night-rgb), 0.82) 70%, rgba(var(--night-rgb), 0)); }
+  .tray-title { font-family: var(--f-display); font-weight: 700; font-size: 26px; line-height: 1.1; color: var(--gilt-hi); }
+  .tray-note { font-family: var(--f-ui); font-size: 15.5px; color: var(--mute); }
+  .seg { display: flex; margin-top: 10px; border: 1px solid rgba(var(--gilt-rgb), 0.5); border-radius: var(--r-btn); overflow: hidden; font-family: var(--f-sc); font-weight: 700; font-size: 15px; }
+  .seg span { flex: 1; padding: 7px 0; color: var(--mute); }
+  .seg span.on { background: var(--gilt); color: #1c1108; }
+  #flat { position: absolute; left: 6px; right: 6px; top: 132px; bottom: 262px; }
+  .tray-bot { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; gap: 12px; padding: 30px 20px 16px; background: linear-gradient(rgba(var(--night-rgb), 0) 0%, rgba(var(--night-rgb), 0.86) 24%, rgba(var(--night-rgb), 0.97) 100%); }
+  .result { display: flex; align-items: center; gap: 14px; min-height: 76px; }
+  .result-num { font-family: var(--f-display); font-weight: 700; font-size: 80px; line-height: 0.9; min-width: 1.2ch; color: var(--gilt-hi); background: var(--num); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.8)); font-variant-numeric: lining-nums; }
+  .result-num.crit { background: var(--num-crit); -webkit-background-clip: text; background-clip: text; }
+  .result-num.fumble { background: linear-gradient(180deg, #ffb09c 0%, #c8402c 60%, #7a1208 100%); -webkit-background-clip: text; background-clip: text; }
+  body[data-theme="northpole"] .result-num { font-weight: 900; }
+  .result-math { font-family: var(--f-ui); font-size: 17px; color: var(--bone); }
+  .result-say { font-family: var(--f-sc); font-weight: 700; font-size: 17px; letter-spacing: 0.06em; color: var(--mute); }
+  .btn { min-height: 56px; width: 100%; border-radius: var(--r-btn); font-family: var(--f-sc); font-weight: 700; font-size: 19px; letter-spacing: 0.06em; color: var(--gilt-hi); border: 1px solid #c9a45c; background: linear-gradient(180deg, #a52a1d 0%, #84190f 55%, #6a120a 100%); cursor: pointer; }
+  body[data-theme="northpole"] .btn { border: 2px solid #fff; background: linear-gradient(180deg, #f2405a 0%, #c8102e 58%, #a80b25 100%); color: #fff; box-shadow: 0 5px 0 #7d0a1c; font-weight: 800; }
+  .rail { display: flex; gap: 6px; font-family: var(--f-sc); font-weight: 700; font-size: 15px; color: var(--gilt-hi); }
+  .rail span { flex: 1; padding: 6px 0; text-align: center; border: 1px solid rgba(var(--gilt-rgb), 0.5); border-radius: var(--r-chip); }
+</style>
+</head>
+<body data-theme="tavern">
+
+<div id="panel">
+  <h1>Effects and flat dice</h1>
+  <p>Everything here runs the modules in <code>src/</code> directly. Tap inside the phone while an effect plays to dismiss it.</p>
+
+  <h2>Look</h2>
+  <div class="rowx" id="g-theme"><button data-v="tavern">Tavern</button><button data-v="northpole">North Pole</button></div>
+  <div class="rowx" style="margin-top:6px" id="g-width"><button data-v="320">320 wide</button><button data-v="390">390</button><button data-v="440">440</button></div>
+  <div class="rowx" style="margin-top:6px"><button id="t-reduced">Reduced motion: off</button><button id="t-sound">Sound: on</button><button id="t-words">Scenario words: on</button></div>
+
+  <h2>The big moments</h2>
+  <div class="rowx"><button class="big" id="b-crit">Natural 20</button><button class="big" id="b-fumble">Natural 1</button><button id="b-stop">Stop</button></div>
+  <div class="rowx" style="margin-top:6px">
+    <label>Particles <select id="s-bits"><option value="">scenario's own</option></select></label>
+    <label>Object <select id="s-obj"><option value="">scenario's own</option></select></label>
+  </div>
+
+  <h2>Heralds (someone else's roll)</h2>
+  <div class="rowx"><button id="b-h20">Herald: 20</button><button id="b-h1">Herald: 1</button><button id="b-h3">Four at once</button></div>
+
+  <h2>Flat dice</h2>
+  <div class="rowx">
+    <label>Shape <select id="s-shape"><option>4</option><option>6</option><option>8</option><option>10</option><option>12</option><option selected>20</option><option>100</option></select></label>
+    <label>How many <select id="s-count"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
+    <label>Colour <select id="s-colour"></select></label>
+  </div>
+  <div class="rowx" style="margin-top:6px"><button class="big" id="b-roll">Roll</button><button id="b-draw">Draw at rest</button><button id="b-adv">Advantage (one set aside)</button><button id="b-mixed">One of each</button><button id="b-clear">Clear</button></div>
+
+  <h2>Sounds</h2>
+  <div class="rowx" id="g-voices"></div>
+  <div class="rowx" style="margin-top:6px"><button id="b-analyse">Measure every voice</button></div>
+  <div id="voices"></div>
+
+  <h2>Clock</h2>
+  <div class="rowx"><button id="t-manual">By hand: off</button><button id="b-back">-50 ms</button><button id="b-fwd">+50 ms</button><span id="clock">0 ms</span></div>
+  <input type="range" id="scrub" min="0" max="2600" step="10" value="0">
+  <p>With the clock by hand, start an effect and drag the slider (forwards only) to look at any instant.</p>
+
+  <div id="read">starting</div>
+</div>
+
+<div id="stagewrap">
+  <div id="app">
+    <div id="scene"></div>
+    <div id="flat" aria-hidden="true"></div>
+    <header class="tray-top">
+      <div class="tray-title" id="d-title">Sneak past the guard</div>
+      <div class="tray-note" id="d-note">Stealth · d20 + 3</div>
+      <div class="seg"><span>Disadvantage</span><span class="on">Normal</span><span>Advantage</span></div>
+    </header>
+    <footer class="tray-bot">
+      <div class="result">
+        <div class="result-num" id="d-total">17</div>
+        <div><div class="result-math" id="d-math">14 + 3</div><div class="result-say" id="d-say">Tell your DM</div></div>
+      </div>
+      <button type="button" class="btn" id="d-roll">Roll again</button>
+      <div class="rail"><span>d4</span><span>d6</span><span>d8</span><span>d10</span><span>d12</span><span>d20</span></div>
+    </footer>
+  </div>
+</div>
+
+<script>
+  var FR = {};
+  /* Load the modules with a fresh address every time, so a test never looks at a copy the
+     browser kept from before an edit. Written into the page so they still load in order. */
+  (function () {
+    var v = '?v=' + Date.now();
+    document.write('<link rel="stylesheet" href="../src/css/fx.css' + v + '">');
+    ['../src/dice.js', '../src/audio.js', '../src/fx.js', '../src/flatdice.js'].forEach(function (f) { document.write('<script src="' + f + v + '"><\/script>'); });
+  })();
+</script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var app = $('app'), flat = $('flat'), total = $('d-total'), Sound = FR.Dice.Sound;
+  window.errs = []; window.addEventListener('error', function (e) { window.errs.push(String(e.message)); });
+
+  /* What each scenario would hand to FR.FX and FR.FlatDice. The fx blocks are the ones
+     recommended in the hand-over notes, so what plays here is what the app would play. */
+  var THEMES = {
+    tavern: {
+      floor: 'url(../src/img/table.webp) center / cover, #4a1a14', rim: '#5d3d24',
+      colours: { Barbarian: '#8c2f1b', Bard: '#b0457a', Cleric: '#c79a2c', Druid: '#4d7a3a', Fighter: '#9a3b2a', Monk: '#c2702a', Paladin: '#b58a2e', Ranger: '#3f6b4f', Rogue: '#3f4f7a', Sorcerer: '#a23a5a', Warlock: '#5b3a7a', Wizard: '#3a5f8a', 'Fight die': '#1b1820' },
+      fx: {
+        crit: { title: 'Natural 20!', particles: 'sparks', colors: ['#f3dc9c', '#c9a45c', '#fff6dc', '#ff9a4a', '#b23a2c'],
+          lines: ['The tavern goes quiet. Then it goes very loud.', 'Somewhere, a bard is already writing this down.', 'The dice gods buy this round.', 'Steel sings, luck smiles, and you look good doing it.', 'They will tell this one by the fire for years.', 'Even the innkeeper stopped wiping that same mug.'] },
+        fumble: { title: 'Natural 1', particles: 'coal', object: 'tankard', colors: ['#6b5a48', '#3d3128', '#8a7a66', '#241c16'],
+          lines: ['Well. That happened.', 'The dice have seen your plan and voted no.', 'Somewhere, a goblin is laughing and does not know why.', 'A bold strategy. The floor disagrees.', 'Let us never speak of this again.', 'On the bright side, the only way is up.'] }
+      }
+    },
+    northpole: {
+      floor: 'url(../scenarios/northpole/img/table.webp) center / cover, #0f4a30', rim: '#b5121f',
+      colours: { 'Blizzard Brawler': '#3d6fb0', Caroler: '#b0457a', Baker: '#c9862c', 'Tree Tender': '#2f7d4f', 'Candy Cane Knight': '#c8102e', 'Ice Skater': '#7a6fc0', Santa: '#b3122b', 'Sleigh Pilot': '#2f6f8f', 'Chimney Sneak': '#48566f', 'Frost Mage': '#3aa0c8', 'Mischief Maker': '#6a3f9a', Toymaker: '#2f8f8a', 'Snow fight die': '#c8102e' },
+      fx: {
+        crit: { title: 'Natural 20!', particles: 'sprinkles', colors: ['#ffe7a6', '#f2b84b', '#ffffff', '#ef3b4f', '#3fbf7f', '#7fd4ff'],
+          lines: ['Straight to the top of the Nice List.', 'The elves are doing a little dance about it.', 'Every bell at the North Pole just rang at once.', 'Somebody fetch the good cocoa.', 'Even the reindeer looked up.', 'That roll gets its own ornament on the tree.'] },
+        fumble: { title: 'Natural 1', particles: 'coal', object: 'coal', colors: ['#2a2a30', '#4a4a54', '#77778a', '#15151a'],
+          lines: ['That is a lump of coal, that is.', 'The Naughty List has entered the chat.', 'Somewhere, a snowman winced.', 'The reindeer saw that. They are being polite about it.', 'Well, the cocoa is still warm.', 'Let us blame the mittens.'] }
+      }
+    }
+  };
+  var state = { theme: 'tavern', width: 390, reduced: false, words: true, manual: false, shown: { n: 0, sides: 20 } };
+  var theme = function () { return THEMES[state.theme]; };
+
+  /* ---------- look ---------- */
+  function mark(group, v) { Array.prototype.forEach.call($(group).children, function (b) { b.className = b.getAttribute('data-v') === String(v) ? 'on' : ''; }); }
+  function setTheme(name) {
+    state.theme = name; document.body.setAttribute('data-theme', name); mark('g-theme', name);
+    var sel = $('s-colour'), keep = sel.selectedIndex; sel.innerHTML = '';
+    Object.keys(theme().colours).forEach(function (k) { var o = document.createElement('option'); o.value = theme().colours[k]; o.textContent = k + '  ' + theme().colours[k]; sel.appendChild(o); });
+    sel.selectedIndex = Math.max(0, keep);
+    redraw();
+  }
+  function setWidth(w) { state.width = w; app.style.width = w + 'px'; mark('g-width', w); redraw(); }
+  function toggle(id, key, label) { state[key] = !state[key]; $(id).textContent = label + ': ' + (state[key] ? 'on' : 'off'); $(id).className = state[key] ? 'on' : ''; }
+
+  /* ---------- the big moments ---------- */
+  function fxFor(kind) {
+    var base = state.words ? theme().fx[kind] : {}, out = {}, k;
+    for (k in base) { out[k] = base[k]; }
+    if ($('s-bits').value) { out.particles = $('s-bits').value; if (!state.words) { delete out.colors; } }
+    if ($('s-obj').value) { out.object = $('s-obj').value; }
+    return out;
+  }
+  function showResult(kind) {
+    total.className = 'result-num ' + kind; total.textContent = kind === 'crit' ? '23' : '4';
+    $('d-math').textContent = kind === 'crit' ? '20 + 3' : '1 + 3'; $('d-say').textContent = kind === 'crit' ? 'Natural 20!' : 'Natural 1. Oh dear.';
+  }
+  /* the read-out is refreshed when anything finishes, not only on the half-second tick */
+  function after(p) { p.then(report); return p; }
+  function crit() { showResult('crit'); worst = 0; return after(FR.FX.crit({ anchor: total, host: app, fx: fxFor('crit'), reduced: state.reduced })); }
+  function fumble() { showResult('fumble'); worst = 0; return after(FR.FX.fumble({ anchor: total, host: app, fx: fxFor('fumble'), reduced: state.reduced })); }
+  function herald(kind, name, label) { return after(FR.FX.herald({ kind: kind, name: name, label: label, host: app, fx: state.words ? theme().fx : null, reduced: state.reduced })); }
+
+  /* ---------- flat dice ---------- */
+  function diceOpts(extra) { var o = { reduced: state.reduced, floor: theme().floor, rim: theme().rim }, k; for (k in (extra || {})) { o[k] = extra[k]; } return o; }
+  function makeDice(n, sides, colour) { var out = [], i; for (i = 0; i < n; i++) { out.push({ sides: sides, color: colour }); } return out; }
+  var anyOf = function (d) { return 1 + Math.floor(Math.random() * d.sides); };
+  var current = null;
+  function rollDice(dice, extra) {
+    var vals = dice.map(anyOf), o = diceOpts(extra);
+    current = { dice: dice, vals: vals, extra: extra || {} }; worst = 0;
+    return after(FR.FlatDice.roll(flat, dice, vals, o));
+  }
+  function redraw() { if (current) { FR.FlatDice.draw(flat, current.dice, current.vals, diceOpts(current.extra)); } }
+  function picked() { return makeDice(+$('s-count').value, +$('s-shape').value, $('s-colour').value); }
+  function advantage() {
+    var dice = makeDice(2, 20, $('s-colour').value), vals = dice.map(anyOf), low = vals[0] <= vals[1] ? 0 : 1;
+    current = { dice: dice, vals: vals, extra: { dropped: [low] } }; worst = 0;
+    return after(FR.FlatDice.roll(flat, dice, vals, diceOpts({ dropped: [low] })));
+  }
+  function mixed() {
+    var cols = Object.keys(theme().colours).map(function (k) { return theme().colours[k]; });
+    return rollDice([4, 6, 8, 10, 12, 20, 100].map(function (s, i) { return { sides: s, color: cols[(i * 2 + 2) % cols.length] }; }));
+  }
+
+  /* ---------- sound: play, and measure ---------- */
+  var VOICES = [['epic', undefined, 3.2], ['doom', undefined, 3.0], ['heraldUp', undefined, 1.4], ['heraldDown', undefined, 1.4], ['rattle', 0.7, 1.2], ['thud', 0.8, 1.0]];
+  VOICES.forEach(function (v) {
+    var b = document.createElement('button'); b.textContent = v[0];
+    b.addEventListener('click', function () { Sound.unlock(); Sound[v[0]](v[1]); });
+    $('g-voices').appendChild(b);
+  });
+  /* Nobody can hear a test page from a script, so each voice is also rendered silently, as
+     fast as the machine can, through a copy of the app's own output chain, and measured:
+     did it make sound, how long, how loud, and where its weight sits (low rumble or bright). */
+  function measure(name, arg, seconds) {
+    var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext, rate = 44100;
+    if (!OAC) { return Promise.resolve({ name: name, error: 'no OfflineAudioContext' }); }
+    var off = new OAC(1, Math.floor(rate * seconds), rate), keep = { ctx: Sound.ctx, out: Sound.out, rev: Sound.rev, noise: Sound.noise, muted: Sound.muted };
+    var out = off.createGain(), comp = off.createDynamicsCompressor(), conv = off.createConvolver(), wet = off.createGain(), i, err = '';
+    var len = Math.floor(rate * 0.28), ir = off.createBuffer(1, len, rate), d = ir.getChannelData(0);
+    for (i = 0; i < len; i++) { d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.2); }
+    var nb = off.createBuffer(1, Math.floor(rate * 0.25), rate), nd = nb.getChannelData(0);
+    for (i = 0; i < nd.length; i++) { nd[i] = Math.random() * 2 - 1; }
+    out.gain.value = 0.9; out.connect(comp); comp.connect(off.destination); conv.buffer = ir; wet.gain.value = 0.22; conv.connect(wet); wet.connect(comp);
+    Sound.ctx = off; Sound.out = out; Sound.rev = conv; Sound.noise = nb; Sound.muted = false;
+    try { Sound[name](arg); } catch (e) { err = String(e && e.message || e); }
+    Sound.ctx = keep.ctx; Sound.out = keep.out; Sound.rev = keep.rev; Sound.noise = keep.noise; Sound.muted = keep.muted;
+    return off.startRendering().then(function (buf) {
+      var x = buf.getChannelData(0), peak = 0, sum = 0, first = -1, lastAt = -1, zc = 0, k, win = Math.floor(rate / 10), env = [], s, lows = 0, prev = 0, lp = 0;
+      for (k = 0; k < x.length; k++) {
+        s = Math.abs(x[k]); if (s > peak) { peak = s; } sum += x[k] * x[k];
+        if (s > 0.003) { if (first < 0) { first = k; } lastAt = k; }
+        if (k && (x[k] >= 0) !== (prev >= 0)) { zc++; } prev = x[k];
+        lp += 0.02 * (x[k] - lp); lows += lp * lp;                 // energy below roughly 140 Hz
+      }
+      for (k = 0; k + win <= x.length; k += win) { s = 0; for (i = k; i < k + win; i++) { s += x[i] * x[i]; } env.push(Math.sqrt(s / win)); }
+      return { name: name, error: err, silent: peak < 0.002, starts: first < 0 ? null : +(first / rate).toFixed(2), ends: lastAt < 0 ? null : +(lastAt / rate).toFixed(2),
+        peak: +peak.toFixed(3), rms: +Math.sqrt(sum / x.length).toFixed(4), crossingsPerSec: Math.round(zc / (x.length / rate)), lowShare: +(lows / (sum || 1)).toFixed(3),
+        clipped: peak >= 0.999, envelope: env.map(function (v) { return +v.toFixed(3); }) };
+    });
+  }
+  function measureAll() {
+    var out = [];
+    return VOICES.reduce(function (p, v) { return p.then(function () { return measure(v[0], v[1], v[2]); }).then(function (r) { out.push(r); }); }, Promise.resolve()).then(function () {
+      var bars = ' ▁▂▃▄▅▆▇█';
+      $('voices').textContent = out.map(function (r) {
+        var top = Math.max.apply(null, r.envelope) || 1;
+        return (r.name + '          ').slice(0, 11) + (r.silent ? 'SILENT ' : '') + (r.error ? 'ERROR ' + r.error + ' ' : '') + r.starts + 's to ' + r.ends + 's  peak ' + r.peak + (r.clipped ? ' CLIPPED' : '') + '\n           ' +
+          r.envelope.map(function (v) { return bars.charAt(Math.min(8, Math.round(v / top * 8))); }).join('');
+      }).join('\n');
+      return out;
+    });
+  }
+
+  /* ---------- clock, frame rate, and what is left behind ---------- */
+  var frames = 0, fps = 0, lastT = 0, mark0 = performance.now(), worst = 0;
+  (function tick(now) {
+    requestAnimationFrame(tick);
+    if (lastT) { worst = Math.max(worst, now - lastT); }
+    lastT = now; frames++;
+    if (now - mark0 >= 500) { fps = Math.round(frames * 1000 / (now - mark0)); frames = 0; mark0 = now; report(); }
+  })(performance.now());
+  function leftovers() {
+    var s = app.style;
+    return {
+      fxNodes: document.querySelectorAll('.fx-stage, .fx-grey, .fx-herald, .fx-canvas').length,
+      appChildren: app.children.length,
+      hostStyle: [s.rotate, s.translate, s.scale, s.willChange].join('|'),
+      anchorStyle: total.getAttribute('style') || ''
+    };
+  }
+  function report() {
+    var st = FR.FX.test.state(), left = leftovers();
+    $('read').textContent = 'frames per second: ' + fps + '   slowest frame since last effect: ' + Math.round(worst) + ' ms\n' +
+      'moment: ' + (st.moment || 'none') + (st.moment ? ' at ' + Math.round(st.t) + ' ms, ' + st.bits + ' particles' : '') + '   herald: ' + (st.herald || 'none') + ' (' + st.waiting + ' waiting)\n' +
+      'left in the page by effects: ' + left.fxNodes + ' nodes' + (left.hostStyle !== '|||' ? ', host style ' + left.hostStyle : '') + (left.anchorStyle ? ', anchor style ' + left.anchorStyle : '') + '\n' +
+      'script errors: ' + window.errs.length;
+    if (st.moment && !state.manual) { $('scrub').value = st.t; $('clock').textContent = Math.round(st.t) + ' ms'; }
+  }
+  function setManual(on) {
+    state.manual = on; FR.FX.test.manual(on); FR.FlatDice.test.manual(on);
+    $('t-manual').textContent = 'By hand: ' + (on ? 'on' : 'off'); $('t-manual').className = on ? 'on' : '';
+  }
+  function seek(ms) {
+    FR.FX.test.seek(ms); FR.FX.test.seek(ms, 'herald'); FR.FlatDice.test.seek(flat, ms);
+    $('scrub').value = ms; $('clock').textContent = Math.round(ms) + ' ms'; report();
+  }
+
+  /* ---------- wiring ---------- */
+  FR.FX.particles.forEach(function (k) { var o = document.createElement('option'); o.textContent = k; $('s-bits').appendChild(o); });
+  FR.FX.objects.forEach(function (k) { var o = document.createElement('option'); o.textContent = k; $('s-obj').appendChild(o); });
+  $('g-theme').addEventListener('click', function (e) { var v = e.target.getAttribute('data-v'); if (v) { setTheme(v); } });
+  $('g-width').addEventListener('click', function (e) { var v = e.target.getAttribute('data-v'); if (v) { setWidth(+v); } });
+  $('t-reduced').addEventListener('click', function () { toggle('t-reduced', 'reduced', 'Reduced motion'); });
+  $('t-words').addEventListener('click', function () { toggle('t-words', 'words', 'Scenario words'); });
+  $('t-sound').addEventListener('click', function () { Sound.muted = !Sound.muted; $('t-sound').textContent = 'Sound: ' + (Sound.muted ? 'off' : 'on'); $('t-sound').className = Sound.muted ? '' : 'on'; });
+  $('t-manual').addEventListener('click', function () { setManual(!state.manual); });
+  $('b-crit').addEventListener('click', crit); $('b-fumble').addEventListener('click', fumble); $('b-stop').addEventListener('click', function () { FR.FX.stop(); });
+  $('b-h20').addEventListener('click', function () { herald('crit', 'Mirabel', 'Stealth'); });
+  $('b-h1').addEventListener('click', function () { herald('fumble', 'Old Tobias', 'Attack roll'); });
+  $('b-h3').addEventListener('click', function () { herald('crit', 'Mirabel', 'Stealth'); herald('fumble', 'Old Tobias', 'Attack roll'); herald('crit', 'Pip', 'Persuasion'); herald('fumble', 'A player with a very long name indeed', 'Acrobatics check'); });
+  $('b-roll').addEventListener('click', function () { rollDice(picked()); });
+  $('b-draw').addEventListener('click', function () { var dice = picked(); current = { dice: dice, vals: dice.map(anyOf), extra: {} }; FR.FlatDice.clear(flat); redraw(); });
+  $('b-adv').addEventListener('click', advantage); $('b-mixed').addEventListener('click', mixed);
+  $('b-clear').addEventListener('click', function () { current = null; FR.FlatDice.clear(flat); });
+  $('b-analyse').addEventListener('click', measureAll);
+  $('b-back').addEventListener('click', function () { seek(Math.max(0, +$('scrub').value - 50)); });
+  $('b-fwd').addEventListener('click', function () { seek(+$('scrub').value + 50); });
+  $('scrub').addEventListener('input', function () { if (state.manual) { seek(+$('scrub').value); } });
+  /* the app unlocks sound on the first tap anywhere; so does this page */
+  document.addEventListener('pointerdown', function () { Sound.unlock(); }, true);
+  /* in the app, "Roll again" starts a new throw and the app calls FR.FX.stop() first */
+  $('d-roll').addEventListener('click', function () { FR.FX.stop(); total.className = 'result-num'; total.textContent = ''; rollDice(current ? current.dice : picked()).then(function (ok) { if (ok) { total.textContent = String(current.vals.reduce(function (a, b) { return a + b; }, 0)); } }); });
+
+  setTheme('tavern'); setWidth(390); $('t-sound').className = 'on'; $('t-words').className = 'on';
+  current = { dice: makeDice(1, 20, theme().colours.Fighter), vals: [14], extra: {} }; redraw();
+
+  /* for driving the page from a script */
+  window.H = {
+    theme: setTheme, width: setWidth, crit: crit, fumble: fumble, herald: herald, seek: seek, manual: setManual, leftovers: leftovers, measure: measure, measureAll: measureAll,
+    reduced: function (on) { if (state.reduced !== !!on) { toggle('t-reduced', 'reduced', 'Reduced motion'); } },
+    words: function (on) { if (state.words !== !!on) { toggle('t-words', 'words', 'Scenario words'); } },
+    sound: function (on) { Sound.muted = !on; $('t-sound').textContent = 'Sound: ' + (on ? 'on' : 'off'); $('t-sound').className = on ? 'on' : ''; },
+    bits: function (v) { $('s-bits').value = v || ''; }, object: function (v) { $('s-obj').value = v || ''; },
+    roll: function (n, sides, colour, extra) { return rollDice(makeDice(n, sides, colour || $('s-colour').value), extra); },
+    draw: function (n, sides, colour, vals, extra) { var dice = makeDice(n, sides, colour || $('s-colour').value); current = { dice: dice, vals: vals || dice.map(anyOf), extra: extra || {} }; FR.FlatDice.clear(flat); redraw(); },
+    advantage: advantage, mixed: mixed, clear: function () { current = null; FR.FlatDice.clear(flat); },
+    fps: function () { return { fps: fps, worst: Math.round(worst) }; }, themes: THEMES, state: state
+  };
+})();
+</script>
+</body>
+</html>

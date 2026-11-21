@@ -1,0 +1,112 @@
+/* First Roll: the player's side. Styles for the ways in, the play screen's corner controls and
+   menu, the settings sheet, the dice tray's controls and the small app-wide signs (toast,
+   reconnecting). Bundled after styles.css; colours, type and corners all come from the theme's
+   custom properties, so every scenario wears these in its own look. */
+
+/* ---------- app-wide: one toast, and the sign that the table cannot be reached ---------- */
+.app-toast { position: absolute; left: 16px; right: 16px; top: max(14px, env(safe-area-inset-top, 0px)); z-index: 60; padding: 12px 16px; border-radius: max(var(--r-chip), 8px); background: var(--gilt); color: var(--on-gilt); font-family: var(--f-ui); font-weight: 800; font-size: var(--t-sm); line-height: 1.3; text-align: center; box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5); animation: toast-in 0.28s var(--ease); pointer-events: none; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(-10px); } }
+.net-pill { position: absolute; left: 50%; bottom: max(10px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 59; max-width: calc(100% - 32px); padding: 6px 14px; border-radius: var(--r-pill); background: rgba(var(--night-rgb), 0.92); border: var(--bw) solid rgba(var(--gilt-rgb), 0.6); color: var(--gilt-hi); font-family: var(--f-ui); font-weight: 700; font-size: var(--t-xs); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+/* the speaker says "nothing will be heard" with a crossed-out icon and its label, not by fading away */
+.audio-open.off { opacity: 1; color: var(--mute); border-style: dashed; }
+
+/* ---------- the title: the table chip and the ways in ---------- */
+#s-title .title-wrap { min-height: 0; overflow-y: auto; scrollbar-width: none; }
+#s-title .title-wrap::-webkit-scrollbar { display: none; }
+#t-table { flex-shrink: 0; max-width: 100%; min-height: 44px; }
+.ways-k { flex-shrink: 0; margin-bottom: -4px; font-family: var(--f-sc); font-weight: 700; font-size: var(--t-sm); letter-spacing: 0.1em; color: var(--gilt-hi); text-shadow: 0 1px 6px #000; }
+.duo.ways .btn { white-space: normal; line-height: 1.12; padding: 6px 8px; text-wrap: balance; }
+/* Every way in, and the DM door, must be on screen without scrolling in any window from a short
+   laptop to a tall phone. The buttons keep their size; the wordmark, the tagline and the gaps give way. */
+@media (max-height: 900px) {
+  #s-title .title-wrap { padding-top: 5vh; gap: 10px; padding-bottom: var(--s-3); }
+  #s-title .wordmark { width: min(78%, 300px); }
+}
+@media (max-height: 820px) {
+  #s-title .title-wrap { padding-top: 3vh; gap: 8px; }
+  #s-title .wordmark { width: min(68%, 260px); }
+  #s-title .tagline { font-size: var(--t-md); padding: var(--s-2) var(--s-4); }
+}
+@media (max-height: 730px) {
+  #s-title .title-wrap { padding-top: 12px; gap: 6px; }
+  #s-title .wordmark { width: min(57%, 220px); }
+  #s-title .tagline { font-size: var(--t-sm); line-height: 1.25; padding: var(--s-1) var(--s-4); }
+}
+@media (max-height: 650px) {
+  #s-title .wordmark { width: min(44%, 170px); }
+  #s-title .tagline { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+}
+@media (max-height: 590px) {
+  #s-title .title-wrap { padding-top: 8px; gap: 4px; }
+  #s-title .wordmark { width: min(26%, 100px); }
+  #s-title .tagline { display: none; }
+}
+
+/* ---------- ready-made heroes ---------- */
+.pre-list { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; padding-bottom: 20px; }
+.pre-card { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 100px; padding: 8px 12px 8px 8px; text-align: left; color: var(--bone); background: rgba(var(--night-rgb), 0.62); border: var(--bw) solid rgba(var(--gilt-rgb), 0.45); border-radius: max(var(--r-chip), 8px); transition: background-color 0.2s, border-color 0.2s; }
+.pre-card:hover, .pre-card:active { background: rgba(var(--gilt-rgb), 0.14); border-color: var(--gilt-hi); }
+.pre-card img { width: 64px; height: 84px; flex-shrink: 0; object-fit: cover; object-position: 50% 18%; border-radius: max(var(--r-chip), 6px); background: var(--parch); }
+.pre-t { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pre-t b { font-family: var(--f-display); font-weight: 700; font-size: var(--t-lg); line-height: 1.1; color: var(--gilt-hi); }
+.pre-t small { font-family: var(--f-sc); font-weight: 700; font-size: var(--t-xs); letter-spacing: 0.05em; color: var(--mute); }
+.pre-t span { font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.3; color: var(--bone); }
+
+/* ---------- the reveal ---------- */
+.r-name { font-family: var(--f-display); font-weight: 700; font-size: var(--t-lg); line-height: 1.2; color: var(--gilt-hi); }
+.match-note { font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.35; color: var(--ink-soft); }
+
+/* ---------- the picture: a wall of ready-made ones ---------- */
+.gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.tile { position: relative; padding: 0; aspect-ratio: 2 / 3; overflow: hidden; background: rgba(255, 250, 235, 0.4); border: 2px solid rgba(var(--ink-rgb), 0.35); border-radius: max(var(--r-chip), 6px); }
+.tile img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.tile.on { border-color: var(--oxblood); box-shadow: 0 0 0 2px var(--oxblood); }
+.tile.none { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 6px; font-family: var(--f-sc); font-weight: 700; font-size: var(--t-xs); letter-spacing: 0.05em; line-height: 1.15; color: var(--ink-soft); }
+.tile.none img { width: 56%; height: auto; object-fit: contain; opacity: 0.55; }
+.btn.repaint { align-self: center; }
+
+/* ---------- at the table: table chip, envelope, settings, menu ---------- */
+.inbox-gap { flex: 1; min-width: 0; }
+.inbox .tablechip.quiet { min-height: 44px; }
+.inbox .icon { flex-shrink: 0; }
+.inbox .pl-audio { width: 44px; height: 44px; margin-left: 0; }
+.inbox .pl-audio svg { width: 20px; height: 20px; }
+.pl-mail { position: relative; }
+.pl-mail b { position: absolute; right: -4px; top: -4px; min-width: 20px; height: 20px; padding: 0 5px; display: grid; place-items: center; border-radius: var(--r-pill); background: var(--wax-hi); color: var(--on-wax); font-family: var(--f-ui); font-weight: 800; font-size: var(--t-xs); line-height: 1; box-shadow: 0 0 0 2px var(--night); }
+/* the one-time word about what to do here, until the first roll */
+.nudge { flex-shrink: 0; margin: 10px max(20px, env(safe-area-inset-right, 0px)) 0 max(20px, env(safe-area-inset-left, 0px)); padding: 10px 14px; border-radius: max(var(--r-chip), 8px); background: rgba(var(--gilt-rgb), 0.16); border: var(--bw) solid rgba(var(--gilt-rgb), 0.6); color: var(--bone); font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.35; }
+/* "Good at this": said in words where a bare bonus would only puzzle */
+.row-g { flex-shrink: 0; padding: 4px 10px; border-radius: var(--r-pill); border: var(--bw) solid rgba(var(--gilt-rgb), 0.55); color: var(--gilt-hi); font-family: var(--f-ui); font-weight: 700; font-size: var(--t-xs); white-space: nowrap; }
+
+/* ---------- the dice tray ---------- */
+/* in plain words the three choices are short sentences, so they may take two lines */
+.seg.plain button { padding: 5px 4px; font-size: var(--t-xs); line-height: 1.15; letter-spacing: 0.02em; white-space: normal; text-wrap: balance; }
+.shake { align-self: center; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: var(--r-pill); background: rgba(var(--night-rgb), 0.6); border: var(--bw) solid rgba(var(--gilt-rgb), 0.4); color: var(--mute); font-family: var(--f-ui); font-weight: 700; font-size: var(--t-sm); }
+.shake svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: var(--icon-stroke); stroke-linecap: round; stroke-linejoin: round; }
+.shake.on { color: var(--accent); border-color: rgba(var(--gilt-rgb), 0.75); background: rgba(var(--gilt-rgb), 0.14); }
+.rail-hint { font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.3; color: var(--mute); text-align: center; }
+.stepper { grid-template-columns: 44px 26px 44px; }
+/* Where the flat dice sit, if nothing else has placed them. src/app.js sets the top and bottom itself,
+   to the stretch between the tray's header and footer; :where keeps this weaker than any .flat rule. */
+:where(#s-dice) :where(.flat) { position: absolute; left: 0; right: 0; top: 20%; bottom: 32%; pointer-events: none; }
+
+/* ---------- dialogs: small print, settings, the ways in, the menu ---------- */
+.handout-card .fine-ink { font-family: var(--f-ui); font-weight: 500; font-size: var(--t-sm); line-height: 1.4; color: var(--ink-soft); white-space: normal; text-align: center; }
+.ai-extras { display: flex; flex-direction: column; gap: 6px; padding-top: 10px; border-top: var(--bw) solid rgba(var(--ox-rgb), 0.3); }
+.ai-extras small { font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.35; color: var(--ink-soft); text-align: center; }
+.ai-extras .btn { align-self: center; }
+.btn.way { flex-direction: column; gap: 2px; min-height: 60px; padding-block: 8px; }
+.btn.way small { font-family: var(--f-ui); font-weight: 500; font-size: var(--t-xs); letter-spacing: 0; opacity: 0.92; }
+.menu-list { display: flex; flex-direction: column; gap: 8px; }
+.menu-list .btn { min-height: 50px; }
+#handout .handout-nav .btn { min-height: 46px; }
+/* a heading that only holds the focus after a change of screen (see Dlg.land in src/app.js) is not a control: no ring */
+#app [tabindex="-1"]:focus { outline: none; }
+
+/* ---------- names and titles are never cut off: they take a second line instead ---------- */
+.hero-name, .hero-sub, .tray-title, .tray-note, .dm-title, .theme-card b {
+  white-space: normal; text-overflow: clip; overflow: hidden; overflow-wrap: anywhere; text-wrap: balance;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+}
+.hero-name { font-size: var(--t-lg); }
+.tray-title { font-size: var(--t-xl); }

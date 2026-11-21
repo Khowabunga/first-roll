@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1536" width="1024" height="1536" role="img" aria-label="Portrait to come">
+  <!-- The stand-in portrait for a pack that has no sample art yet (art.sample in src/base.js). -->
+  <defs>
+    <radialGradient id="page" cx="50%" cy="42%" r="78%">
+      <stop offset="0" stop-color="#f1e3c2"/><stop offset="0.65" stop-color="#e1cda2"/><stop offset="1" stop-color="#c9af7c"/>
+    </radialGradient>
+  </defs>
+  <rect width="1024" height="1536" fill="url(#page)"/>
+  <g fill="#5a4330" opacity="0.42">
+    <circle cx="512" cy="590" r="176"/>
+    <path d="M176 1250c0-214 148-352 336-352s336 138 336 352v286H176z"/>
+  </g>
+  <g fill="none" stroke="#6b170f" stroke-width="12" stroke-linejoin="round" opacity="0.62" transform="translate(512 1180)">
+    <polygon points="0,-120 104,-60 104,60 0,120 -104,60 -104,-60"/>
+    <polygon points="0,-72 72,52 -72,52"/>
+    <path d="M0,-120V-72M104,60 72,52M-104,60-72,52M104,-60 0,-72-104,-60M72,52 0,120-72,52"/>
+  </g>
+</svg>

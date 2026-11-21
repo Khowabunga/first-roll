@@ -2,8 +2,7 @@
 .dev.vars
 .wrangler/
 node_modules/
-dist/
-public/offline.html
+public/
 test/shots*/
 test/preview/
 test/*.png

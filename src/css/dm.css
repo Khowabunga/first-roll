@@ -1,0 +1,159 @@
+/* First Roll: the DM's side. The wide layout (from 900px the story gets the window, with the
+   table beside it), the live rolls, the turn order, a player at a glance, and the DM's dialogs.
+   Bundled after styles.css, which still holds the DM's single-column look; colours, type and
+   corners all come from the theme's custom properties.
+   The two widths below, 900px and 1400px, are also in src/dm.js: it decides what is drawn in
+   which pane, and this file decides where the panes sit. Change them together. */
+
+/* ---------- the frame: one column until there is room for panes ---------- */
+.dm-panes, .dm-main { flex: 1; min-height: 0; min-width: 0; display: flex; flex-direction: column; }
+.dm-side, .dm-views { display: none; }
+.dm-tabs { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+.dmtab { position: relative; min-width: 0; }
+.dmtab span { white-space: nowrap; }
+/* how many rolls have come in since the DM last looked at them */
+.dm-count { min-width: 20px; height: 20px; padding: 0 6px; display: inline-grid; place-items: center; border-radius: var(--r-pill); background: var(--wax); border: var(--bw) solid var(--gilt-hi); color: var(--on-wax); font-family: var(--f-ui); font-style: normal; font-weight: 800; font-size: var(--t-xs); line-height: 1; }
+.dmtab .dm-count { position: absolute; top: 5px; left: calc(50% + 5px); }
+/* said to a screen reader, not shown: the newest roll, whose turn it is */
+.dm-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+#s-dm select:focus-visible, #s-dm summary:focus-visible { outline: 2px solid var(--gilt-hi); outline-offset: 2px; }
+
+/* the switches at the top of a pane, and Run / Story in the header */
+.dm-views button, .dm-sidetabs button { min-height: 44px; min-width: 0; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: max(var(--r-chip), 6px); border: var(--bw) solid var(--rim); background: transparent; color: var(--bone); font-family: var(--f-ui); font-weight: 700; font-size: var(--t-sm); white-space: nowrap; }
+.dm-views button:hover, .dm-sidetabs button:hover { background: rgba(var(--gilt-rgb), 0.14); }
+.dm-views button.on, .dm-sidetabs button.on { background: var(--sel-bg); border-color: var(--sel-bg); color: var(--sel-ink); }
+.dm-views svg { width: 20px; height: 20px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: var(--icon-stroke); stroke-linecap: round; stroke-linejoin: round; }
+.dm-sidetabs { flex-shrink: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; padding: 10px 14px; border-bottom: var(--bw) solid rgba(var(--gilt-rgb), 0.22); }
+.dm-side-b { padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 12px; }
+.dm-side-b.dict { padding-top: 0; }
+.dm-side-b.dict > .btn.back { margin-top: 14px; }
+.btn.back { align-self: flex-start; width: auto; padding: 0 16px; }
+
+/* ---------- the table: its code, who is here, and how to step away from it ---------- */
+.tb-how { font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.4; color: var(--bone); }
+.tb-code b { overflow-wrap: anywhere; }
+.tb-p b { overflow-wrap: anywhere; }
+button.tb-p { width: 100%; padding: 4px 6px 4px 4px; text-align: left; background: none; border: var(--bw) solid transparent; border-radius: max(var(--r-chip), 10px); }
+button.tb-p:hover { background: rgba(255, 255, 255, 0.06); border-color: var(--hairline); }
+button.tb-p > span { flex: 1; }
+button.tb-p::after { content: ""; flex-shrink: 0; width: 8px; height: 8px; margin-right: 6px; border-top: 2px solid var(--mute); border-right: 2px solid var(--mute); transform: rotate(45deg); }
+.tb-tip { font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.35; color: var(--mute); }
+.tb-way { display: flex; flex-direction: column; gap: 6px; }
+.tb-way + .tb-way { margin-top: 6px; }
+.tb-way small { font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.35; color: var(--mute); }
+.btn.danger { color: var(--bone); border-color: var(--wax-hi); }
+.btn.danger:hover { background: rgba(var(--ox-rgb), 0.45); }
+
+/* a player at a glance */
+.good { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.good li { padding: 6px 12px; border-radius: var(--r-pill); border: var(--bw) solid rgba(var(--gilt-rgb), 0.5); background: rgba(var(--gilt-rgb), 0.12); font-family: var(--f-ui); font-weight: 700; font-size: var(--t-sm); line-height: 1.25; color: var(--bone); }
+.sh-t { overflow-wrap: anywhere; }
+.sheet-b > .sh-t:first-child { padding-right: 52px; }
+
+/* ---------- the rolls ---------- */
+.rl-list { display: flex; flex-direction: column; gap: 8px; }
+.rl { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 64px; padding: 8px 14px 8px 8px; border-radius: max(var(--r-chip), 10px); border: var(--bw) solid var(--hairline); background: rgba(255, 255, 255, 0.04); color: var(--bone); }
+.rl-face { width: 44px; height: 44px; padding: 0; display: block; border: 0; border-radius: 50%; background: none; }
+.rl-face img, .rl-face .lk-dot { display: block; width: 44px; height: 44px; border-radius: 50%; object-fit: cover; object-position: 50% 18%; }
+.rl-who { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.rl-who b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; font-family: var(--f-display); font-weight: 800; font-size: var(--t-md); line-height: 1.2; }
+.rl-who b i { font-family: var(--f-ui); font-style: normal; font-weight: 500; font-size: var(--t-sm); color: var(--mute); }
+.rl-what { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; font-family: var(--f-ui); font-weight: 600; font-size: var(--t-sm); line-height: 1.25; }
+.rl-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.3; color: var(--mute); }
+.rl-nat { padding: 1px 8px; border-radius: var(--r-pill); font-style: normal; font-weight: 800; font-size: var(--t-xs); letter-spacing: 0.04em; text-transform: uppercase; }
+.rl-sum { overflow-wrap: anywhere; font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.3; color: var(--bone); opacity: 0.86; }
+.rl-num { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+.rl-num b { font-family: var(--f-display); font-weight: 900; font-size: 34px; line-height: 1; color: var(--gilt-hi); font-variant-numeric: lining-nums; }
+.rl-num small { margin-top: 3px; font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.2; white-space: nowrap; color: var(--mute); }
+/* a natural 20 glows; a natural 1 goes cold. Each also says so in words. */
+.rl.nat20 { border-color: var(--gilt); background: rgba(var(--gilt-rgb), 0.16); box-shadow: 0 0 0 1px rgba(var(--gilt-rgb), 0.35), 0 6px 18px rgba(0, 0, 0, 0.3); }
+.rl.nat20 .rl-nat { background: var(--gilt); color: var(--on-gilt); }
+.rl.nat1 { border-style: dashed; border-color: rgba(255, 255, 255, 0.5); background: rgba(0, 0, 0, 0.28); }
+.rl.nat1 .rl-nat { background: var(--wax); color: var(--on-wax); }
+.rl.nat1 .rl-num b { color: var(--mute); }
+/* history from before this screen was connected stays, more quietly */
+.rl.old { opacity: 0.62; background: transparent; box-shadow: none; }
+.rl.old .rl-num b { font-size: var(--t-2xl); }
+.rl-sep { display: flex; align-items: center; gap: 10px; margin-top: 4px; font-family: var(--f-sc); font-weight: 800; font-size: var(--t-xs); letter-spacing: 0.04em; color: var(--mute); }
+.rl-sep::after { content: ""; flex: 1; height: 1px; background: var(--hairline); }
+
+/* ---------- the turn order ---------- */
+.to, .rl-wrap { display: flex; flex-direction: column; gap: 8px; }
+.to { padding-bottom: 14px; border-bottom: var(--bw) solid var(--hairline); }
+.to .dm-h, .rl-wrap .dm-h { margin: 0; }
+.to-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.to-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto 44px; align-items: center; gap: 10px; min-height: 52px; padding: 5px 6px 5px 8px; border-radius: max(var(--r-chip), 10px); border: var(--bw) solid var(--hairline); background: rgba(255, 255, 255, 0.04); color: var(--bone); }
+.to-row > img, .to-row > .lk-dot { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; object-position: 50% 18%; }
+.to-who { min-width: 0; }
+.to-who b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; font-family: var(--f-display); font-weight: 800; font-size: var(--t-md); line-height: 1.2; }
+.to-who small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.3; color: var(--mute); }
+.to-n { min-width: 2ch; text-align: right; font-family: var(--f-display); font-weight: 900; font-size: var(--t-2xl); line-height: 1; color: var(--gilt-hi); font-variant-numeric: lining-nums; }
+.to-row .icon { width: 44px; height: 44px; border-color: var(--rim); color: var(--mute); }
+.to-row .icon svg { width: 16px; height: 16px; }
+.to-row.now { border-color: var(--gilt); background: rgba(var(--gilt-rgb), 0.18); box-shadow: inset 4px 0 0 var(--gilt); }
+.to-row.now .to-who small { color: var(--gilt-hi); font-weight: 700; }
+.to-ctl { display: flex; gap: 8px; }
+.to-ctl .btn { flex: 3 1 0; min-width: 0; padding: 0 10px; }
+.to-ctl .btn:first-child { flex-grow: 2; }
+.to-add { display: grid; grid-template-columns: minmax(0, 1fr) 76px auto; gap: 6px; }
+.to-add .btn { width: auto; padding: 0 16px; }
+.to-add input[type="number"] { text-align: center; padding-inline: 6px; -moz-appearance: textfield; appearance: textfield; }
+.to-add input[type="number"]::-webkit-outer-spin-button, .to-add input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.to-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.to-foot small { font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.3; color: var(--mute); }
+
+/* ---------- "are you sure?" ---------- */
+.dm-confirm { z-index: 8; align-items: center; justify-content: center; padding: 16px; background: rgba(2, 6, 14, 0.76); }
+.confirm-card { width: 100%; max-width: 440px; max-height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 22px 20px 18px; background: var(--soot); border: var(--bw) solid rgba(var(--gilt-rgb), 0.45); border-radius: max(var(--r-page), 14px); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7); }
+.confirm-card .sh-t { font-size: var(--t-xl); text-wrap: balance; }
+.confirm-b { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+
+/* ---------- the door ---------- */
+.door-hint { margin-top: -6px; font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.35; color: var(--ink-soft); }
+
+/* ================= from 900px: the story takes the window ================= */
+@media (min-width: 900px) {
+  /* the stage stops being a phone-sized card */
+  #app[data-screen="dm"] { max-width: none; height: 100%; top: 0; transform: none; border-radius: 0; box-shadow: none; --dm-side: clamp(340px, 32vw, 420px); --dm-third: 340px; --dm-measure: 720px; }
+  /* the screen being left keeps its own column while it fades away */
+  #app[data-screen="dm"] .screen:not(#s-dm) { left: 0; right: 0; max-width: 440px; margin-inline: auto; }
+  /* messages stay a readable width in the middle of the window, not a stripe across it */
+  #app[data-screen="dm"] .toast, #app[data-screen="dm"] .app-toast { left: 50%; right: auto; width: max-content; max-width: min(560px, calc(100% - 32px)); translate: -50% 0; }
+
+  #app[data-screen="dm"] .dm-top { height: 64px; gap: 14px; }
+  #app[data-screen="dm"] .dm-title { font-size: var(--t-xl); }
+  #app[data-screen="dm"] .dm-views { display: flex; flex-shrink: 0; gap: 6px; }
+  #app[data-screen="dm"] .dm-tabs { display: none; }
+  #app[data-screen="dm"] .dm-panes { display: grid; grid-template-columns: minmax(0, 1fr) var(--dm-side); }
+  #app[data-screen="dm"] .dm-side { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--soot); border-left: var(--bw) solid rgba(var(--gilt-rgb), 0.25); }
+  #app[data-screen="dm"] .dm-third { display: none; }
+  #app[data-screen="dm"] .dm-side .lk-top { background: var(--soot); }
+
+  /* the story: a comfortable measure in the middle of its pane, set larger for reading aloud */
+  #app[data-screen="dm"] .dm-body { padding: 4px max(28px, calc((100% - var(--dm-measure)) / 2)) 28px; gap: 14px; }
+  #app[data-screen="dm"] .dm-ask { padding: 10px max(28px, calc((100% - var(--dm-measure)) / 2)) 8px; }
+  #app[data-screen="dm"] .ask-chips { flex-wrap: wrap; margin: 0; padding: 0; overflow: visible; }
+  #app[data-screen="dm"] .chap { margin: 16px 0 2px; aspect-ratio: 5 / 2; border-radius: max(var(--r-page), 10px); }
+  #app[data-screen="dm"] .chap-t { padding: 56px 22px 16px; }
+  #app[data-screen="dm"] .chap-t h2 { font-size: 38px; }
+  #app[data-screen="dm"] .chap-k { font-size: var(--t-sm); }
+  #app[data-screen="dm"] .dm-body .scene-t { font-size: var(--t-2xl); margin-top: 18px; }
+  #app[data-screen="dm"] .dm-body .read { padding: 16px 24px 10px; }
+  #app[data-screen="dm"] .dm-body .read-h { font-size: var(--t-sm); }
+  #app[data-screen="dm"] .dm-body .read p { font-size: var(--t-xl); line-height: 1.55; margin-bottom: 14px; }
+  #app[data-screen="dm"] .dm-body .cover-p, #app[data-screen="dm"] .dm-body .dmnotes li, #app[data-screen="dm"] .dm-body .kv, #app[data-screen="dm"] .dm-body .perk, #app[data-screen="dm"] .dm-body .try summary { font-size: var(--t-md); line-height: 1.45; }
+  #app[data-screen="dm"] .dm-body .try-else, #app[data-screen="dm"] .dm-body .outdone { font-size: var(--t-sm); }
+  #app[data-screen="dm"] .dm-body .outs { margin-top: 10px; }
+  #app[data-screen="dm"] .dm-body .errand img { width: 132px; height: 88px; }
+
+  /* a player at a glance slides in over the side of the window, and the story stays in view */
+  #app[data-screen="dm"] #dm-sheet { align-items: stretch; justify-content: flex-end; background: rgba(2, 6, 14, 0.5); }
+  #app[data-screen="dm"] #dm-sheet .sheet-card { width: min(440px, 100%); max-height: none; border-radius: 0; border-top: 0; border-left: var(--bw) solid rgba(var(--gilt-rgb), 0.4); box-shadow: -18px 0 50px rgba(0, 0, 0, 0.5); }
+}
+
+/* ================= from 1400px: the dictionary gets a pane of its own ================= */
+@media (min-width: 1400px) {
+  #app[data-screen="dm"] { --dm-side: 380px; }
+  #app[data-screen="dm"] .dm-panes { grid-template-columns: minmax(0, 1fr) var(--dm-side) var(--dm-third); }
+  #app[data-screen="dm"] .dm-third { display: flex; }
+}

@@ -1,16 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>First Roll</title>
+<!-- The colour a phone paints its own bars in. It starts as the default look's night (--night in
+     src/styles.css; npm run validate checks the two agree) and the registry sets it to each pack's own. -->
+<meta name="theme-color" content="#0b0705">
+<!-- the tab's icon: a d20, drawn here so the page asks for no favicon file -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%238f1d14' stroke='%23f3dc9c' stroke-width='2.5' stroke-linejoin='round' d='M24 3l18.2 10.5v21L24 45 5.800 34.500v-21z'/%3E%3Cpath fill='%23f3dc9c' d='M24 12l12.500 21.500h-25z'/%3E%3C/svg%3E">
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;0,800;1,400&family=Alegreya+Sans:wght@400;500;700&family=Alegreya+Sans+SC:wght@500;700&family=Baskervville+SC:wght@400;600;700&family=Grandstander:wght@500;700;800;900&family=Nunito:ital,wght@0,500;0,700;0,800;1,500&display=swap">
+<!-- This page names no scenario and no typeface. build.js fills in each marker: the opening scenario's
+     typefaces and styles, the engine's styles and scripts, and the list of scenario packs. -->
+<!--FONTS-->
+<style>:root{color-scheme:light;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}
+/* a scenario that is not built into the page is still on its way: show the backdrop alone until it lands */
+body[data-loading] #app{opacity:0;pointer-events:none}</style>
 <style>
 /*CSS*/
 </style>
+<!--PACKCSS-->
+</head>
+<body>
 <script>
-/* pick the theme before anything paints */
-(function () {
-  var t = 'northpole';
-  try { t = localStorage.getItem('firstroll.theme') || t; } catch (e) { /* no storage */ }
-  document.body.setAttribute('data-theme', t === 'tavern' ? 'tavern' : 'northpole');
-})();
+/* The rules, the pack registry, the list of packs and the opening pack, then FR.begin(): it chooses
+   the scenario (?s=<id> in the address, else the one used last time, else the default) and names it
+   on <body> before anything paints, so the first thing drawn already has the right look. */
+/*BOOT*/
 </script>
 
 <div id="backdrop" aria-hidden="true"></div>
@@ -20,38 +36,34 @@
 
   <!-- 1. Title -->
   <section class="screen on" id="s-title">
-    <button type="button" class="icon audio-open title-audio" aria-label="Music and sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button>
+    <button type="button" class="icon audio-open title-audio" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button>
     <div class="title-wrap pad">
       <h1 class="wordmark"><img id="t-wordmark" alt="First Roll" width="900" height="560"></h1>
       <p class="tagline" data-t="tagline"></p>
-      <div class="themes" id="themes" role="group" aria-label="Theme"></div>
-      <button type="button" class="btn wax" id="b-begin" data-t="begin"></button>
-      <div class="duo">
-        <button type="button" class="btn ghost slim" id="b-have" data-t="have"></button>
-        <button type="button" class="btn ghost slim" id="b-dm" data-t="dm"></button>
+      <div class="themes" id="themes" role="group" aria-label="Scenario"></div>
+      <!-- the table: an invitation waiting, the table this device is at, or the way to join one -->
+      <button type="button" class="tablechip" id="t-table" hidden></button>
+      <!-- the pack's own invitation, above the three ways to start -->
+      <p class="ways-k" id="t-begin" data-t="begin"></p>
+      <!-- the way straight back in when there is one; otherwise the three ways to start (src/app.js, renderTitle) -->
+      <button type="button" class="btn wax" id="b-main"></button>
+      <div class="duo ways" id="t-ways">
+        <button type="button" class="btn ghost slim" id="b-way-a"></button>
+        <button type="button" class="btn ghost slim" id="b-way-b"></button>
       </div>
-      <p class="fine" id="live-note" role="status"></p>
-      <button type="button" class="linkish" id="b-connect-title" hidden></button>
+      <button type="button" class="btn ghost slim" id="b-dm" data-t="dm"></button>
     </div>
   </section>
 
-  <!-- 2. Sign in -->
-  <section class="screen" id="s-ledger">
-    <header class="bar pad"><button type="button" class="icon" data-back="title" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button></header>
-    <div class="mid pad">
-      <form class="page" id="ledger" novalidate>
-        <h2 class="h-ox" data-t="ledgerTitle"></h2>
-        <p class="lede" id="j-lede"></p>
-        <label class="lbl" for="j-name">Your name</label>
-        <input class="field" id="j-name" type="text" autocomplete="given-name" maxlength="24" placeholder="What should the table call you?">
-        <div class="stack" id="j-code-wrap" hidden>
-          <label class="lbl" for="j-code">Table code</label>
-          <input class="field code" id="j-code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="4" placeholder="ABCD">
-        </div>
-        <p class="err" id="j-err" role="alert" hidden></p>
-        <button type="submit" class="btn wax" id="b-join"></button>
-        <button type="button" class="btn ink" id="b-skip-ledger" data-t="ledgerSkip"></button>
-      </form>
+  <!-- 1b. Ready-made heroes: tap one and play -->
+  <section class="screen" id="s-heroes">
+    <header class="bar pad">
+      <button type="button" class="icon" data-back="title" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="bar-title" data-t="heroesTitle"></div>
+      <span class="spacer"></span>
+    </header>
+    <div class="scroll">
+      <div class="pad pre-list" id="heroes"></div>
     </div>
   </section>
 
@@ -65,7 +77,7 @@
     </header>
     <div class="story-body pad">
       <div class="story-dots" id="st-dots" aria-hidden="true"></div>
-      <p class="story-text" id="st-text" aria-live="polite"></p>
+      <p class="story-text" id="st-text" aria-live="polite" data-h></p>
       <button type="button" class="btn wax" id="st-next"></button>
     </div>
   </section>
@@ -79,7 +91,7 @@
     </header>
     <div class="mid pad">
       <div class="page quiz" id="q-card">
-        <p class="q" id="q-text"></p>
+        <p class="q" id="q-text" data-h></p>
         <div class="answers" id="q-answers"></div>
       </div>
     </div>
@@ -96,6 +108,7 @@
         <img class="crest" id="r-crest" alt="" width="420" height="460">
         <h2 class="gilt big" id="r-title"></h2>
         <p class="r-sub" id="r-sub"></p>
+        <p class="r-name" id="r-name"></p>
         <p class="r-blurb" id="r-blurb"></p>
       </div>
       <div class="pad">
@@ -108,20 +121,24 @@
           <div class="chips" id="r-classes"></div>
           <h3 class="h-ox" data-t="closestRaces"></h3>
           <div class="chips" id="r-races"></div>
+          <p class="match-note" data-t="matchNote"></p>
           <p class="note" id="r-perk"></p>
         </div>
       </div>
     </div>
     <footer class="dock pad">
-      <button type="button" class="btn wax" id="b-to-portrait" data-t="toPortrait"></button>
-      <button type="button" class="btn ghost slim" id="b-retake" data-t="retake"></button>
+      <button type="button" class="btn wax" id="b-looks" data-t="looksGood"></button>
+      <div class="duo ways">
+        <button type="button" class="btn ghost slim" id="b-to-portrait"></button>
+        <button type="button" class="btn ghost slim" id="b-retake" data-t="retake"></button>
+      </div>
     </footer>
   </section>
 
   <!-- 5. Portrait studio -->
   <section class="screen" id="s-portrait">
     <header class="bar pad">
-      <button type="button" class="icon" data-back="reveal" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <button type="button" class="icon" id="p-back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
       <div class="bar-title" id="p-title"></div>
       <span class="spacer"></span>
     </header>
@@ -130,7 +147,6 @@
         <div class="page studio">
           <div class="easel" id="easel">
             <img id="p-img" alt="" hidden>
-            <span class="tag" id="p-tag" hidden></span>
             <div class="easel-empty" id="p-empty">
               <img id="p-crest" alt="" width="420" height="460">
               <span data-t="easelEmpty"></span>
@@ -141,9 +157,9 @@
             </div>
           </div>
           <p class="src" id="p-src" role="status"></p>
-          <button type="button" class="btn ink connect" id="b-connect" hidden></button>
+          <div class="gallery" id="p-gallery" role="group" hidden></div>
           <div id="p-groups"></div>
-          <label class="lbl" for="p-desc" data-t="ownWords"></label>
+          <label class="lbl" for="p-desc" id="p-desc-lbl" data-t="ownWords"></label>
           <textarea class="field area" id="p-desc" rows="3"></textarea>
           <button type="button" class="btn ink dice-btn" id="b-surprise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7zM12 2v6m0 0l6 9H6zm0 0L3 7m9 1l9-1M6 17l-3 0m15 0l3 0M6 17l6 5 6-5"/></svg><span id="b-surprise-t"></span></button>
           <p class="err" id="p-err" role="alert" hidden></p>
@@ -159,7 +175,7 @@
   <!-- 6. Name and character sheet -->
   <section class="screen" id="s-sheet">
     <header class="bar pad">
-      <button type="button" class="icon" data-back="portrait" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <button type="button" class="icon" id="sh-back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
       <div class="bar-title" data-t="sheetTitle"></div>
       <span class="spacer"></span>
     </header>
@@ -167,6 +183,7 @@
       <div class="pad">
         <div class="page sheet">
           <div class="sheet-art"><img id="s-img" alt=""></div>
+          <button type="button" class="btn ink repaint" id="b-repaint" data-t="changePicture"></button>
           <label class="lbl" for="s-name" data-t="nameLabel"></label>
           <div class="name-row">
             <input class="field name" id="s-name" type="text" autocomplete="off" maxlength="40">
@@ -175,8 +192,11 @@
           <p class="sheet-line" id="s-line"></p>
           <div class="taper"></div>
           <dl class="vitals" id="s-vitals"></dl>
-          <div class="taper"></div>
-          <div class="abil" id="s-abil"></div>
+          <!-- the six scores: only with "Show rules details" on -->
+          <div class="stack" id="s-abil-wrap" hidden>
+            <div class="taper"></div>
+            <div class="abil" id="s-abil"></div>
+          </div>
           <div class="taper"></div>
           <dl class="vitals" id="s-skills"></dl>
           <h3 class="h-ox" data-t="originHead"></h3>
@@ -194,13 +214,20 @@
     <header class="hero pad">
       <button type="button" class="medal" id="pl-medal" aria-label="Open character sheet"><img id="pl-img" alt=""></button>
       <div class="hero-id">
-        <div class="hero-name" id="pl-name"></div>
+        <div class="hero-name" id="pl-name" data-h></div>
         <div class="hero-sub" id="pl-sub"></div>
       </div>
       <div class="hero-stats" id="pl-stats"></div>
     </header>
-    <div class="inbox pad"><button type="button" class="tablechip quiet" id="pl-table" hidden></button><button type="button" class="btn ghost slim" id="pl-inbox" hidden></button><button type="button" class="icon audio-open pl-audio" aria-label="Music and sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button></div>
+    <div class="inbox pad">
+      <button type="button" class="tablechip quiet" id="pl-table" hidden></button>
+      <span class="inbox-gap"></span>
+      <button type="button" class="icon pl-mail" id="pl-inbox" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6.5h17v11h-17zM3.5 7l8.5 6.5L20.5 7"/></svg><b id="pl-badge" hidden></b></button>
+      <button type="button" class="icon audio-open pl-audio" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button>
+      <button type="button" class="icon" id="pl-menu" aria-haspopup="dialog" aria-label="Menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg></button>
+    </div>
     <nav class="tabs pad" id="pl-tabs" aria-label="What are you doing?"></nav>
+    <p class="nudge" id="pl-nudge" role="note" hidden></p>
     <div class="scroll list" id="pl-list"></div>
     <footer class="dock pad play-dock">
       <button type="button" class="btn ghost" id="b-free"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7zM12 2v6m0 0l6 9H6zm0 0L3 7m9 1l9-1M6 17l-3 0m15 0l3 0M6 17l6 5 6-5"/></svg><span data-t="free"></span></button>
@@ -217,12 +244,12 @@
       <div class="tray-bar">
         <button type="button" class="icon" id="d-close" aria-label="Back to the table"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
         <div class="tray-id">
-          <div class="tray-title" id="d-title"></div>
+          <div class="tray-title" id="d-title" data-h></div>
           <div class="tray-note" id="d-note"></div>
         </div>
-        <button type="button" class="icon audio-open" id="d-sound" aria-label="Music and sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button>
+        <button type="button" class="icon audio-open" id="d-sound" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button>
       </div>
-      <div class="seg" id="d-adv" role="group" aria-label="Advantage"></div>
+      <div class="seg" id="d-adv" role="group"></div>
     </header>
     <footer class="tray-bot pad" id="tray-bot">
       <div class="result" aria-live="polite">
@@ -233,10 +260,13 @@
         </div>
       </div>
       <div class="tray-actions">
-        <button type="button" class="btn wax" id="d-roll">Roll</button>
+        <button type="button" class="btn wax" id="d-roll" data-t="roll"></button>
         <button type="button" class="btn ghost" id="d-second" hidden></button>
       </div>
-      <div class="rail">
+      <!-- shake to roll: only shown where the device can feel a shake -->
+      <button type="button" class="shake" id="d-shake" aria-pressed="false" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 3.5h7a1.5 1.5 0 011.5 1.5v14a1.5 1.5 0 01-1.5 1.5h-7A1.5 1.5 0 017 19V5a1.5 1.5 0 011.5-1.5zM3 8.5c-1 2.2-1 4.8 0 7M21 8.5c1 2.2 1 4.8 0 7"/></svg><span id="d-shake-t"></span></button>
+      <p class="rail-hint" id="d-rail-hint" hidden></p>
+      <div class="rail" id="d-rail-wrap">
         <div class="rail-dice" id="d-rail" role="group" aria-label="Which dice"></div>
         <div class="stepper" role="group" aria-label="How many dice">
           <button type="button" id="d-less" aria-label="One die fewer">&minus;</button>
@@ -271,19 +301,22 @@
       <form class="page" id="dmgate" novalidate>
         <h2 class="h-ox">The DM&rsquo;s door</h2>
         <p class="lede">Behind this page is the whole story: every secret, every twist and every ending. Players, this door is not for you.</p>
-        <p class="lede" id="dm-door-note" hidden>A table has a four-letter code. Your players type it on their own phones, and then you can send everyone pictures and notes as the story goes. Go back to a table you already opened, or start a new one.</p>
+        <p class="lede" id="dm-door-note" hidden>A table has a four-letter code, and a link that seats your players from their own phones. Once they are in, you see every roll they make and can send everyone pictures and notes as the story goes.</p>
+        <p class="note" id="dm-door-said" role="status" hidden></p>
         <button type="button" class="btn wax" id="b-dm-back" hidden></button>
         <div class="stack" id="dm-pass-wrap" hidden>
           <label class="lbl" for="dm-pass">DM passcode</label>
-          <input class="field" id="dm-pass" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
-        </div>
-        <div class="stack" id="dm-code-wrap" hidden>
-          <label class="lbl" for="dm-code">Table code, to join a table you already opened</label>
-          <input class="field code" id="dm-code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="4" placeholder="ABCD">
+          <input class="field" id="dm-pass" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="dm-pass-hint">
+          <p class="door-hint" id="dm-pass-hint">This is the passcode set by whoever runs this site.</p>
         </div>
         <p class="err" id="dm-err" role="alert" hidden></p>
-        <button type="submit" class="btn wax" id="b-dm-in">I am the DM. Let me in</button>
-        <button type="button" class="btn ink" id="b-dm-new" hidden>Start a new table</button>
+        <!-- starting a table is the main thing to do here; joining one that is already open comes second -->
+        <button type="button" class="btn wax" id="b-dm-new" hidden>Start a new table</button>
+        <div class="stack" id="dm-code-wrap" hidden>
+          <label class="lbl" for="dm-code">Or join a table you already opened, by its code</label>
+          <input class="field code" id="dm-code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="4" placeholder="ABCD">
+        </div>
+        <button type="button" class="btn wax" id="b-dm-in">I am the DM. Let me in</button>
         <button type="button" class="btn ink" id="b-dm-skip" hidden>Go in without a table</button>
       </form>
     </div>
@@ -297,67 +330,137 @@
         <div class="dm-title" id="dm-title"></div>
         <div class="dm-sub" id="dm-sub"></div>
       </div>
+      <!-- wide screens: Run and Story switch here, and the tabs along the bottom are not shown -->
+      <nav class="dm-views" id="dm-views" aria-label="Story views"></nav>
       <button type="button" class="icon audio-open" aria-label="Music and sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button>
       <button type="button" class="tablechip" id="dm-table" hidden></button>
     </header>
     <div class="toast" id="dm-toast" role="status" hidden></div>
-    <div class="scroll dm-body" id="dm-body"></div>
-    <div class="dm-ask pad" id="dm-ask" hidden></div>
+    <!-- One column on a phone. From 900px the story keeps the main pane and the table sits beside it;
+         from 1400px the dictionary has a pane of its own (src/dm.js fills them, src/css/dm.css places them). -->
+    <div class="dm-panes" id="dm-panes">
+      <div class="dm-main" id="dm-main">
+        <div class="scroll dm-body" id="dm-body"></div>
+        <div class="dm-ask pad" id="dm-ask" hidden></div>
+      </div>
+      <aside class="dm-side" id="dm-side" aria-label="Your table" hidden>
+        <div class="dm-sidetabs" id="dm-sidetabs" role="group" aria-label="Beside the story"></div>
+        <div class="scroll dm-side-b" id="dm-side-b"></div>
+      </aside>
+      <aside class="dm-side dm-third" id="dm-third" aria-label="Dictionary" hidden>
+        <div class="scroll dm-side-b dict" id="dm-third-b"></div>
+      </aside>
+    </div>
     <nav class="dm-tabs" id="dm-tabs" aria-label="DM sections"></nav>
+    <!-- the sheet: a dictionary entry, the table (on a phone) or a player; dm.js labels it for each use -->
     <div class="dmsheet" id="dm-sheet" hidden>
-      <div class="sheet-card" role="dialog" aria-modal="true" aria-label="Dictionary entry">
+      <div class="sheet-card" id="dm-sheet-card" role="dialog" aria-modal="true" aria-label="Details">
         <button type="button" class="icon sheet-x" id="dm-sheet-x" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
         <div class="scroll sheet-b" id="dm-sheet-b"></div>
+      </div>
+    </div>
+    <!-- "are you sure?", for leaving or ending a table and removing a player -->
+    <div class="dmsheet dm-confirm" id="dm-confirm" hidden>
+      <div class="confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="dm-confirm-t" aria-describedby="dm-confirm-p">
+        <h3 class="sh-t" id="dm-confirm-t"></h3>
+        <p class="cover-p" id="dm-confirm-p"></p>
+        <div class="confirm-b" id="dm-confirm-b"></div>
       </div>
     </div>
   </section>
 
   <!-- What the DM has shown the table -->
   <div class="handout" id="handout" hidden>
-    <div class="handout-card" role="dialog" aria-modal="true" aria-label="From your DM">
-      <div class="handout-k">From your DM</div>
+    <div class="handout-card" role="dialog" aria-modal="true" aria-labelledby="ho-k">
+      <div class="handout-k" id="ho-k" data-t="fromDM"></div>
       <img id="ho-img" alt="" hidden>
       <h3 id="ho-title"></h3>
       <p id="ho-text"></p>
-      <div class="handout-nav" id="ho-nav"><button type="button" class="btn ink" id="ho-prev">Older</button><span id="ho-count"></span><button type="button" class="btn ink" id="ho-next">Newer</button></div>
-      <button type="button" class="btn wax" id="ho-ok">Got it</button>
+      <div class="handout-nav" id="ho-nav"><button type="button" class="btn ink" id="ho-prev" data-t="older"></button><span id="ho-count"></span><button type="button" class="btn ink" id="ho-next" data-t="newer"></button></div>
+      <button type="button" class="btn wax" id="ho-ok" data-t="gotIt" data-close></button>
     </div>
   </div>
   <div class="handout" id="audio" hidden>
     <div class="handout-card" role="dialog" aria-modal="true" aria-labelledby="au-title">
-      <div class="handout-k">Music and sound</div>
-      <h3 id="au-title">What would you like to hear?</h3>
-      <button type="button" class="switch" id="au-music" role="switch" aria-checked="true"><span><b>Music</b><small id="au-music-note"></small></span><i aria-hidden="true"></i></button>
-      <button type="button" class="switch" id="au-sfx" role="switch" aria-checked="true"><span><b>Sound effects</b><small>Dice, bells and button taps</small></span><i aria-hidden="true"></i></button>
+      <h3 id="au-title" data-t="settings"></h3>
+      <button type="button" class="switch" id="au-music" role="switch" aria-checked="true"><span><b data-t="music"></b><small id="au-music-note"></small></span><i aria-hidden="true"></i></button>
+      <button type="button" class="switch" id="au-sfx" role="switch" aria-checked="true"><span><b data-t="sfx"></b><small data-t="sfxNote"></small></span><i aria-hidden="true"></i></button>
+      <button type="button" class="switch" id="au-details" role="switch" aria-checked="false"><span><b data-t="details"></b><small data-t="detailsNote"></small></span><i aria-hidden="true"></i></button>
+      <!-- AI extras: one line that says whether they are on, and the way to connect where this copy allows it -->
+      <div class="ai-extras" id="au-ai" hidden>
+        <div class="handout-k" data-t="aiHead"></div>
+        <small id="live-note" role="status"></small>
+        <button type="button" class="btn ink" id="b-connect-title" hidden></button>
+      </div>
       <small class="credit" id="au-credit" hidden></small>
-      <button type="button" class="btn wax" id="au-x">Done</button>
+      <button type="button" class="btn wax" id="au-x" data-t="done" data-close></button>
     </div>
   </div>
   <div class="handout" id="back" hidden>
     <div class="handout-card" role="dialog" aria-modal="true" aria-labelledby="bk-title">
-      <div class="handout-k">Welcome back</div>
+      <div class="handout-k" data-t="welcomeKicker"></div>
       <h3 id="bk-title"></h3>
       <p id="bk-text"></p>
       <button type="button" class="btn wax" id="bk-yes"></button>
-      <button type="button" class="btn ink" id="bk-no">Make a new character</button>
+      <button type="button" class="btn ink" id="bk-no" data-t="welcomeNew"></button>
     </div>
   </div>
   <div class="handout" id="switch" hidden>
     <div class="handout-card" role="dialog" aria-modal="true" aria-labelledby="sw-title">
-      <div class="handout-k">Your table</div>
+      <div class="handout-k" data-t="tableKicker"></div>
       <h3 id="sw-title"></h3>
-      <p id="sw-who" hidden></p>
-      <label class="lbl" for="sw-code" id="sw-lbl">Table code</label>
+      <p class="fine-ink" id="sw-who" hidden></p>
+      <!-- the one place "DM" is explained to someone joining a table -->
+      <p class="fine-ink" id="sw-dm" data-t="dmIs"></p>
+      <label class="lbl" for="sw-name" data-t="yourName"></label>
+      <input class="field" id="sw-name" type="text" autocomplete="given-name" maxlength="24">
+      <label class="lbl" for="sw-code" id="sw-lbl"></label>
       <input class="field code" id="sw-code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="4" placeholder="ABCD">
       <p class="err" id="sw-err" role="alert" hidden></p>
       <button type="button" class="btn wax" id="sw-join"></button>
-      <button type="button" class="btn ink" id="sw-leave" hidden>Leave this table and play on my own</button>
-      <button type="button" class="btn ink" id="sw-x">Close</button>
+      <button type="button" class="btn ink" id="sw-leave" hidden></button>
+      <button type="button" class="btn ink" id="sw-x" data-t="close" data-close></button>
     </div>
   </div>
+  <!-- "are you sure?" and "this just happened": one dialog for both (FR.app.ask) -->
+  <div class="handout" id="ask" hidden>
+    <div class="handout-card" role="alertdialog" aria-modal="true" aria-labelledby="ask-title" aria-describedby="ask-text">
+      <div class="handout-k" id="ask-k" hidden></div>
+      <h3 id="ask-title"></h3>
+      <p id="ask-text" hidden></p>
+      <button type="button" class="btn wax" id="ask-yes"></button>
+      <button type="button" class="btn ink" id="ask-no" hidden></button>
+    </div>
+  </div>
+  <!-- starting a new hero when there already is one: the same three ways in -->
+  <div class="handout" id="ways" hidden>
+    <div class="handout-card" role="dialog" aria-modal="true" aria-labelledby="ways-title">
+      <h3 id="ways-title" data-t="waysTitle"></h3>
+      <p class="fine-ink" id="ways-note" hidden></p>
+      <button type="button" class="btn wax way" id="w-quick"><span data-t="quickStart"></span><small data-t="quickSub"></small></button>
+      <button type="button" class="btn ink way" id="w-full"><span data-t="fullQuiz"></span><small data-t="fullSub"></small></button>
+      <button type="button" class="btn ink way" id="w-premade"><span data-t="premade"></span><small data-t="premadeSub"></small></button>
+      <button type="button" class="btn ink" id="w-x" data-close></button>
+    </div>
+  </div>
+  <!-- the play screen's menu -->
+  <div class="handout" id="menu" hidden>
+    <div class="handout-card" role="dialog" aria-modal="true" aria-labelledby="mn-title">
+      <h3 id="mn-title" data-t="menu"></h3>
+      <div class="menu-list" id="mn-list"></div>
+      <button type="button" class="btn ink" id="mn-x" data-t="close" data-close></button>
+    </div>
+  </div>
+  <!-- one toast for the whole app (FR.app.toast), and the small sign that the table cannot be reached -->
+  <div class="app-toast" id="toast" role="status" hidden></div>
+  <div class="net-pill" id="net" role="status" hidden></div>
 </div>
 
 <!--LIBS-->
 <script>
+/* The rest of the engine. The screens (app.js, table.js, dm.js) are wrapped as FR.main and started by
+   FR.boot() once the chosen scenario is loaded. */
 /*JS*/
 </script>
+</body>
+</html>

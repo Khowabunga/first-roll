@@ -1,0 +1,13 @@
+/* __NAME__: this pack's own styles. Optional: delete this file if the pack needs none.
+
+   The look itself is tokens in scenario.js (tokens: {...}): colours, typefaces, sizes, corners,
+   shadows, timings, the page and the play screen. Change those first; most packs need nothing
+   here. This file is for the few things no token can say, such as a shape drawn with ::before.
+
+   Start every rule with body[data-theme="__ID__"], so it cannot touch another pack (npm run
+   validate checks), and take colours and sizes from the tokens rather than writing them out:
+
+     body[data-theme="__ID__"] .row-m { box-shadow: 0 3px 0 rgba(var(--night-rgb), 0.5); }
+
+   Pictures are named from this folder: url(img/page.webp). An animation's name must start with
+   the pack's id: @keyframes __ID__-sway. scenarios/northpole/theme.css is a worked example. */

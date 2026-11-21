@@ -1,0 +1,23 @@
+/* North Pole: "Iced gingerbread at midnight".
+   Nearly all of the look is tokens in scenario.js (tokens: {...}): the colours, the type, the
+   corners, the candy stripe, the bite under a button, the cards on the play screen. This file is
+   only for what a token cannot say: a shape drawn with a pseudo-element, or one rule for one thing.
+   The build ships it as pack.css. Every rule must start with body[data-theme="northpole"]
+   (npm run validate checks), so nothing here can touch another pack; and like the engine's own
+   styles it takes every colour and size from the tokens. */
+
+/* the modifier on a row is a bauble: a gold ball with a little cap where the hook goes */
+body[data-theme="northpole"] .row-m { position: relative; box-shadow: inset 0 -5px 0 rgba(var(--ink-rgb), 0.16), inset 0 3px 0 rgba(255, 255, 255, 0.5), 0 3px 0 rgba(4, 12, 28, 0.5); }
+body[data-theme="northpole"] .row-m::before { content: ""; position: absolute; left: 50%; top: -6px; width: 14px; height: 7px; margin-left: -7px; border-radius: 4px 4px 1px 1px; background: var(--mod-edge); box-shadow: 0 1px 0 rgba(4, 12, 28, 0.35); }
+
+/* a pressed row or quiet button sits down flat on its bite */
+body[data-theme="northpole"] .row:active, body[data-theme="northpole"] .btn.ghost:active, body[data-theme="northpole"] .theme-card:active { box-shadow: none; }
+/* the quiet buttons on a card are candy too: a thin red rim and a small bite */
+body[data-theme="northpole"] .btn.ink { box-shadow: 0 3px 0 rgba(var(--ox-rgb), 0.3); }
+body[data-theme="northpole"] .btn.ink:active { box-shadow: none; }
+/* chips, the dice buttons and the picker get the same small bite, so everything you press reads as pressable */
+body[data-theme="northpole"] .rail-dice button, body[data-theme="northpole"] .stepper button, body[data-theme="northpole"] .theme-card { box-shadow: var(--sh-ghost); }
+body[data-theme="northpole"] .rail-dice button:active, body[data-theme="northpole"] .stepper button:active { box-shadow: none; }
+
+/* a finished portrait is a snapshot laid on the card at a jaunty angle */
+body[data-theme="northpole"] .sheet-art:not(.crest-only) { transform: rotate(-1.5deg); margin: var(--s-1) auto var(--s-2); }

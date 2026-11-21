@@ -1,0 +1,92 @@
+/* The big moments: a natural 20, a natural 1, and the herald banner (src/fx.js).
+   Everything here is a still picture. The script moves it by setting transform and opacity
+   on each part every frame, which is why there is not one animation or transition below.
+   Colours, the pill's corner and the title's weight come from the theme's own tokens (with plain
+   fallbacks, so the file also works on a page that has none). --fx-a and --fx-b are the two colours of light for this moment;
+   the script sets them, and their "r, g, b" twins, from the scenario's fx.colors.
+   To lift or lower the layers, set --fx-z (the moment) and --fx-z-herald on the host. */
+
+.fx-stage { position: absolute; left: 0; top: 0; z-index: var(--fx-z, 60); overflow: hidden; contain: strict; border-radius: inherit; pointer-events: none; -webkit-user-select: none; user-select: none; --fx-a: #f3dc9c; --fx-a-rgb: 243, 220, 156; --fx-b: #c9a45c; --fx-b-rgb: 201, 164, 92; }
+.fx-stage > * { position: absolute; left: 0; top: 0; opacity: 0; will-change: transform, opacity; }
+
+/* The dark that everything else shines against. It is drawn at a quarter of the size and
+   stretched back up: a soft gradient loses nothing by it, and the phone keeps a sixteenth of
+   the pixels. The edge glow further down does the same at half size. */
+.fx-veil { width: calc(25% + 1px); height: calc(25% + 1px); transform: scale(4); transform-origin: 0 0; }
+.fx-crit .fx-veil { background: radial-gradient(120% 78% at 50% 38%, rgba(4, 3, 2, 0.5) 0%, rgba(4, 3, 2, 0.9) 72%); }
+.fx-still .fx-veil { background: rgba(4, 3, 2, 0.62); opacity: 1; }
+
+/* beams: a small wheel of soft rays, drawn once and scaled up by the script */
+.fx-beams { width: 400px; height: 400px; margin: -200px 0 0 -200px; border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, rgba(var(--fx-a-rgb), 0) 0deg, rgba(var(--fx-a-rgb), 0) 5deg, rgba(var(--fx-a-rgb), 0.6) 12deg, rgba(var(--fx-a-rgb), 0) 19deg, rgba(var(--fx-a-rgb), 0) 30deg);
+  -webkit-mask-image: radial-gradient(closest-side, #000 0%, rgba(0, 0, 0, 0.8) 34%, transparent 100%); mask-image: radial-gradient(closest-side, #000 0%, rgba(0, 0, 0, 0.8) 34%, transparent 100%); }
+.fx-beams.fx-thin { background: repeating-conic-gradient(from 0deg, rgba(var(--fx-b-rgb), 0) 0deg, rgba(var(--fx-b-rgb), 0) 7deg, rgba(var(--fx-b-rgb), 0.55) 10deg, rgba(var(--fx-b-rgb), 0) 13deg, rgba(var(--fx-b-rgb), 0) 20deg); }
+.fx-bloom { width: 300px; height: 300px; margin: -150px 0 0 -150px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 255, 255, 0.95) 0%, rgba(var(--fx-a-rgb), 0.6) 34%, rgba(var(--fx-a-rgb), 0) 100%); }
+.fx-ring { width: 110px; height: 110px; margin: -55px 0 0 -55px; border-radius: 50%; border: 3px solid rgba(var(--fx-a-rgb), 0.95); box-shadow: 0 0 14px rgba(var(--fx-a-rgb), 0.6), inset 0 0 14px rgba(var(--fx-a-rgb), 0.45); }
+.fx-ring.fx-soft { border-width: 2px; border-color: rgba(var(--fx-b-rgb), 0.9); }
+.fx-stage > .fx-canvas { width: 100%; height: 100%; opacity: 1; will-change: auto; }
+.fx-edge { width: 50%; height: 50%; transform: scale(2); transform-origin: 0 0; box-shadow: inset 0 0 0 1px rgba(var(--fx-a-rgb), 0.6), inset 0 0 17px 4px rgba(var(--fx-a-rgb), 0.5), inset 0 0 60px 14px rgba(var(--fx-b-rgb), 0.24); }
+
+/* the stand-in for the result number; the script copies the real one's type and gradient */
+.fx-num { text-align: center; white-space: nowrap; font-variant-numeric: lining-nums; transform-origin: 50% 50%; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.8)); }
+.fx-crit .fx-num { filter: drop-shadow(0 0 22px rgba(var(--fx-a-rgb), 0.55)) drop-shadow(0 5px 0 rgba(0, 0, 0, 0.6)); }
+/* a natural 1 breaks along one jagged line: two copies, each showing its own side of it */
+.fx-half-a { transform-origin: 30% 100%; -webkit-clip-path: polygon(-60% -40%, 56% -40%, 56% 0%, 47% 22%, 58% 40%, 44% 61%, 53% 80%, 46% 100%, 46% 140%, -60% 140%); clip-path: polygon(-60% -40%, 56% -40%, 56% 0%, 47% 22%, 58% 40%, 44% 61%, 53% 80%, 46% 100%, 46% 140%, -60% 140%); }
+.fx-half-b { transform-origin: 70% 100%; -webkit-clip-path: polygon(56% -40%, 160% -40%, 160% 140%, 46% 140%, 46% 100%, 53% 80%, 44% 61%, 58% 40%, 47% 22%, 56% 0%); clip-path: polygon(56% -40%, 160% -40%, 160% 140%, 46% 140%, 46% 100%, 53% 80%, 44% 61%, 58% 40%, 47% 22%, 56% 0%); }
+.fx-crack svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.fx-crack polyline { fill: none; stroke: #fff; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+
+/* the words */
+.fx-title { font-family: var(--f-display, Georgia, 'Times New Roman', serif); font-weight: var(--w-display, 800); line-height: 1.05; letter-spacing: 0.04em; white-space: nowrap; }
+.fx-line { font-family: var(--f-body, Georgia, 'Times New Roman', serif); line-height: 1.3; text-wrap: balance; }
+.fx-banner { width: 100%; padding: 0 18px; text-align: center; }
+.fx-banner .fx-title { display: inline-block; font-size: 42px; color: var(--fx-a); text-shadow: 0 3px 0 rgba(0, 0, 0, 0.75), 0 0 26px rgba(var(--fx-a-rgb), 0.55); }
+.fx-banner .fx-title span { display: inline-block; white-space: pre; opacity: 0; will-change: transform, opacity; }
+.fx-rule { position: relative; width: 200px; height: 14px; margin: 6px auto 6px; background: linear-gradient(90deg, rgba(var(--fx-b-rgb), 0), var(--fx-b) 22%, var(--fx-a) 50%, var(--fx-b) 78%, rgba(var(--fx-b-rgb), 0)) center / 100% 2px no-repeat; }
+.fx-rule::after { content: ""; position: absolute; left: 50%; top: 50%; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; transform: rotate(45deg); background: var(--fx-a); box-shadow: 0 0 10px rgba(var(--fx-a-rgb), 0.8); }
+.fx-banner .fx-line { max-width: 330px; margin: 0 auto; font-style: italic; font-size: 20px; color: #fff; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95), 0 0 14px rgba(0, 0, 0, 0.8); opacity: 0; }
+
+/* natural 1: the plaque that comes loose, the thing that falls, the colour that drains */
+.fx-plaque { padding: 15px 18px 16px; border-radius: var(--r-chip, 3px); text-align: center; transform-origin: 14px 12px; background: var(--soot, #17100b); border: 1px solid rgba(255, 255, 255, 0.16); box-shadow: 0 16px 34px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.06); }
+.fx-plaque::before, .fx-plaque::after { content: ""; position: absolute; top: 8px; width: 8px; height: 8px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #d8d2c6, #6f6a62 70%); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.7); }
+.fx-plaque::before { left: 10px; }
+.fx-plaque::after { right: 10px; opacity: 0.35; }
+.fx-plaque .fx-title { font-size: 34px; letter-spacing: 0.08em; color: var(--wax-hi, #b23a2c); text-shadow: 0 2px 0 rgba(0, 0, 0, 0.65); }
+.fx-plaque .fx-line { margin-top: 5px; font-style: italic; font-size: 18.5px; color: var(--bone, #efe3c8); }
+.fx-prop { transform-origin: 50% 100%; filter: drop-shadow(0 5px 4px rgba(0, 0, 0, 0.55)); }
+.fx-prop svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.fx-shade { border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0)); }
+/* Sits just under the stage and takes the colour out of everything below it. Grey mixed in
+   "saturation" mode keeps every brightness as it was and removes only the colour. */
+.fx-grey { position: absolute; left: 0; top: 0; z-index: calc(var(--fx-z, 60) - 1); background: #7b7b7b; mix-blend-mode: saturation; opacity: 0; pointer-events: none; border-radius: inherit; will-change: opacity; }
+
+/* the still version */
+.fx-badge { left: 50%; top: 40%; width: min(320px, 86%); padding: 20px 20px 22px; transform: translate(-50%, -50%); opacity: 1; will-change: auto; text-align: center; border-radius: var(--r-page, 4px); background: var(--soot, #17100b); border: 2px solid var(--fx-a); box-shadow: 0 18px 44px rgba(0, 0, 0, 0.65); }
+.fx-badge-icon { width: 76px; height: 76px; margin: 0 auto 8px; }
+.fx-badge-icon svg { display: block; width: 100%; height: 100%; }
+.fx-badge .fx-title { font-size: 36px; color: var(--fx-a); }
+.fx-fumble .fx-badge { border-color: rgba(255, 255, 255, 0.3); }
+.fx-fumble .fx-badge .fx-title { color: var(--wax-hi, #b23a2c); }
+.fx-badge .fx-line { margin-top: 6px; font-style: italic; font-size: 19px; color: var(--bone, #efe3c8); }
+
+/* the little d20 used on badges and heralds */
+.fx-m-body { fill: var(--fx-b); stroke: rgba(0, 0, 0, 0.55); stroke-width: 2; stroke-linejoin: round; }
+.fx-m-face { fill: var(--fx-a); }
+.fx-m-edge { fill: none; stroke: rgba(0, 0, 0, 0.3); stroke-width: 1.2; stroke-linejoin: round; }
+.fx-m-num { font-family: var(--f-display, Georgia, serif); font-weight: 800; font-size: 15px; fill: var(--on-gilt, #1d140b); }
+.fx-fumble .fx-m-body { fill: #55514c; }
+.fx-fumble .fx-m-face { fill: #8b8680; }
+
+/* the herald: someone else's news, small and out of the way */
+.fx-herald { position: absolute; left: 0; top: 0; z-index: var(--fx-z-herald, 70); display: flex; justify-content: center; padding: max(10px, env(safe-area-inset-top, 0px)) 12px 0; pointer-events: none; --fx-a: #f3dc9c; --fx-a-rgb: 243, 220, 156; --fx-b: #c9a45c; --fx-b-rgb: 201, 164, 92; }
+.fx-h-wrap { position: relative; min-width: 0; max-width: 100%; opacity: 0; transform-origin: 22px 22px; pointer-events: auto; cursor: pointer; will-change: transform, opacity; }
+.fx-h-pill { position: relative; display: flex; align-items: center; gap: 11px; min-width: 0; max-width: 372px; padding: 8px 20px 8px 9px; overflow: hidden; border-radius: var(--r-pill, 999px); background: rgba(var(--night-rgb, 11, 7, 5), 0.96); border: 1.5px solid var(--fx-a); box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55), 0 0 22px rgba(var(--fx-a-rgb), 0.3); }
+.fx-herald.fx-fumble .fx-h-pill { border-color: rgba(255, 255, 255, 0.34); box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55); }
+.fx-h-medal { flex: none; width: 44px; height: 44px; will-change: transform; }
+.fx-h-medal svg { display: block; width: 100%; height: 100%; }
+.fx-h-text { min-width: 0; }
+.fx-h-name { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-family: var(--f-display, Georgia, serif); font-weight: 700; font-size: 19px; line-height: 1.15; color: var(--bone, #efe3c8); }
+.fx-h-what { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-family: var(--f-ui, 'Segoe UI', Helvetica, Arial, sans-serif); font-weight: 700; font-size: 15px; line-height: 1.25; letter-spacing: 0.02em; color: var(--fx-a); }
+.fx-herald.fx-fumble .fx-h-what { color: var(--mute, #b9a88a); }
+.fx-h-shine { position: absolute; left: 0; top: -20%; width: 46px; height: 140%; background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0)); pointer-events: none; will-change: transform; }
+.fx-h-spark { position: absolute; left: 27px; top: 26px; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%; opacity: 0; background: var(--fx-a); box-shadow: 0 0 8px rgba(var(--fx-a-rgb), 0.9); pointer-events: none; will-change: transform, opacity; }

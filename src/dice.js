@@ -8,7 +8,7 @@ FR.Dice = (function () {
   var renderer, scene, camera, world, canvas, env;
   var mats = {}, floorMesh, rim = [], walls = [], lightKey, lightCandle;
   var dice = [], running = false, raf = 0, lastT = 0, acc = 0;
-  var state = 'idle', rollStart = 0, nudges = 0, onSettle = null, onFrame = null;
+  var state = 'idle', rollStart = 0, nudges = 0, onSettle = null, onFrame = null, onLost = null;
   var view = { w: 1, h: 1, visW: 10.5, visH: 20, camH: 24, tray: { x0: -4, x1: 4, z0: -5, z1: 5 } };
   var theme = { color: '#7a0d18', ink: '#f3d68a' };
   var look = { inkMetal: 0.7, fleck: '#f6dd9a', rim: { color: 0xb09a8c, wood: true, metal: 0.05, rough: 0.6 }, floorTint: 0xd8d0cc, floorBase: 0x4a1a14, exposure: 0.92 }, floorImg = '', floorCache = {}, woodTex = null;
@@ -239,6 +239,10 @@ FR.Dice = (function () {
   function init(cv, opts) {
     T = window.THREE; C = window.CANNON; canvas = cv; opts = opts || {};
     renderer = new T.WebGLRenderer({ canvas: cv, antialias: true, alpha: false, powerPreference: 'high-performance' });
+    /* The browser may take the graphics context away while the tray is open (a tired phone, a tab
+       left asleep). Nothing more can be drawn here then: stop, and tell whoever asked (onLost), so the
+       dice can be drawn another way instead of leaving a blank tray. */
+    cv.addEventListener('webglcontextlost', function (e) { e.preventDefault(); stop(); if (onLost) { onLost(); } });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.outputEncoding = T.sRGBEncoding;
     renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.92;
@@ -533,7 +537,7 @@ FR.Dice = (function () {
     init: init, resize: resize, setBounds: setBounds, roll: roll, clear: clear, start: start, stop: stop, draw: draw, simulate: simulate,
     screenPos: screenPos, dim: dim, setTheme: setTheme, setScene: setScene, Sound: Sound, shape: shape,
     count: function () { return dice.length; }, state: function () { return state; },
-    onFrame: function (fn) { onFrame = fn; }, ready: function () { return !!renderer; },
+    onFrame: function (fn) { onFrame = fn; }, onLost: function (fn) { onLost = fn; }, ready: function () { return !!renderer; },
     values: function () { return dice.map(function (d) { return read(d); }); }
   };
 })();
