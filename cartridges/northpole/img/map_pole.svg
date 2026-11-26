@@ -1,0 +1,185 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-label="A map of the North Pole: the village of Evergleam, the Cocoa Canal, Frostwhistle Peak and the Northern Lights">
+  <!-- The North Pole, for "The Great Cookie Calamity". Drawn by hand, with no lettering: the names of the
+       places come from the adventure (maps, in adventure.js), where each region is a rectangle over this
+       picture in percentages of its width and height. The nine regions tile the whole picture:
+         sky         x 0   y 0   w 62  h 24      the midnight sky, and what crosses it
+         lights      x 62  y 0   w 38  h 22      the Northern Lights, where snowflakes are born
+         peak        x 62  y 22  w 38  h 40      Frostwhistle Peak and the Flying School
+         snowbank    x 0   y 24  w 28  h 30      where the bakers land
+         santa       x 28  y 24  w 34  h 30      Santa's house, at the top of Gumdrop Lane
+         bakery      x 0   y 54  w 30  h 46      the Rolling Pin (and the little door round the side)
+         square      x 30  y 54  w 32  h 26      Snowman Square: bandstand, fountain, clock tower
+         bridge      x 30  y 80  w 32  h 20      Peppermint Bridge over the Cocoa Canal, and the shop under it
+         listoffice  x 62  y 62  w 38  h 38      the List Office, and the trapdoor to the Coal Cellar
+       Keep anything that belongs to a place inside its rectangle, so nothing shows before it should. -->
+  <defs>
+    <linearGradient id="night" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#050d1c"/><stop offset="1" stop-color="#1a3a68"/></linearGradient>
+    <radialGradient id="glow"><stop offset="0" stop-color="#fff6d8" stop-opacity="0.5"/><stop offset="1" stop-color="#fff6d8" stop-opacity="0"/></radialGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3fbf7f" stop-opacity="0"/><stop offset="0.5" stop-color="#3fbf7f" stop-opacity="0.8"/><stop offset="1" stop-color="#3fbf7f" stop-opacity="0"/></linearGradient>
+    <linearGradient id="violet" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a8cf0" stop-opacity="0"/><stop offset="0.5" stop-color="#9a8cf0" stop-opacity="0.7"/><stop offset="1" stop-color="#9a8cf0" stop-opacity="0"/></linearGradient>
+    <g id="pine"><rect x="-5" y="18" width="10" height="16" fill="#7a4420"/><path d="M0-72L24-26H12L32 20H-32L-12-26H-24Z" fill="#1f7a4d"/><path d="M0-72L15-43Q0-34-15-43Z" fill="#f7fbff"/></g>
+    <g id="flake" fill="none" stroke="#f7fbff" stroke-width="3" stroke-linecap="round"><path d="M0-13V13M-11-6.5L11 6.5M-11 6.5L11-6.5"/></g>
+    <g id="lamp"><path d="M0 0V-58q0-16 15-16" fill="none" stroke="#f7fbff" stroke-width="8" stroke-linecap="round"/><path d="M0 0V-58q0-16 15-16" fill="none" stroke="#c8102e" stroke-width="8" stroke-dasharray="8 9"/><circle cx="17" cy="-62" r="9" fill="#ffe7a6"/></g>
+    <g id="hut"><rect x="-17" y="-26" width="34" height="26" fill="#b9743a"/><path d="M-23-24L0-46L23-24Z" fill="#7a4420"/><path d="M-23-24L0-46L23-24L17-27L0-40L-17-27Z" fill="#f7fbff"/><rect x="-6" y="-18" width="12" height="11" fill="#ffe7a6"/></g>
+    <g id="deer"><ellipse rx="13" ry="7" fill="#9a6a3a"/><circle cx="14" cy="-7" r="6" fill="#9a6a3a"/><circle cx="19" cy="-6" r="2" fill="#c8102e"/><path d="M12-12l-4-9m4 9l3-9M-8 6v9M8 6v9" fill="none" stroke="#7a4420" stroke-width="2.5" stroke-linecap="round"/></g>
+    <g id="skater"><circle r="6"/><path d="M-16 5h10" fill="none" stroke="#f7fbff" stroke-width="2" stroke-linecap="round"/></g>
+  </defs>
+
+  <!-- the night, and its stars -->
+  <rect width="1600" height="900" fill="url(#night)"/>
+  <g fill="#f7fbff">
+    <circle cx="60" cy="40" r="2"/><circle cx="310" cy="34" r="2.4"/><circle cx="392" cy="150" r="1.8"/><circle cx="470" cy="62" r="2"/><circle cx="560" cy="186" r="1.8"/>
+    <circle cx="640" cy="34" r="2.4"/><circle cx="760" cy="170" r="2"/><circle cx="850" cy="44" r="1.8"/><circle cx="930" cy="130" r="2.2"/><circle cx="52" cy="190" r="1.8"/>
+    <circle cx="1040" cy="26" r="2"/><circle cx="1180" cy="182" r="1.8"/><circle cx="1330" cy="20" r="2"/><circle cx="1560" cy="150" r="2"/><circle cx="1090" cy="330" r="1.8"/><circle cx="1560" cy="300" r="2"/><circle cx="1500" cy="240" r="1.6"/>
+  </g>
+
+  <!-- sky: the moon, and a sleigh crossing it -->
+  <circle cx="176" cy="108" r="106" fill="url(#glow)"/>
+  <circle cx="176" cy="108" r="54" fill="#fff6d8"/>
+  <circle cx="158" cy="92" r="9" fill="#efe2b6"/><circle cx="196" cy="126" r="13" fill="#efe2b6"/><circle cx="188" cy="84" r="5" fill="#efe2b6"/>
+  <g fill="#ffe7a6" stroke="#ffe7a6" stroke-linecap="round">
+    <path d="M470 150q14 14 44 10l46-6q18-2 20-24l-22 6q-6-18-30-14l-8 18q-22 6-40-2z" stroke="none"/>
+    <path d="M462 172q60 16 132-4" fill="none" stroke-width="5"/>
+    <path d="M590 138L640 122" fill="none" stroke-width="2.5"/>
+    <g transform="translate(662 112) rotate(-12)"><ellipse rx="16" ry="8" stroke="none"/><circle cx="17" cy="-9" r="6" stroke="none"/><path d="M15-14l-5-10m5 10l4-10M-9 6l-6 12M9 6l8 10" fill="none" stroke-width="2.5"/></g>
+    <path d="M680 106L722 92" fill="none" stroke-width="2.5"/>
+    <g transform="translate(744 86) rotate(-14)"><ellipse rx="16" ry="8" stroke="none"/><circle cx="17" cy="-9" r="6" stroke="none"/><path d="M15-14l-5-10m5 10l4-10M-9 6l-6 12M9 6l8 10" fill="none" stroke-width="2.5"/></g>
+    <path d="M762 78L800 64" fill="none" stroke-width="2.5"/>
+    <g transform="translate(822 58) rotate(-16)"><ellipse rx="16" ry="8" stroke="none"/><circle cx="17" cy="-9" r="6" stroke="none"/><path d="M15-14l-5-10m5 10l4-10M-9 6l-6 12M9 6l8 10" fill="none" stroke-width="2.5"/></g>
+  </g>
+  <circle cx="846" cy="44" r="3.4" fill="#ef3b4f"/>
+  <g fill="#ffe7a6"><circle cx="440" cy="176" r="3"/><circle cx="408" cy="188" r="2.4"/><circle cx="378" cy="196" r="1.8"/><circle cx="350" cy="201" r="1.4"/></g>
+
+  <!-- lights: the Northern Lights, and snowflakes being born in them -->
+  <path d="M1004 96C1100 0 1230 96 1380 42S1540 70 1606 30V112C1540 150 1440 110 1380 132S1120 80 1004 96Z" fill="url(#green)"/>
+  <path d="M1016 140C1140 60 1260 150 1400 100S1550 124 1606 98V168C1550 190 1460 160 1400 176S1150 130 1016 140Z" fill="url(#violet)"/>
+  <use xlink:href="#flake" x="1116" y="82"/><use xlink:href="#flake" x="1262" y="58" transform="rotate(20 1262 58)"/><use xlink:href="#flake" x="1378" y="118"/>
+  <use xlink:href="#flake" x="1502" y="74" transform="rotate(12 1502 74)"/><use xlink:href="#flake" x="1206" y="150" transform="rotate(8 1206 150)"/><use xlink:href="#flake" x="1456" y="162"/>
+
+  <!-- peak: Frostwhistle Peak (the snowy ground laid down further on covers its foot) -->
+  <path d="M1004 600L1186 334L1246 372L1330 214L1424 352L1474 322L1600 474V600Z" fill="#2c4a7c"/>
+  <path d="M1330 214L1246 372L1186 334L1004 600H1210Z" fill="#3d6fb0" opacity="0.6"/>
+  <path d="M1330 214L1376 292L1350 280L1330 306L1306 276L1284 300Z" fill="#f7fbff"/>
+  <path d="M1186 334L1214 352L1196 362L1176 350Z" fill="#f7fbff"/><path d="M1474 322L1506 360L1484 356L1468 372L1456 344Z" fill="#f7fbff"/>
+
+  <!-- the snowy ground, with a few soft hills in it -->
+  <path d="M0 262C180 236 330 250 470 268C640 290 800 250 960 280C1040 296 1050 520 1150 540C1320 560 1480 534 1600 542V900H0Z" fill="#e8f1fb"/>
+  <path d="M0 540C150 500 330 520 470 560C330 548 150 560 0 596Z" fill="#d3e2f4"/>
+  <path d="M1010 640C1180 600 1420 610 1600 650V690C1420 650 1180 646 1010 690Z" fill="#d3e2f4"/>
+  <path d="M470 320C560 296 660 300 720 316C640 312 560 318 470 344Z" fill="#d3e2f4"/>
+
+  <!-- the ways between places, as dotted tracks in the snow -->
+  <g fill="none" stroke="#8ea9c9" stroke-width="6" stroke-linecap="round" stroke-dasharray="1 15">
+    <path d="M330 446C400 476 470 520 548 566"/><path d="M548 648C490 664 450 680 410 706"/><path d="M738 706C742 730 742 752 740 778"/>
+    <path d="M936 636C1020 646 1110 676 1196 716"/><path d="M1250 594C1200 566 1110 566 1076 524"/>
+  </g>
+
+  <!-- peak: the Flying School on its ledge: runway and lanterns, windsock, practice chimneys, two students -->
+  <path d="M1056 520Q1180 480 1326 498V518Q1180 502 1056 542Z" fill="#f7fbff"/>
+  <path d="M1092 508Q1190 486 1300 496" fill="none" stroke="#1d2b45" stroke-width="12" stroke-linecap="round"/>
+  <g fill="#f2b84b"><circle cx="1110" cy="504" r="3.4"/><circle cx="1150" cy="496" r="3.4"/><circle cx="1190" cy="491" r="3.4"/><circle cx="1230" cy="489" r="3.4"/><circle cx="1270" cy="491" r="3.4"/></g>
+  <path d="M1316 500V448" stroke="#7a4420" stroke-width="5" stroke-linecap="round"/><path d="M1316 450L1276 458L1316 468Z" fill="#c8102e"/><path d="M1304 452.5L1290 455.3V461.6L1304 465Z" fill="#f7fbff"/>
+  <g><rect x="1090" y="466" width="14" height="22" fill="#b3122b"/><rect x="1087" y="462" width="20" height="6" fill="#f7fbff"/>
+    <rect x="1124" y="452" width="20" height="30" fill="#b3122b"/><rect x="1121" y="447" width="26" height="7" fill="#f7fbff"/>
+    <rect x="1166" y="436" width="28" height="42" fill="#b3122b"/><rect x="1162" y="430" width="36" height="8" fill="#f7fbff"/></g>
+  <circle cx="1128" cy="398" r="27" fill="none" stroke="#f7fbff" stroke-width="2.5" stroke-dasharray="3 8" stroke-linecap="round"/>
+  <use xlink:href="#deer" x="1128" y="372"/>
+  <g transform="translate(1244 400) scale(-1 1)"><use xlink:href="#deer"/></g>
+  <path d="M1262 404h30m-9-7l9 7l-9 7" fill="none" stroke="#f7fbff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- snowbank: pines, and the dent a team of bakers makes -->
+  <use xlink:href="#pine" x="66" y="352"/><use xlink:href="#pine" x="128" y="318" transform="translate(128 318) scale(0.8) translate(-128 -318)"/><use xlink:href="#pine" x="398" y="330" transform="translate(398 330) scale(0.7) translate(-398 -330)"/>
+  <path d="M150 440C186 340 336 330 388 430C320 450 220 452 150 440Z" fill="#f7fbff"/>
+  <path d="M268 352l10 26l26-12l-12 26l26 10l-26 10l12 26l-26-12l-10 26l-10-26l-26 12l12-26l-26-10l26-10l-12-26l26 12z" fill="#a9c2e0"/>
+  <path d="M268 372l6 14l14-6l-6 14l14 6l-14 6l6 14l-14-6l-6 14l-6-14l-14 6l6-14l-14-6l14-6l-6-14l14 6z" fill="#7f9cc4"/>
+  <g fill="#f2b84b"><path d="M210 330l4 10l10 4l-10 4l-4 10l-4-10l-10-4l10-4z"/><path d="M336 322l3 8l8 3l-8 3l-3 8l-3-8l-8-3l8-3z"/><path d="M300 296l3 7l7 3l-7 3l-3 7l-3-7l-7-3l7-3z"/></g>
+  <g fill="#a9c2e0"><ellipse cx="318" cy="442" rx="7" ry="4" transform="rotate(24 318 442)"/><ellipse cx="344" cy="446" rx="7" ry="4" transform="rotate(24 344 446)"/><ellipse cx="366" cy="462" rx="7" ry="4" transform="rotate(24 366 462)"/><ellipse cx="392" cy="466" rx="7" ry="4" transform="rotate(24 392 466)"/></g>
+
+  <!-- santa: the house at the top of Gumdrop Lane, a hat sneezed clean out of the window -->
+  <use xlink:href="#lamp" x="606" y="454"/><use xlink:href="#lamp" x="846" y="458"/>
+  <path d="M720 446C700 464 760 474 742 512" fill="none" stroke="#c6d6ea" stroke-width="24" stroke-linecap="round"/>
+  <rect x="648" y="360" width="144" height="90" fill="#c8102e"/>
+  <path d="M628 368L720 292L812 368Z" fill="#7d0a1c"/>
+  <path d="M628 368L720 292L812 368L796 364L720 306L644 364Z" fill="#f7fbff"/>
+  <rect x="762" y="296" width="24" height="46" fill="#b9743a"/><rect x="758" y="290" width="32" height="9" rx="3" fill="#f7fbff"/>
+  <g fill="#f7fbff" opacity="0.75"><circle cx="776" cy="274" r="9"/><circle cx="790" cy="254" r="11"/><circle cx="780" cy="232" r="8"/></g>
+  <circle cx="720" cy="340" r="13" fill="#ffe7a6" stroke="#f7fbff" stroke-width="4"/>
+  <g fill="#ffe7a6" stroke="#f7fbff" stroke-width="4"><rect x="662" y="384" width="28" height="28"/><rect x="750" y="384" width="28" height="28"/></g>
+  <path d="M676 384v28M662 398h28M764 384v28M750 398h28" stroke="#f7fbff" stroke-width="3"/>
+  <rect x="707" y="398" width="26" height="52" rx="3" fill="#7a4420"/><circle cx="720" cy="414" r="9" fill="none" stroke="#1f7a4d" stroke-width="5"/><circle cx="720" cy="423" r="3" fill="#ef3b4f"/>
+  <path d="M742 334q30-14 62-8" fill="none" stroke="#f7fbff" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="6 8"/>
+  <path d="M822 318q24-22 44 6q-22-6-44-6z" fill="#c8102e"/><path d="M820 320q24-6 48 4" fill="none" stroke="#f7fbff" stroke-width="7" stroke-linecap="round"/><circle cx="870" cy="326" r="7" fill="#f7fbff"/>
+  <g><path d="M686 470a8 8 0 0 1 16 0z" fill="#ef3b4f"/><path d="M752 466a8 8 0 0 1 16 0z" fill="#3fbf7f"/><path d="M702 484a8 8 0 0 1 16 0z" fill="#f2b84b"/><path d="M764 478a8 8 0 0 1 16 0z" fill="#9a8cf0"/></g>
+
+  <!-- square: Snowman Square, with its bandstand, the snowman fountain, the clock tower and a few crooked houses -->
+  <ellipse cx="736" cy="618" rx="214" ry="86" fill="#d5e2f1"/>
+  <g fill="#bccde2"><circle cx="600" cy="660" r="4"/><circle cx="650" cy="676" r="4"/><circle cx="700" cy="688" r="4"/><circle cx="780" cy="690" r="4"/><circle cx="840" cy="672" r="4"/><circle cx="890" cy="640" r="4"/><circle cx="660" cy="560" r="4"/><circle cx="812" cy="556" r="4"/><circle cx="560" cy="626" r="4"/></g>
+  <use xlink:href="#hut" x="508" y="542"/><use xlink:href="#hut" x="674" y="540" transform="rotate(-5 674 540)"/><use xlink:href="#hut" x="962" y="612" transform="rotate(6 962 612)"/><use xlink:href="#hut" x="846" y="708" transform="rotate(-4 846 708)"/>
+  <ellipse cx="596" cy="622" rx="50" ry="13" fill="#b9743a"/>
+  <g><rect x="554" y="578" width="7" height="44" fill="#f7fbff"/><rect x="580" y="582" width="7" height="44" fill="#f7fbff"/><rect x="606" y="582" width="7" height="44" fill="#f7fbff"/><rect x="632" y="578" width="7" height="44" fill="#f7fbff"/>
+    <path d="M554 590h7M554 604h7M580 594h7M580 608h7M606 594h7M606 608h7M632 590h7M632 604h7" stroke="#c8102e" stroke-width="6"/></g>
+  <path d="M544 580Q596 524 648 580Z" fill="#c8102e"/><path d="M544 580Q596 564 648 580" fill="none" stroke="#f7fbff" stroke-width="6" stroke-linecap="round"/>
+  <path d="M596 536l3 8l8 3l-8 3l-3 8l-3-8l-8-3l8-3z" fill="#f2b84b"/>
+  <ellipse cx="736" cy="646" rx="84" ry="22" fill="#a9d4f5" stroke="#6f86a6" stroke-width="5"/>
+  <g fill="#ffffff" stroke="#b9cbe2" stroke-width="3"><circle cx="736" cy="616" r="34"/><circle cx="736" cy="570" r="25"/><circle cx="736" cy="534" r="18"/></g>
+  <path d="M714 548q22 10 44 0" fill="none" stroke="#c8102e" stroke-width="7" stroke-linecap="round"/><path d="M752 552l6 20" stroke="#c8102e" stroke-width="7" stroke-linecap="round"/>
+  <g fill="#1d2b45"><circle cx="730" cy="530" r="2.6"/><circle cx="742" cy="530" r="2.6"/><circle cx="736" cy="566" r="2.6"/><circle cx="736" cy="578" r="2.6"/><circle cx="736" cy="606" r="2.6"/></g>
+  <path d="M738 535l24 4l-24 4z" fill="#f2832b"/>
+  <rect x="868" y="546" width="46" height="124" fill="#b9743a"/><path d="M868 546h46M868 600h46" stroke="#f7fbff" stroke-width="4" stroke-dasharray="6 5"/>
+  <path d="M860 548L891 502L922 548Z" fill="#7d0a1c"/><path d="M860 548L891 502L922 548L912 544L891 514L870 544Z" fill="#f7fbff"/>
+  <circle cx="891" cy="574" r="16" fill="#fffaf0" stroke="#f2b84b" stroke-width="4"/><path d="M891 574V562M891 574L882 580" stroke="#1d2b45" stroke-width="3" stroke-linecap="round"/>
+  <rect x="882" y="640" width="18" height="30" rx="9" fill="#7a4420"/>
+
+  <!-- the Cocoa Canal, frozen solid, from one side of the map to the other -->
+  <path d="M0 826C160 808 320 842 480 826C560 818 600 852 740 856C880 860 920 818 1000 814C1100 810 1150 834 1200 838S1500 846 1600 828V880C1500 898 1200 890 1000 876S600 886 400 892S100 880 0 884Z" fill="#8a5a3c"/>
+  <path d="M0 833C160 815 320 849 480 833C560 825 600 859 740 863C880 867 920 825 1000 821C1100 817 1150 841 1200 845S1500 853 1600 835" fill="none" stroke="#c9a27e" stroke-width="5" stroke-linecap="round"/>
+  <g fill="none" stroke="#e6cfb4" stroke-width="2.5" stroke-linecap="round"><path d="M70 860q30-10 60 0"/><path d="M330 870q26-12 56-2"/><path d="M1080 858q30-8 58 4"/><path d="M1380 868q30-12 60-2"/><path d="M520 862q24-10 50 0"/><path d="M930 856q22-8 46 2"/></g>
+
+  <!-- bakery: the Rolling Pin, with its sign, its flour sacks, and the little door round the side -->
+  <rect x="70" y="604" width="330" height="188" fill="#b9743a"/>
+  <path d="M46 612L235 522L424 612Z" fill="#7a4420"/><path d="M46 612L235 522L424 612L404 606L235 538L66 606Z" fill="#f7fbff"/>
+  <path d="M70 624q14 12 28 0t28 0t28 0t28 0t28 0t28 0t28 0t28 0t28 0t28 0t28 0t22 0" fill="none" stroke="#f7fbff" stroke-width="5" stroke-linecap="round"/>
+  <rect x="328" y="522" width="34" height="62" fill="#7a4420"/><rect x="323" y="515" width="44" height="10" rx="3" fill="#f7fbff"/>
+  <g fill="#f7fbff" opacity="0.75"><circle cx="346" cy="498" r="8"/><circle cx="358" cy="512" r="6"/></g>
+  <g fill="#ffe7a6" stroke="#f7fbff" stroke-width="5"><circle cx="134" cy="700" r="23"/><circle cx="336" cy="700" r="23"/></g>
+  <path d="M134 677v46M111 700h46M336 677v46M313 700h46" stroke="#f7fbff" stroke-width="3.5"/>
+  <path d="M203 792V722q0-30 32-30t32 30v70Z" fill="#7d0a1c"/><path d="M235 694v98" stroke="#b3122b" stroke-width="4"/><circle cx="227" cy="748" r="3.4" fill="#f2b84b"/><circle cx="243" cy="748" r="3.4" fill="#f2b84b"/>
+  <rect x="185" y="652" width="100" height="22" rx="11" fill="#e8c98a" stroke="#7a4420" stroke-width="4"/><rect x="163" y="658" width="24" height="10" rx="5" fill="#7a4420"/><rect x="283" y="658" width="24" height="10" rx="5" fill="#7a4420"/>
+  <g fill="#fffaf0" stroke="#9db6d6" stroke-width="3"><rect x="410" y="760" width="28" height="34" rx="8"/><rect x="436" y="766" width="26" height="28" rx="8"/><rect x="420" y="738" width="28" height="28" rx="8"/></g>
+  <rect x="84" y="742" width="24" height="50" rx="3" fill="#48566f"/><circle cx="102" cy="768" r="2.4" fill="#f2b84b"/>
+  <circle cx="96" cy="727" r="10" fill="#e8c98a" stroke="#7a4420" stroke-width="3"/><g fill="#7a4420"><circle cx="92" cy="724" r="1.6"/><circle cx="99" cy="723" r="1.6"/><circle cx="96" cy="730" r="1.6"/></g>
+  <path d="M60 792L72 744" stroke="#7a4420" stroke-width="4" stroke-linecap="round"/><path d="M52 800q8-14 18-2z" fill="#b9cbe2"/>
+
+  <!-- bridge: Peppermint Bridge over the canal, the crooked little shop under it, and skaters -->
+  <path d="M618 842Q740 716 862 842" fill="none" stroke="#f7fbff" stroke-width="30" stroke-linecap="round"/>
+  <path d="M618 842Q740 716 862 842" fill="none" stroke="#c8102e" stroke-width="30" stroke-dasharray="16 16"/>
+  <path d="M640 838Q740 742 840 838" fill="none" stroke="#5c3a24" stroke-width="4"/>
+  <g transform="rotate(-7 716 846)"><rect x="690" y="812" width="50" height="40" fill="#7a4420"/><path d="M682 814L715 786L748 814Z" fill="#48566f"/><path d="M682 814L715 786L748 814L738 811L715 795L692 811Z" fill="#f7fbff"/>
+    <rect x="698" y="822" width="14" height="14" fill="#ffe7a6"/><rect x="720" y="826" width="12" height="26" fill="#48566f"/></g>
+  <path d="M752 806h20" stroke="#5c3a24" stroke-width="3" stroke-linecap="round"/><path d="M760 808v6h-6v16h22q2-8-8-10v-12z" fill="#f2b84b" stroke="#7a4420" stroke-width="2"/>
+  <g fill="#3fbf7f"><use xlink:href="#skater" x="566" y="866"/></g><g fill="#ef3b4f"><use xlink:href="#skater" x="900" y="866"/></g><g fill="#f2b84b"><use xlink:href="#skater" x="806" y="876"/></g>
+  <g fill="#9a8cf0"><use xlink:href="#skater" x="250" y="862"/></g><g fill="#3fbf7f"><use xlink:href="#skater" x="1290" y="864"/></g>
+
+  <!-- listoffice: the List Office, all drawers, with its two scrolls (one long, one very long), a brass tube, and the trapdoor to the Coal Cellar -->
+  <rect x="1204" y="604" width="184" height="200" fill="#48566f"/>
+  <path d="M1192 608h208v-18h-26v-12h-26v12h-52v-12h-26v12h-26v-12h-26v12h-26Z" fill="#1d2b45"/>
+  <path d="M1192 590h26v-12h26v12h52v-12h26v12h52v-12h26v12h8" fill="none" stroke="#f7fbff" stroke-width="5" stroke-linejoin="round"/>
+  <g fill="#d9c9a0">
+    <rect x="1220" y="626" width="40" height="24"/><rect x="1276" y="626" width="40" height="24"/><rect x="1332" y="626" width="40" height="24"/>
+    <rect x="1220" y="662" width="40" height="24"/><rect x="1276" y="662" width="40" height="24"/><rect x="1332" y="662" width="40" height="24"/>
+    <rect x="1220" y="698" width="40" height="24"/><rect x="1332" y="698" width="40" height="24"/>
+    <rect x="1220" y="734" width="40" height="24"/><rect x="1332" y="734" width="40" height="24"/>
+  </g>
+  <g fill="#7a4420"><circle cx="1240" cy="638" r="3"/><circle cx="1296" cy="638" r="3"/><circle cx="1352" cy="638" r="3"/><circle cx="1240" cy="674" r="3"/><circle cx="1296" cy="674" r="3"/><circle cx="1352" cy="674" r="3"/><circle cx="1240" cy="710" r="3"/><circle cx="1352" cy="710" r="3"/><circle cx="1240" cy="746" r="3"/><circle cx="1352" cy="746" r="3"/></g>
+  <path d="M1278 804V736q0-18 18-18t18 18v68Z" fill="#1d2b45"/><circle cx="1306" cy="768" r="3" fill="#f2b84b"/>
+  <rect x="1160" y="606" width="30" height="96" fill="#fffaf0"/><circle cx="1175" cy="704" r="15" fill="#fffaf0" stroke="#d9c9a0" stroke-width="3"/><circle cx="1175" cy="704" r="5" fill="#d9c9a0"/>
+  <path d="M1166 622h18M1166 636h18M1166 650h18M1166 664h18M1166 678h18" stroke="#b9743a" stroke-width="2.5"/>
+  <path d="M1402 606h30V760q0 30 30 40l30 10v-0q-30-4-36 12h-24q-30-12-30-52Z" fill="#fffaf0"/>
+  <circle cx="1498" cy="822" r="15" fill="#fffaf0" stroke="#d9c9a0" stroke-width="3"/><circle cx="1498" cy="822" r="5" fill="#d9c9a0"/>
+  <path d="M1408 622h18M1408 636h18M1408 650h18M1408 664h18M1408 678h18M1408 692h18M1408 706h18M1408 720h18M1408 734h18M1408 748h18" stroke="#b9743a" stroke-width="2.5"/>
+  <path d="M1296 580V578q0-10 14-10h124q14 0 14 12v16" fill="none" stroke="#f2b84b" stroke-width="8" stroke-linecap="round"/><circle cx="1448" cy="600" r="8" fill="#c98a1b"/>
+  <path d="M1090 790l58-6l8 26l-58 6z" fill="#1d2b45"/><path d="M1104 800l32-3" stroke="#6f86a6" stroke-width="3" stroke-linecap="round"/><circle cx="1120" cy="798" r="5" fill="none" stroke="#f2b84b" stroke-width="2.5"/>
+  <g fill="#15151a"><path d="M1042 806l10-8l12 4l2 10l-14 4z"/><path d="M1068 782l9-6l10 4l1 9l-12 3z"/><path d="M1168 812l10-7l11 4l2 9l-13 4z"/></g>
+  <g fill="#fffaf0"><rect x="1060" y="796" width="9" height="6" transform="rotate(20 1060 796)"/><rect x="1084" y="774" width="9" height="6" transform="rotate(-16 1084 774)"/><rect x="1186" y="802" width="9" height="6" transform="rotate(14 1186 802)"/></g>
+  <g transform="translate(1524 716)"><circle r="26" fill="none" stroke="#8ea9c9" stroke-width="3"/><path d="M0-34L8 0L0 34L-8 0Z" fill="#b9cbe2"/><path d="M-34 0L0-8L34 0L0 8Z" fill="#b9cbe2"/><path d="M0-34L8 0H-8Z" fill="#c8102e"/><circle r="4" fill="#f7fbff"/></g>
+</svg>

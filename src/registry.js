@@ -1,9 +1,9 @@
 /* First Roll: scenario packs.
-   A pack is one call, FR.scenario({ ...data only... }), in scenarios/<id>/scenario.js. This file
+   A pack is one call, FR.cartridge({ ...data only... }), in cartridges/<id>/cartridge.js. This file
    takes that data, lays it over the pack it extends (src/base.js unless it says otherwise) and
    builds the theme object the rest of the app reads: FR.theme, FR.THEMES[id], FR.useTheme(id).
    It also fetches packs on demand (FR.loadScenario) and chooses the one to open with (FR.begin).
-   The contract, field by field, is in README.md under "Make a new scenario". */
+   The contract, field by field, is in README.md under "Make a new cartridge". */
 var FR = (typeof FR !== 'undefined') ? FR : {};
 if (typeof module !== 'undefined' && typeof require === 'function' && !FR.rank) { FR = require('./rules.js'); }
 
@@ -18,6 +18,14 @@ if (typeof module !== 'undefined' && typeof require === 'function' && !FR.rank) 
   FR.SFX = ['tink', 'tick', 'jingle', 'fanfare', 'chime', 'lowchime', 'womp', 'dingdong', 'sparkle'];
   /* screens a pack may show its particles on */
   FR.SCREENS = ['title', 'heroes', 'story', 'quiz', 'reveal', 'portrait', 'sheet', 'play', 'dice'];
+  /* cartridge spec v3 (docs/PHASE2.md, section 2): the three short lists a cartridge or an adventure picks from.
+     AMBIENCE  the soundscapes the engine makes with no file: a bed's `synth` (the voices of FR.Ambience, src/audio.js)
+     BEATS     the one-off moments a scene may offer the DM: a beat's `kind`. What each does on a phone is the screens' business
+     RULES     the rules a cartridge plays by: its `rules`, one of the profiles in src/rules.js (FR.PROFILES). 'open-5e' is
+               today's maths, and what a cartridge that says nothing gets; 'light' is one die and a bonus */
+  FR.AMBIENCE = ['wind', 'fire', 'storm', 'crowd', 'cave', 'night', 'sea'];
+  FR.BEATS = ['thunder', 'hit', 'reveal', 'bell', 'crash', 'hush'];
+  FR.RULES = Object.keys(FR.PROFILES);
 
   var DEFS = {}, hasDoc = typeof document !== 'undefined';
   var clone = function (v) { return v === undefined ? undefined : JSON.parse(JSON.stringify(v)); };
@@ -36,7 +44,7 @@ if (typeof module !== 'undefined' && typeof require === 'function' && !FR.rank) 
   FR.asset = function (id, path) { return FR.url(FR.locate(id, path)); };
   /* every place in a pack that names a file; `*` is "each item" */
   FR.ASSET_FIELDS = ['art.wordmark', 'art.divider', 'art.thumb', 'art.floor', 'art.crest', 'art.sample', 'tokens.images.*',
-    'story.*.img', 'music.intro.*', 'music.game.*', 'music.fight.*', 'roster.premades.*.portrait'];
+    'story.*.img', 'music.intro.*', 'music.game.*', 'music.fight.*', 'roster.premades.*.portrait', 'kit.items.*.img', 'sound.beds.*.file'];
   /* fn(value, path) for each file a pack names; return a string to replace it */
   FR.eachAsset = function (def, fn) {
     FR.ASSET_FIELDS.forEach(function (field) {
@@ -55,15 +63,18 @@ if (typeof module !== 'undefined' && typeof require === 'function' && !FR.rank) 
   /* ---------- one pack laid over another ---------- */
   /* Small settings merge key by key, so a pack only writes what differs. Content that only makes
      sense whole (a cast, a quiz, a wording template) replaces the parent's outright. Lists always replace. */
-  var WHOLE = ['quiz.questions', 'quiz.quick', 'quiz.alignment', 'cast.classes', 'cast.races', 'cast.names', 'cast.samples', 'cast.armorNotes',
+  var WHOLE = ['quiz.questions', 'quiz.quick', 'quiz.alignment', 'cast.classes', 'cast.races', 'cast.names', 'cast.samples', 'cast.armorNotes', 'cast.roles',
     'look.options', 'look.labels', 'roster.demo', 'prose.describe', 'prose.origin', 'ai.subject', 'music', 'particles'];
   var OWN = ['schema', 'id', 'version', 'extends', 'meta', 'adventure'];        // never inherited
+  /* tables that merge key by key but whose entries each replace whole: a cartridge adds a soundscape or an item beside
+     the ones it inherits, and one it writes again is taken as written (null takes one away) */
+  var EACH = ['sound.beds', 'kit.items'];
   function merge(under, over, at) {
     var out = {};
     Object.keys(under).forEach(function (k) { if (at || OWN.indexOf(k) < 0) { out[k] = under[k]; } });
     Object.keys(over).forEach(function (k) {
       var here = at ? at + '.' + k : k, a = out[k], b = over[k];
-      out[k] = plain(a) && plain(b) && WHOLE.indexOf(here) < 0 ? merge(a, b, here) : b;
+      out[k] = plain(a) && plain(b) && WHOLE.indexOf(here) < 0 && EACH.indexOf(at) < 0 ? merge(a, b, here) : b;
     });
     return out;
   }
@@ -144,6 +155,80 @@ if (typeof module !== 'undefined' && typeof require === 'function' && !FR.rank) 
       ai: ai, text: d.text || {}, particles: d.particles || null, adventure: d.adventure || null,
       sfx: d.sfx || {}, fx: d.fx || {}, tokens: d.tokens || {}, quiz: quiz, roster: roster
     };
+    /* What a cartridge is given from the base even though `meta` is otherwise its own: the label a cartridge
+       card shows (the cartridge's own meta.label laid over the base's, key by key) and the credits every
+       cartridge carries (the rules credit), ahead of its own. */
+    var baseMeta = (DEFS.base && DEFS.base.meta) || {};
+    t.label = merge(plain(baseMeta.label) ? clone(baseMeta.label) : {}, plain(meta.label) ? clone(meta.label) : {}, 'meta.label');
+    t.credits = (id === 'base' ? [] : (baseMeta.credits || []).filter(function (c) { return c && c.type === 'rules'; })).concat(Array.isArray(meta.credits) ? meta.credits : []).map(clone);
+    /* The rules the cartridge plays by, and what those rules work out from what its author wrote (src/rules.js,
+       FR.PROFILES). Under 'open-5e' the author wrote every number and nothing is added. Under 'light' a class
+       says only its role and the skills it is strong and fair at: its lean for the quiz (v), its `skills` and
+       a colour for its dice are filled in here, before anything below reads them.
+         t.light   what only the light rules read: { fight: [{ id, label, hint, skills: [...] }], text: { key: line } } */
+    var lightDef = plain(d.light) ? d.light : {};
+    t.rules = FR.RULES.indexOf(d.rules) >= 0 ? d.rules : FR.RULES[0];
+    t.roles = plain(cast.roles) ? cast.roles : {};
+    t.light = {
+      /* a way to fight names one skill or several (the hero rolls whichever they are best at): always a list here */
+      fight: (Array.isArray(lightDef.fight) ? lightDef.fight : []).filter(function (m) { return plain(m) && typeof m.label === 'string'; })
+        .map(function (m) { return { id: m.id, label: m.label, hint: typeof m.hint === 'string' ? m.hint : '', skills: [].concat(m.skill).filter(function (sk) { return typeof sk === 'string' && !!FR.SKILLS[sk]; }) }; })
+        .filter(function (m) { return m.skills.length > 0; }),
+      text: plain(lightDef.text) ? lightDef.text : {}
+    };
+    FR.profile(t).prepare(t);
+    /* what each class is good at: its own three sentences, or the plain sentence for each of its first three skills */
+    var bySkill = plain(cast.skillStrengths) ? cast.skillStrengths : {};
+    Object.keys(t.classes).forEach(function (name) {
+      var c = t.classes[name];
+      if (!plain(c) || (Array.isArray(c.strengths) && c.strengths.length)) { return; }
+      c.strengths = (Array.isArray(c.skills) ? c.skills : []).map(function (sk) { return bySkill[sk]; }).filter(function (line) { return typeof line === 'string' && line; }).slice(0, 3);
+    });
+    t.intent = plain(d.intent) ? d.intent : {};
+
+    /* ---- cartridge spec v3 (docs/PHASE2.md, section 2): roles, ties, the kit, soundscapes and the rules profile ----
+       All of it is optional in a cartridge, and all of it has a plain default in the base, so the screens can read
+       these without asking whether they are there:
+         t.roles                  { RoleName: { blurb, does, trait? } }, in the order they are written
+         t.classes[Name].role     always one of t.roles when there is one to give: the class's own, or the role that
+                                  names the class's strongest trait (a role's `trait`); left off only when no role fits
+         t.classes[Name].kit      always a list: the ids of the items a hero of that class starts with
+         t.ties                   { bonds: [text with {name}], hooks: [{ id, text, roles: [] }], voices: [{ label, tip }] }
+         t.kit                    { items: { id: { name, text, img, uses } }, token: { name, plural, text } }
+         t.beds                   { id: { label, synth } or { label, file } }: what FR.Ambience.play takes
+         t.rules                  'open-5e' or 'light' (set above, with t.roles, because the rules have a hand in the classes) */
+    var kit = plain(d.kit) ? d.kit : {}, ties = plain(d.ties) ? d.ties : {}, sound = plain(d.sound) ? d.sound : {};
+    var lines = function (l) { return (Array.isArray(l) ? l : []).filter(function (s) { return typeof s === 'string' && s.trim() !== ''; }); };
+    t.kit = { items: {}, token: plain(kit.token) ? kit.token : {} };
+    Object.keys(plain(kit.items) ? kit.items : {}).forEach(function (k) {
+      var it = kit.items[k];
+      if (plain(it)) { t.kit.items[k] = { name: it.name, text: it.text, img: typeof it.img === 'string' && it.img ? FR.url(it.img) : '', uses: it.uses === 'once' ? 'once' : 'always' }; }
+    });
+    var roleFor = {};                                  // trait -> the first role that names it
+    Object.keys(t.roles).forEach(function (r) { var tr = plain(t.roles[r]) ? t.roles[r].trait : ''; if (tr && !roleFor[tr]) { roleFor[tr] = r; } });
+    Object.keys(t.classes).forEach(function (name) {
+      var c = t.classes[name], top = '', best = -Infinity;
+      if (!plain(c)) { return; }
+      if (typeof c.role !== 'string' || !t.roles[c.role]) {
+        FR.STRENGTHS.forEach(function (tr, i) { var v = Array.isArray(c.v) ? c.v[i] : NaN; if (roleFor[tr] && v > best) { best = v; top = tr; } });
+        if (top) { c.role = roleFor[top]; } else { delete c.role; }
+      }
+      c.kit = lines(c.kit).filter(function (k) { return !!t.kit.items[k]; });
+    });
+    t.ties = {
+      bonds: lines(ties.bonds),
+      hooks: (Array.isArray(ties.hooks) ? ties.hooks : []).filter(function (h) { return plain(h) && typeof h.id === 'string' && typeof h.text === 'string'; })
+        .map(function (h) { return { id: h.id, text: h.text, roles: lines(h.roles) }; }),
+      voices: (Array.isArray(ties.voices) ? ties.voices : []).filter(function (v) { return plain(v) && typeof v.label === 'string' && typeof v.tip === 'string'; })
+        .map(function (v) { return { label: v.label, tip: v.tip }; })
+    };
+    t.beds = {};
+    Object.keys(plain(sound.beds) ? sound.beds : {}).forEach(function (k) {
+      var b = sound.beds[k];
+      if (!plain(b)) { return; }                       // null: the cartridge has taken one of the base's away
+      if (typeof b.file === 'string' && b.file) { t.beds[k] = { label: b.label || k, file: FR.url(b.file) }; }
+      else if (FR.AMBIENCE.indexOf(b.synth) >= 0) { t.beds[k] = { label: b.label || k, synth: b.synth }; }
+    });
     /* each table remembers its own questions, so its yardstick (FR.baseline) can never be taken with another pack's */
     [t.classes, t.races].forEach(function (table) { Object.defineProperty(table, '_quiz', { value: t.questions, enumerable: false }); });
 
@@ -347,8 +432,8 @@ if (typeof module !== 'undefined' && typeof require === 'function' && !FR.rank) 
 
   /* ---------- registering ---------- */
   /* What every pack file calls. `built` is added by the build: the hashes of the pack's files. */
-  FR.scenario = function (def, built) {
-    if (!def || typeof def.id !== 'string') { throw new Error('FR.scenario needs a pack with an id.'); }
+  FR.cartridge = function (def, built) {
+    if (!def || typeof def.id !== 'string') { throw new Error('FR.cartridge needs a pack with an id.'); }
     DEFS[def.id] = def;
     if (built && built.assets) { Object.keys(built.assets).forEach(function (k) { FR.ASSETS[k] = built.assets[k]; }); }
     if (def.id === 'base') { return def; }                       // the base is only ever worn under another pack
@@ -382,6 +467,49 @@ if (typeof module !== 'undefined' && typeof require === 'function' && !FR.rank) 
     [].concat(names).forEach(function (n) {
       if (n === 'chime') { S.chime(true); } else if (n === 'lowchime') { S.chime(false); } else if (typeof S[n] === 'function') { S[n](); }
     });
+  };
+
+  /* ---------- "say what you do" ---------- */
+  /* A player types what their hero does ("I swing from the chandelier") and the screens suggest the check
+     it most likely comes down to. The words come from the cartridge (`intent.words`, laid over the base's):
+     a word or short phrase -> a skill. Pure: no page, no network, the same answer every time.
+       FR.checkFor('I swing from the chandelier')  ->  { skill: 'Acrobatics', why: 'That comes down to being nimble.', word: 'swing' }
+       FR.checkFor('Hello there')                  ->  null   (nothing it knows: leave it to the DM)
+     `theme` is the cartridge to read; the one in play when left out. */
+  /* the plain forms a typed word might stand for: "climbing" -> climb, "grabbed" -> grab, "hides" -> hide */
+  function forms(w) {
+    var out = [w], add = function (x) { if (x.length > 1 && out.indexOf(x) < 0) { out.push(x); } };
+    ['ing', 'ed', 'es', 's'].forEach(function (end) {
+      if (w.length <= end.length + 2 || w.slice(-end.length) !== end) { return; }
+      var stem = w.slice(0, -end.length);
+      add(stem); add(stem + 'e');
+      if (/([b-df-hj-np-tv-z])\1$/.test(stem)) { add(stem.slice(0, -1)); }            // grabbing -> grabb -> grab
+    });
+    if (w.length > 4 && w.slice(-3) === 'ies') { add(w.slice(0, -3) + 'y'); }           // tries -> try
+    return out;
+  }
+  var wordsOf = function (text) { return String(text).toLowerCase().match(/[a-z\u00e0-\u024f]+/g) || []; };
+  FR.checkFor = function (text, theme) {
+    var t = theme || FR.theme, intent = (t && t.intent) || {}, table = plain(intent.words) ? intent.words : {};
+    if (typeof text !== 'string' || !text.trim()) { return null; }
+    var said = wordsOf(text.slice(0, 400)).map(forms), score = {}, first = {}, best = {}, top = null;
+    Object.keys(table).forEach(function (key) {
+      var skill = table[key], want = wordsOf(key), i, j, hit;
+      if (!want.length || typeof skill !== 'string' || !FR.SKILLS[skill]) { return; }           // null drops a word; an unknown skill is the validator's to report
+      for (i = 0; i + want.length <= said.length; i++) {
+        hit = true;
+        for (j = 0; j < want.length && hit; j++) { hit = said[i + j].indexOf(want[j]) >= 0; }
+        if (!hit) { continue; }
+        score[skill] = (score[skill] || 0) + want.length + 1;                                     // a phrase says more than a word
+        if (first[skill] === undefined || i < first[skill]) { first[skill] = i; best[skill] = key; }
+      }
+    });
+    Object.keys(score).forEach(function (skill) {            // the most said; between equals, the one said first
+      if (top === null || score[skill] > score[top] || (score[skill] === score[top] && first[skill] < first[top])) { top = skill; }
+    });
+    if (top === null) { return null; }
+    var because = t && t.text ? t.text['why' + top.split(' ')[0]] : '';
+    return { skill: top, word: best[top], why: because && typeof intent.why === 'string' ? intent.why.split('{why}').join(because) : '' };
   };
 
   /* ---------- fetching ---------- */
@@ -424,8 +552,36 @@ if (typeof module !== 'undefined' && typeof require === 'function' && !FR.rank) 
     return loading[id];
   };
 
-  /* A DM adventure is data too: scenarios/<id>/adventure.js calls FR.adventure('<id>', {...}).
-     Any "img/..." or "audio/..." it names is one of the pack's own files. */
+  /* Parts of the engine that most visits never use, fetched the first time they are wanted instead of
+     with the page: FR.lib('qr') resolves once the QR code maker (window.qrcode) is ready. Only the DM's
+     side draws a QR code, so a player's phone never fetches it. FR.lib('dice') resolves once the two
+     libraries behind the 3D dice are here (three.js draws them, cannon.js throws them): the tray asks for
+     them the first time it opens, and draws the dice flat until they arrive, or for good if they never do. */
+  var LIBS = {
+    qr: { src: ['vendor/qrcode.js'], ready: function () { return typeof window.qrcode === 'function'; } },
+    dice: { src: ['vendor/three.min.js', 'vendor/cannon.min.js'], ready: function () { return !!window.THREE && !!window.CANNON; } }
+  }, libLoading = {};
+  FR.lib = function (name) {
+    var lib = LIBS[name];
+    if (!lib || !hasDoc) { return Promise.reject(new Error('There is no part of the app called "' + name + '".')); }
+    if (lib.ready()) { return Promise.resolve(); }
+    if (!libLoading[name]) {
+      libLoading[name] = Promise.all(lib.src.map(function (src) { return script(FR.url(src)); })).then(function () { if (!lib.ready()) { throw new Error('"' + name + '" did not load properly.'); } });
+      libLoading[name].catch(function () { delete libLoading[name]; });      // a later try may fetch it again
+    }
+    return libLoading[name];
+  };
+  /* A picture that will be wanted in a moment (the next screen's art) is asked for now, so it is there
+     when the screen opens. Never waited on. */
+  FR.warmPicture = function (url) { if (hasDoc && url) { var im = new Image(); im.src = url; } };
+
+  /* A DM adventure is data too: cartridges/<id>/adventure.js calls FR.adventure('<id>', {...}).
+     Any "img/..." or "audio/..." it names is one of the pack's own files ("base:img/..." is one of the
+     engine's), wherever in the adventure it is named: a cover, a person, a chapter, a handout, a map, a reveal,
+     a foe. Everything else is handed on exactly as written, so the parts added in format 2 (brief, summary,
+     check, card, hint, quests, clues, people's `public`, handouts) and in format 3 (maps, a scene's map, sound,
+     beats, reveal, easier, harder, foes and vote, a chapter's sound and minutes) reach the screens as the
+     author wrote them. A `sound` is the id of one of the cartridge's soundscapes (FR.theme.beds), not a file. */
   var FILE = /^(base:)?(img|audio)\/[\w.\/-]+\.[A-Za-z0-9]+$/;
   function relocate(node, fn) {
     if (!node || typeof node !== 'object') { return; }

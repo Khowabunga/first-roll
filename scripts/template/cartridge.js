@@ -1,8 +1,9 @@
 /* First Roll scenario pack: __NAME__.
 
-   Made by `npm run new-scenario __ID__`. It already works: it borrows the engine's art and everyday
+   Made by `npm run new-cartridge __ID__`. It already works: it borrows the engine's art and everyday
    wording (src/base.js), starts with the engine's look written out as tokens for you to change, and
-   brings a full placeholder cast and quiz of its own.
+   brings a full placeholder cast and quiz of its own. It plays by the __RULESET__ rules: see `rules`,
+   near the end, and "The two sets of rules" in README.md.
    To make it yours, search this file for TODO and replace each one. Anything you do not need to
    change you can leave alone; anything you delete falls back to the base pack.
 
@@ -11,8 +12,8 @@
      visibility: 'public'             lists it on the title screen once it is ready
 
    A pack is data only: no functions, nothing computed. The contract, field by field, is in README.md
-   under "Make a new scenario". scenarios/tavern/scenario.js is a complete example. */
-FR.scenario({
+   under "Make a new cartridge". cartridges/tavern/cartridge.js is a complete example. */
+FR.cartridge({
   schema: 1,
   id: '__ID__',
   version: '0.1.0',
@@ -24,8 +25,25 @@ FR.scenario({
     kind: 'one-shot',              // 'one-shot' or 'campaign'
     access: 'free', sku: null,     // for a store later; the app ignores both for now
     visibility: 'draft',           // 'draft' is not built, 'unlisted' opens only with ?s=__ID__, 'public' is listed
-    credits: []                    // { type: 'music' | 'art' | 'writing', text: '...' }; music needs one
+    /* TODO the label: what the cartridge's card tells someone choosing what to play, and what the DM sees on the
+       cover. A few words each (40 characters at most). Any line you delete falls back to the engine's wording. */
+    label: {
+      length: 'One sitting',                 // how long a game takes: 'About 2 hours'
+      players: 'Up to 8 players',            // how many it suits: '3 to 6 players'
+      tone: 'Adventure',                     // the mood: 'Silly and warm', 'Spooky'
+      dm: 'First-time DMs welcome',          // how much the DM needs to know
+      rating: 'everyone',                    // 'everyone', 'teen' or 'mature'
+      flags: []                              // anything a table may want to know first, each a word or two: ['Spiders']
+    },
+    /* { type: 'music' | 'art' | 'writing', text: '...' }; music needs one. Every cartridge also carries the
+       engine's rules credit (src/base.js) without writing it here. */
+    credits: []
   },
+
+  /* The DM's adventure, if this cartridge has one: the id written inside adventure.js, beside this file.
+     The DM's door only shows for a cartridge with an adventure. To get a small starter adventure and this
+     line written for you, make the cartridge with:  npm run new-cartridge __ID__ --adventure */
+  // adventure: '__ID__',
 
   /* TODO the look. Every token is here, set to the default look ("Tavern Night"), so the pack looks
      like the engine until you change a value. Change colours first (palette), then the typefaces, then
@@ -193,12 +211,12 @@ FR.scenario({
       chrome: 'fade'               // the bars round the dice 'fade' into the tray, or are solid 'panel's
     },
     /* Backdrop pictures. key: the scene behind everything. page: behind anything you read (null for a flat page in the
-       parch colour). table: behind the play screen. Yours go in scenarios/__ID__/img/ and are named 'img/keyart.webp'. */
+       parch colour). table: behind the play screen. Yours go in cartridges/__ID__/img/ and are named 'img/keyart.webp'. */
     images: { key: 'base:img/keyart.webp', page: 'base:img/parchment.webp', table: 'base:img/table.webp' }
   },
 
   /* TODO art. Every picture here is borrowed from the engine ("base:..."). As you make your own, put the
-     files in scenarios/__ID__/img/ and name them here: wordmark: 'img/wordmark.webp', and for the cast
+     files in cartridges/__ID__/img/ and name them here: wordmark: 'img/wordmark.webp', and for the cast
      crest: 'img/crest_{slug}.webp' and sample: 'img/sample_{slug}.webp', where {slug} is the class name in
      lower case with underscores ("The Brawler" is the_brawler). */
   art: {
@@ -273,63 +291,27 @@ FR.scenario({
         { t: 'TODO To speak with beasts and birds.', w: { wild: 2, light: 0.5 } }] }
     ],
     /* the five asked in a short game. After changing weights, ask for the best five: npm run validate -- --quick __ID__ */
-    quick: [1, 2, 3, 7, 8]
+    /*__QUICK__*/
   },
 
   cast: {
-    /* TODO rename each class, and write its blurb, attacks and gear. The numbers are a standard set that
-       plays well; leave them unless you mean to rebalance.
-       v:    how much the class is about each trait [might, guile, lore, faith, charm, wild, order(-chaos), light(-shadow)]
-       hd:   hit die (6, 8, 10 or 12)      prio: how much it wants [STR, DEX, CON, INT, WIS, CHA]
-       color: the dice are cast in it      armor: unarmored, monk, leather, leather+shield, scale, scale+shield, chain+shield or none */
-    classes: {
-      'The Brawler': { v: [1, 0.1, 0, 0.1, 0.1, 0.7, -0.7, 0], hd: 12, prio: [1, 0.7, 0.9, 0.1, 0.4, 0.3], color: '#8c2f1b',
-        blurb: 'TODO one line that sells this class.', armor: 'unarmored', skills: ['Athletics', 'Perception', 'Survival'],
-        attacks: [{ n: 'TODO Heavy weapon', ab: 'STR', die: 12, cnt: 1, hint: 'Someone next to you' }, { n: 'TODO Thrown weapon', ab: 'STR', die: 6, cnt: 1, hint: 'Thrown, up to 30 feet' }], gear: 'TODO what they wear and carry, for the portrait' },
-      'The Performer': { v: [0, 0.5, 0.4, 0.1, 1, 0.1, -0.5, 0.2], hd: 8, prio: [0.1, 0.8, 0.6, 0.4, 0.4, 1], color: '#b0457a',
-        blurb: 'TODO one line that sells this class.', armor: 'leather', skills: ['Persuasion', 'Performance', 'Deception'],
-        attacks: [{ n: 'TODO Light blade', ab: 'DEX', die: 8, cnt: 1, hint: 'Someone next to you' }, { n: 'TODO Thrown knife', ab: 'DEX', die: 4, cnt: 1, hint: 'Up to 20 feet' }], gear: 'TODO what they wear and carry, for the portrait' },
-      'The Healer': { v: [0.3, 0, 0.3, 1, 0.2, 0, 0.5, 0.7], hd: 8, prio: [0.7, 0.3, 0.8, 0.2, 1, 0.4], color: '#c79a2c',
-        blurb: 'TODO one line that sells this class.', armor: 'scale+shield', skills: ['Insight', 'Medicine', 'Religion'],
-        attacks: [{ n: 'TODO Blunt weapon', ab: 'STR', die: 6, cnt: 1, hint: 'Someone next to you' }, { n: 'TODO Bright bolt', ab: 'WIS', die: 6, cnt: 4, spell: true, hint: 'Magic, up to 120 feet' }], gear: 'TODO what they wear and carry, for the portrait' },
-      'The Wild One': { v: [0.1, 0.1, 0.4, 0.5, 0, 1, -0.1, 0.3], hd: 8, prio: [0.1, 0.7, 0.8, 0.4, 1, 0.3], color: '#4d7a3a',
-        blurb: 'TODO one line that sells this class.', armor: 'leather+shield', skills: ['Nature', 'Animal Handling', 'Perception'],
-        attacks: [{ n: 'TODO Nature magic', ab: 'WIS', die: 8, cnt: 1, spell: true, hint: 'Magic, up to 30 feet' }, { n: 'TODO Curved blade', ab: 'DEX', die: 6, cnt: 1, hint: 'Someone next to you' }], gear: 'TODO what they wear and carry, for the portrait' },
-      'The Guardian': { v: [1, 0.2, 0.1, 0.1, 0.1, 0.1, 0.7, 0.1], hd: 10, prio: [1, 0.6, 0.9, 0.2, 0.4, 0.3], color: '#9a3b2a',
-        blurb: 'TODO one line that sells this class.', armor: 'chain+shield', skills: ['Athletics', 'Intimidation', 'Perception'],
-        attacks: [{ n: 'TODO Sword', ab: 'STR', die: 8, cnt: 1, hint: 'Someone next to you' }, { n: 'TODO Crossbow', ab: 'DEX', die: 8, cnt: 1, hint: 'Up to 80 feet' }], gear: 'TODO what they wear and carry, for the portrait' },
-      'The Acrobat': { v: [0.5, 0.6, 0.2, 0.6, 0, 0.2, 0.9, 0.2], hd: 8, prio: [0.4, 1, 0.7, 0.2, 0.9, 0.2], color: '#c2702a',
-        blurb: 'TODO one line that sells this class.', armor: 'monk', skills: ['Acrobatics', 'Stealth', 'Insight'],
-        attacks: [{ n: 'TODO Bare hands', ab: 'DEX', die: 4, cnt: 1, hint: 'Someone next to you' }, { n: 'TODO Staff', ab: 'DEX', die: 8, cnt: 1, hint: 'Someone next to you' }], gear: 'TODO what they wear and carry, for the portrait' },
-      'The Champion': { v: [0.8, 0, 0, 0.8, 0.4, 0, 0.8, 0.8], hd: 10, prio: [1, 0.2, 0.8, 0.1, 0.4, 0.9], color: '#b58a2e',
-        blurb: 'TODO one line that sells this class.', armor: 'chain+shield', skills: ['Athletics', 'Persuasion', 'Insight'],
-        attacks: [{ n: 'TODO Sword', ab: 'STR', die: 8, cnt: 1, hint: 'Someone next to you' }, { n: 'TODO Thrown spear', ab: 'STR', die: 6, cnt: 1, hint: 'Thrown, up to 30 feet' }], gear: 'TODO what they wear and carry, for the portrait' },
-      'The Scout': { v: [0.4, 0.6, 0.1, 0.1, 0, 1, 0, 0.2], hd: 10, prio: [0.5, 1, 0.7, 0.3, 0.9, 0.2], color: '#3f6b4f',
-        blurb: 'TODO one line that sells this class.', armor: 'scale', skills: ['Survival', 'Stealth', 'Perception'],
-        attacks: [{ n: 'TODO Bow', ab: 'DEX', die: 8, cnt: 1, hint: 'Up to 150 feet' }, { n: 'TODO Short blade', ab: 'DEX', die: 6, cnt: 1, hint: 'Someone next to you' }], gear: 'TODO what they wear and carry, for the portrait' },
-      'The Sneak': { v: [0, 1, 0.3, 0, 0.5, 0.1, -0.6, -0.3], hd: 8, prio: [0.1, 1, 0.6, 0.6, 0.5, 0.7], color: '#3f4f7a',
-        blurb: 'TODO one line that sells this class.', armor: 'leather', skills: ['Stealth', 'Sleight of Hand', 'Deception', 'Perception'],
-        attacks: [{ n: 'TODO Light blade', ab: 'DEX', die: 8, cnt: 1, hint: 'Someone next to you' }, { n: 'TODO Short bow', ab: 'DEX', die: 6, cnt: 1, hint: 'Up to 80 feet' }], gear: 'TODO what they wear and carry, for the portrait' },
-      'The Spark': { v: [0.1, 0.1, 0.3, 0, 0.9, 0.3, -0.8, 0], hd: 6, prio: [0.1, 0.7, 0.8, 0.3, 0.4, 1], color: '#a23a5a',
-        blurb: 'TODO one line that sells this class.', armor: 'none', skills: ['Persuasion', 'Arcana', 'Intimidation'],
-        attacks: [{ n: 'TODO Wild magic', ab: 'CHA', die: 10, cnt: 1, spell: true, hint: 'Magic, up to 120 feet' }, { n: 'TODO Knife', ab: 'DEX', die: 4, cnt: 1, hint: 'Next to you, or thrown 20 feet' }], gear: 'TODO what they wear and carry, for the portrait' },
-      'The Trickster': { v: [0, 0.5, 0.7, 0, 0.6, 0, -0.2, -0.8], hd: 8, prio: [0.1, 0.7, 0.8, 0.5, 0.4, 1], color: '#5b3a7a',
-        blurb: 'TODO one line that sells this class.', armor: 'leather', skills: ['Deception', 'Arcana', 'Intimidation'],
-        attacks: [{ n: 'TODO Dark magic', ab: 'CHA', die: 10, cnt: 1, spell: true, hint: 'Magic, up to 120 feet' }, { n: 'TODO Knife', ab: 'DEX', die: 4, cnt: 1, hint: 'Next to you, or thrown 20 feet' }], gear: 'TODO what they wear and carry, for the portrait' },
-      'The Scholar': { v: [0, 0.2, 1, 0.1, 0, 0, 0.4, 0], hd: 6, prio: [0.1, 0.7, 0.7, 1, 0.5, 0.3], color: '#3a5f8a',
-        blurb: 'TODO one line that sells this class.', armor: 'none', skills: ['Arcana', 'History', 'Investigation'],
-        attacks: [{ n: 'TODO Studied magic', ab: 'INT', die: 10, cnt: 1, spell: true, hint: 'Magic, up to 120 feet' }, { n: 'TODO Knife', ab: 'DEX', die: 4, cnt: 1, hint: 'Next to you, or thrown 20 feet' }], gear: 'TODO what they wear and carry, for the portrait' }
+    /*__NOTES__*/
+    /* TODO roles: five or six plain jobs a hero can do at the table. Players see them as role cards over the
+       classes ("Protector: Brawler, Guardian, Champion") and in the lobby ("the party has no Healer yet").
+       blurb: the one line that sells the role (80 characters at most).   does: what you do with it (160 at most).
+       trait: might, guile, lore, faith, charm or wild. A class with no `role` of its own goes to the role whose
+              trait is the class's strongest. Leave it out and only classes that name the role get it.
+       Delete the whole block and the engine's six plain roles are used. */
+    roles: {
+      Protector: { trait: 'might', blurb: 'TODO You stand in front, so your friends do not have to.', does: 'TODO Push, lift, block and hold the line. When trouble arrives, it meets you first.' },
+      Trickster: { trait: 'guile', blurb: 'TODO You get in where you are not wanted, and out again unnoticed.', does: 'TODO Sneak, pick a lock or a pocket, and pull a fast one when plain dealing will not do.' },
+      Thinker: { trait: 'lore', blurb: 'TODO You know things, and you work out the rest.', does: 'TODO Solve the puzzle, read the strange writing, and remember the old story that explains it all.' },
+      Healer: { trait: 'faith', blurb: 'TODO You keep everyone on their feet and in good heart.', does: 'TODO Patch people up, calm them down, and notice who is not as fine as they say.' },
+      Talker: { trait: 'charm', blurb: 'TODO You do the talking, and people tend to listen.', does: 'TODO Persuade, bargain, perform and make friends. Words get you where muscle cannot.' },
+      Scout: { trait: 'wild', blurb: 'TODO You go ahead, see trouble coming and find the way through.', does: 'TODO Follow a trail, spot what is hidden, and get on with animals.' }
     },
-    /* TODO rename each people and write its perk and look. Add or remove as you like (at least two).
-       bonus: added to ability scores    tough: true gives an extra hit point    lucky: true lets a rolled 1 be rolled again */
-    races: {
-      Townsfolk: { v: [0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.1, 0.1], bonus: { STR: 1, DEX: 1, CON: 1, INT: 1, WIS: 1, CHA: 1 }, speed: 30, perk: 'TODO Versatile: a little better at everything.', look: 'TODO what they look like, for the portrait' },
-      'Mountain Folk': { v: [0.6, 0, 0.3, 0.5, 0, 0.1, 0.8, 0.3], bonus: { CON: 2, WIS: 1 }, speed: 25, tough: true, perk: 'TODO Tough: one extra hit point each level.', look: 'TODO what they look like, for the portrait' },
-      'Forest Folk': { v: [0, 0.5, 0.6, 0.2, 0.3, 0.7, 0, 0.1], bonus: { DEX: 2, INT: 1 }, speed: 30, perk: 'TODO Keen senses: you notice more.', look: 'TODO what they look like, for the portrait' },
-      'Little Folk': { v: [0, 0.6, 0, 0.4, 0.6, 0.3, -0.3, 0.7], bonus: { DEX: 2, CHA: 1 }, speed: 25, lucky: true, perk: 'TODO Lucky: roll a 1 on a d20 and you may roll again.', look: 'TODO what they look like, for the portrait' },
-      Tinkers: { v: [0, 0.4, 0.9, 0, 0.5, 0.2, -0.5, 0.3], bonus: { INT: 2, CON: 1 }, speed: 25, perk: 'TODO Clever hands: you can fix almost anything.', look: 'TODO what they look like, for the portrait' },
-      Outlanders: { v: [1, 0.1, 0, 0, 0, 0.7, -0.5, -0.1], bonus: { STR: 2, CON: 1 }, speed: 30, perk: 'TODO Relentless: once a day, refuse to fall when you drop to zero.', look: 'TODO what they look like, for the portrait' }
-    },
+    /*__CLASSES__*/
+    /*__RACES__*/
     /* TODO names for "Roll a name": m and f are first names, s is the second half. One list per people. */
     names: {
       Townsfolk: { m: ['Aldric', 'Bram', 'Tomas'], f: ['Mira', 'Rowan', 'Sabine'], s: ['Ashdown', 'Fairwind', 'Marlowe'] },
@@ -339,7 +321,8 @@ FR.scenario({
       Tinkers: { m: ['Aldric', 'Bram', 'Tomas'], f: ['Mira', 'Rowan', 'Sabine'], s: ['Ashdown', 'Fairwind', 'Marlowe'] },
       Outlanders: { m: ['Aldric', 'Bram', 'Tomas'], f: ['Mira', 'Rowan', 'Sabine'], s: ['Ashdown', 'Fairwind', 'Marlowe'] }
     },
-    /* who is in each class's sample portrait (said beside the sample when no AI is painting) */
+    /* who is in each class's sample portrait (said beside the sample when no AI is painting). Under the light rules
+       it is also the people a hero of that class starts as, so hero and picture agree; the player may change it. */
     samples: { 'The Brawler': 'Outlanders', 'The Performer': 'Little Folk', 'The Healer': 'Mountain Folk', 'The Wild One': 'Forest Folk', 'The Guardian': 'Townsfolk', 'The Acrobat': 'Townsfolk',
       'The Champion': 'Mountain Folk', 'The Scout': 'Forest Folk', 'The Sneak': 'Little Folk', 'The Spark': 'Tinkers', 'The Trickster': 'Outlanders', 'The Scholar': 'Tinkers' }
   },
@@ -359,16 +342,96 @@ FR.scenario({
     ]
   },
 
+  /* "Or say what you do": when a player types what their hero does, the app suggests the check it most likely
+     comes down to. The engine knows a couple of hundred everyday words (climb, sneak, persuade: see `intent`
+     in src/base.js). Add the words of your own story here, each one mapped to a skill, in lower case and in
+     its plain form ("skate" also answers for skates, skated and skating). A short phrase works too. To drop
+     one of the engine's words, give it null. The skills are Athletics, Acrobatics, Sleight of Hand, Stealth,
+     Arcana, History, Investigation, Nature, Religion, Animal Handling, Insight, Medicine, Perception,
+     Survival, Deception, Intimidation, Performance and Persuasion. */
+  intent: {
+    words: { barricade: 'Athletics', 'keep a straight face': 'Deception' }      // TODO your story's own words
+  },
+
+  /* TODO ties: what links a hero to the others at the table, and to your story. Delete any of the three lists
+     and the engine's plain ones are used.
+       bonds   questions about ANOTHER player's hero. Each player is asked one once their hero is made at a table,
+               and the answer is shown to everyone. Write {name} where the other hero's name goes: a bond without
+               it is refused. 120 characters at most, 20 bonds at most.
+       hooks   a personal stake in the story, picked (or skipped) by each player; only they and the DM see it.
+               `id` is a short word of its own; `text` is 240 characters at most. `roles` keeps a hook for heroes
+               of those roles (the names in cast.roles); leave it out for a hook anyone may take. 20 at most.
+       voices  a way to talk, for a player who would like to try one: `label` names it (24 characters), `tip` says
+               how to do it (120 characters). 12 at most. */
+  ties: {
+    bonds: [
+      'TODO Why do you owe {name} a favor?',
+      'TODO What did {name} do, the day you met, that made you trust them?',
+      'TODO What do you and {name} still argue about?'
+    ],
+    hooks: [
+      { id: 'prove', text: 'TODO Somebody said you would never amount to much. You mean to prove them wrong.' },
+      { id: 'debt', text: 'TODO You owe someone a favor that money cannot repay. Doing some good here might square it.' },
+      { id: 'promise', text: 'TODO You promised someone you would look after the others. You have not told the others.', roles: ['Protector', 'Healer'] }
+    ],
+    voices: [
+      { label: 'Gruff', tip: 'TODO Short sentences. Long pauses. Never use three words where one will do.' },
+      { label: 'Bright', tip: 'TODO Everything is wonderful, and you say so a little too fast.' },
+      { label: 'Sly', tip: 'TODO Speak low, smile a little, and never quite answer the question.' }
+    ]
+  },
+
+  /* TODO the kit: what a hero carries or can do. Each item is a card on the player's phone with a "Use" button
+     that tells the DM, so write what it is good for in plain words, with no numbers.
+       items   by id (a short word in lower case; never change one once people are playing). `name` is 40
+               characters at most and `text` 160. `uses` is 'once' (it is used up) or 'always'. `img` is optional:
+               img: 'img/rope.webp', a picture in this cartridge's img folder. 40 items at most.
+       token   what a hero token is called in this story. The DM hands one out for a great moment and a player
+               spends it to roll again. `name`, `plural` (24 characters each) and `text` (160). */
+  kit: {
+    items: {
+      rope: { name: 'TODO Rope', text: 'TODO Climb it, tie it, or lower a friend on it.', uses: 'always' },
+      lantern: { name: 'TODO Lantern', text: 'TODO Light in dark places.', uses: 'always' },
+      bandages: { name: 'TODO Bandages', text: 'TODO Patch up one friend who has been hurt.', uses: 'once' },
+      lockpicks: { name: 'TODO Lockpicks', text: 'TODO For doors that were not meant for you.', uses: 'always' },
+      notebook: { name: 'TODO Notebook', text: 'TODO Everything you have read and half remember. Look something up.', uses: 'always' },
+      horn: { name: 'TODO Signal horn', text: 'TODO One blast and everyone for a mile knows where you are.', uses: 'always' },
+      trinket: { name: 'TODO Lucky trinket', text: 'TODO Kiss it before something risky. Once it has worked, the luck is used up.', uses: 'once' },
+      treats: { name: 'TODO Pocketful of treats', text: 'TODO Most animals, and some guards, will stop for one.', uses: 'once' }
+    },
+    token: { name: 'Hero token', plural: 'Hero tokens', text: 'TODO Spend one to roll again when it matters. Your DM hands them out for great moments.' }
+  },
+
+  /* TODO soundscapes: quiet loops of sound the DM can put behind a scene. Every cartridge already has the
+     engine's seven, made on the spot with no files: wind, fire, storm, crowd, cave, night and sea. Here you can
+       say one your way         wind: { label: 'A cold wind', synth: 'wind' }
+       add one of your own      rain: { label: 'Rain on the roof', file: 'audio/rain.mp3' }     (a file in
+                                cartridges/__ID__/audio/; credit it in meta.credits if it is not yours)
+       take one away            sea: null
+     `label` (40 characters at most) is what the DM's picker says. An adventure names a soundscape by its id:
+     sound: 'wind' on a chapter or a scene. */
+  sound: {
+    beds: {
+      wind: { label: 'TODO A cold wind', synth: 'wind' }
+    }
+  },
+
+  /*__RULES__*/
+
   /* TODO the words that are most yours. Every other line on the screens comes from src/base.js: copy any
      key from its `text` into here to say it your way. */
   text: {
     tagline: 'TODO one or two sentences that set the scene on the title screen.',
     begin: 'Begin',
-    omen: 'TODO the line shown just before a player meets their hero.'
+    omen: 'TODO the line shown just before a player meets their hero.',
+    /* health as a state rather than a number: all there, some harm taken, nearly out. Say them your way
+       ('Full of beans', 'A bit battered', 'On your last legs'). */
+    healthFine: 'Fine', healthHurt: 'Hurt', healthTrouble: 'In trouble'
   }
 
   /* Other things a pack can have, all optional and all described in the README: story (pictures and words
      before the questions), music, particles (what drifts past), extras (special rolls), fx (the words and the
      dressing of a natural 20 and a natural 1), sfx, dice (the 3D tray), look, prose and ai (wording), actions;
-     and a theme.css beside this file for the few things about a look that no token can say. */
+     a theme.css beside this file for the few things about a look that no token can say; and an adventure.js
+     beside it for the DM to run (npm run new-cartridge <id> --adventure writes a starter, with a small map). */
 });

@@ -7,7 +7,7 @@ const test = require('node:test'), assert = require('node:assert'), fs = require
 const ROOT = path.join(__dirname, '..', '..');
 const sheets = ['src/styles.css']
   .concat(fs.readdirSync(path.join(ROOT, 'src/css')).filter((f) => f.endsWith('.css')).sort().map((f) => 'src/css/' + f))
-  .concat(fs.readdirSync(path.join(ROOT, 'scenarios')).map((d) => 'scenarios/' + d + '/theme.css').filter((f) => fs.existsSync(path.join(ROOT, f))))
+  .concat(fs.readdirSync(path.join(ROOT, 'cartridges')).map((d) => 'cartridges/' + d + '/theme.css').filter((f) => fs.existsSync(path.join(ROOT, f))))
   .concat(['scripts/template/theme.css'].filter((f) => fs.existsSync(path.join(ROOT, f))));
 
 /* the declarations of every rule, however deeply it is nested in @media and friends */

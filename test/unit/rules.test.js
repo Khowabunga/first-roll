@@ -2,7 +2,11 @@
    wording functions returned before themes became data-only scenario packs: both demo characters,
    every class with every race, and 200 seeded answer sets per pack. These tests replay the same
    inputs through the engine and the packs as they are now and expect the same output, exactly.
-   If one fails, a number or a word a player sees has changed: decide whether you meant it. */
+   If one fails, a number or a word a player sees has changed: decide whether you meant it.
+   What the cartridge format has gained since is recorded there too, as the cartridges say it now:
+   each class's `strengths` and the health words (healthFine, healthHurt, healthTrouble). They were
+   added without touching anything recorded before; a later change of wording is mirrored by
+   replacing those strings in the fixture, and nothing else. */
 'use strict';
 const test = require('node:test'), assert = require('node:assert');
 const P = require('../../scripts/lib/packs.js');
@@ -10,7 +14,7 @@ const fixture = require('./fixtures/rules-baseline.json');
 
 function engineWithPacks() {
   const FR = P.engine();
-  P.list().forEach((p) => { const l = P.load(p.file); assert.strictEqual(l.error, '', p.id + ' ' + l.error); FR.scenario(l.def); });
+  P.list().forEach((p) => { const l = P.load(p.file); assert.strictEqual(l.error, '', p.id + ' ' + l.error); FR.cartridge(l.def); });
   return FR;
 }
 const json = (v) => JSON.parse(JSON.stringify(v));

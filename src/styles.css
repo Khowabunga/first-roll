@@ -5,7 +5,7 @@
    HOW THE LOOK IS BUILT
    Nothing below the two token blocks names a colour, a type size, a corner, a shadow or a timing
    outright: every rule reads a custom property (a "token"). A scenario pack gives itself another
-   look by setting tokens in its scenario.js (tokens: {...}); the build writes them on <body> for
+   look by setting tokens in its cartridge.js (tokens: {...}); the build writes them on <body> for
    that pack alone (a rule keyed by the body's data-theme), which outranks both blocks here. README.md lists every token under
    "Tokens and theme.css", and src/registry.js (FR.TOKENS) is the list the build checks against.
 
@@ -318,7 +318,7 @@ h1, h2, h3, p, dl, dd { margin: 0; }
 .hero-stats strong { display: block; font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-2xl); line-height: 1; color: var(--gilt-hi); letter-spacing: 0; }
 .tabs { display: flex; gap: var(--s-5); flex-shrink: 0; overflow-x: auto; scrollbar-width: none; border-bottom: var(--bw) solid var(--hairline); }
 .tabs::-webkit-scrollbar { display: none; }
-.tab { flex-shrink: 0; min-height: 48px; padding: 0 0 var(--tab-rule-h); white-space: nowrap; background: none; border: 0; font-family: var(--f-sc); font-weight: var(--w-label); font-size: var(--t-lg); letter-spacing: var(--track); font-variant-caps: var(--caps-variant); text-transform: var(--caps-transform); color: var(--mute); text-shadow: var(--sh-text); transition: color var(--d-base); }
+.tab { flex-shrink: 0; min-width: var(--hit); min-height: 48px; padding: 0 0 var(--tab-rule-h); white-space: nowrap; background: none; border: 0; font-family: var(--f-sc); font-weight: var(--w-label); font-size: var(--t-lg); letter-spacing: var(--track); font-variant-caps: var(--caps-variant); text-transform: var(--caps-transform); color: var(--mute); text-shadow: var(--sh-text); transition: color var(--d-base); }
 .tab.on { color: var(--accent); background: var(--decor) left bottom / 100% var(--tab-rule-h) no-repeat; }
 .tab.fight.on { color: var(--danger-hi); background-image: linear-gradient(var(--wax-hi), var(--wax-hi)); }
 .list { padding: var(--s-3) max(var(--gutter), env(safe-area-inset-right, 0px)) 0 max(var(--gutter), env(safe-area-inset-left, 0px)); }

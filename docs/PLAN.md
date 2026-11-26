@@ -8,11 +8,11 @@ easy to make. Progress is tracked row by row in [LEDGER.md](LEDGER.md). Status: 
 
 A feature is not done until a cartridge author can use it without touching the engine:
 
-1. **Data, not code.** The feature reads a named part of the cartridge (`scenarios/<id>/scenario.js`
+1. **Data, not code.** The feature reads a named part of the cartridge (`cartridges/<id>/cartridge.js`
    or `adventure.js`). Nothing about one story lives in `src/`.
 2. **A sensible default.** A cartridge that says nothing still works: the base cartridge supplies
    the words, and the feature hides itself when it has nothing to show.
-3. **Scaffolded.** `npm run new-scenario <id>` writes that part with a comment explaining it.
+3. **Scaffolded.** `npm run new-cartridge <id>` writes that part with a comment explaining it.
 4. **Validated.** `npm run validate` refuses a broken one with a message a non-programmer can act on.
 5. **Proven on North Pole.** The cookie cartridge uses it before it counts as built.
 6. **Documented.** The cartridge spec in the README gains the field.
@@ -200,7 +200,7 @@ Run `npm run dev` and open http://localhost:8787 on a laptop and, on the same wi
 | # | Decision | Recommendation |
 | --- | --- | --- |
 | 1 | Rules: switch to a rules-light core now, or keep today's 5e-style maths hidden under plain words until Phase 2 | Keep today's maths for Phase 1 (players never see it) and introduce rules profiles in Phase 2 |
-| 2 | The word: "cartridge" everywhere, including the code's `scenarios/` folder | Say "cartridge" to users and in docs now; rename the folder at the start of Phase 1, before anything else builds on it |
+| 2 | The word: "cartridge" everywhere, including the code's `cartridges/` folder | Say "cartridge" to users and in docs now; rename the folder at the start of Phase 1, before anything else builds on it |
 | 3 | Family mode and age ratings from the doc, against "not a children's product" | Drop Family mode; keep a content rating on the cartridge label |
 | 4 | The doc says the DM's device is the source of truth; today the server's table is | Keep the server as the truth: TV view, rejoin and remote friends all need it |
 | 5 | Where the day-one numbers are kept | Cloudflare's own analytics store; no third-party tracker |

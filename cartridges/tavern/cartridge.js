@@ -3,8 +3,8 @@
    This is the complete reference pack: it writes out everything a pack can say, including the
    parts it could have inherited from src/base.js. A new pack only needs what differs.
    It is data only: the build reads this call, checks it (npm run validate) and ships it as JSON.
-   The contract is in README.md under "Make a new scenario". */
-FR.scenario({
+   The contract is in README.md under "Make a new cartridge". */
+FR.cartridge({
   schema: 1,
   id: 'tavern',
   version: '1.0.0',
@@ -16,6 +16,17 @@ FR.scenario({
     kind: 'one-shot',              // 'one-shot' or 'campaign'
     access: 'free', sku: null,     // for a store later: 'paid' packs name the product they belong to. The app ignores both for now.
     visibility: 'public',          // 'public' is listed, 'unlisted' opens only with ?s=tavern, 'draft' is not built
+    /* what the cartridge's card tells someone choosing what to play. There is no adventure in this cartridge:
+       the DM brings the story. */
+    label: {
+      length: 'As long as you like',
+      players: '2 to 8 players',
+      tone: 'Classic fantasy',
+      dm: 'Bring your own story',
+      rating: 'everyone',
+      flags: ['Fantasy fighting']
+    },
+    /* the rules credit every cartridge carries comes from src/base.js and is not repeated here */
     credits: []
   },
 
@@ -106,43 +117,88 @@ FR.scenario({
   cast: {
     /* Class and race profiles on the same eight traits:
        [might, guile, lore, faith, charm, wild, order(-chaos), light(-shadow)] */
+    /* `strengths` is what a class is good at, in three plain sentences: players see them in the lobby and on
+       the sheet, the DM beside each player. The first is the one shown where there is room for one.
+       `role` is the part the class plays in a party (one of the six below), and `kit` is what a hero of that
+       class starts with: two things from `kit.items`, further down. */
+    /* Roles: the six parts a party wants filled. Players see them as cards over the classes, and the lobby says
+       which part nobody has taken yet. `blurb` sells the role and `does` says what you do with it. (`trait` is
+       the fallback for a class that names no role; every class here names its own.) */
+    roles: {
+      Protector: { trait: 'might', blurb: 'You stand between your friends and whatever wants to eat them.',
+        does: 'Take the hits, hold the door, carry the heavy end. When a fight starts, you are already in front.' },
+      Sneak: { trait: 'guile', blurb: 'Quiet feet, quick fingers, and a way out nobody else noticed.',
+        does: 'Scout ahead, pick the lock, lift the key, and be somewhere else when the shouting starts.' },
+      Spellcaster: { trait: 'lore', blurb: 'You do the impossible, usually on purpose.',
+        does: 'Know what the glowing thing is, read what the old words say, and bring the fire when nothing else will do.' },
+      Healer: { trait: 'faith', blurb: 'You keep the party alive, and mostly in one piece.',
+        does: 'Bind wounds, steady nerves, and spot who is hiding how hurt they are. Nobody thanks you until they need you.' },
+      Charmer: { trait: 'charm', blurb: 'You do the talking. People tend to agree, and wonder why later.',
+        does: 'Bargain, flatter, bluff and perform. Half of every adventure is getting somebody to open a door.' },
+      Scout: { trait: 'wild', blurb: 'You find the trail, the ambush and the way home.',
+        does: 'Track, forage, spot trouble from a hill away and talk a wolf out of it. You are happiest under open sky.' }
+    },
     classes: {
       Barbarian: { v: [1, 0.1, 0, 0.1, 0.1, 0.7, -0.7, 0], hd: 12, prio: [1, 0.7, 0.9, 0.1, 0.4, 0.3], color: '#8c2f1b',
         blurb: 'Fury given legs. You hit hard, shrug off harder, and think later.', armor: 'unarmored', skills: ['Athletics', 'Perception', 'Survival'],
-        attacks: [{ n: 'Greataxe', ab: 'STR', die: 12, cnt: 1, hint: 'Someone next to you' }, { n: 'Javelin', ab: 'STR', die: 6, cnt: 1, hint: 'Thrown, up to 30 feet' }], gear: 'furs, a heavy greataxe, bare scarred arms' },
+        attacks: [{ n: 'Greataxe', ab: 'STR', die: 12, cnt: 1, hint: 'Someone next to you' }, { n: 'Javelin', ab: 'STR', die: 6, cnt: 1, hint: 'Thrown, up to 30 feet' }], gear: 'furs, a heavy greataxe, bare scarred arms',
+        role: 'Protector', kit: ['rope', 'flask'],
+        strengths: ['You are the strongest in the room, and you hit like a falling tree.', 'You shrug off knocks that would flatten anyone else.', 'You know the wild: its weather, its tracks and its dangers.'] },
       Bard: { v: [0, 0.5, 0.4, 0.1, 1, 0.1, -0.5, 0.2], hd: 8, prio: [0.1, 0.8, 0.6, 0.4, 0.4, 1], color: '#b0457a',
         blurb: 'Words are your weapon and the room is your stage. You make everyone around you better.', armor: 'leather', skills: ['Persuasion', 'Performance', 'Deception'],
-        attacks: [{ n: 'Rapier', ab: 'DEX', die: 8, cnt: 1, hint: 'Someone next to you' }, { n: 'Thrown dagger', ab: 'DEX', die: 4, cnt: 1, hint: 'Up to 20 feet' }], gear: 'a lute, a feathered cap, a colorful doublet' },
+        attacks: [{ n: 'Rapier', ab: 'DEX', die: 8, cnt: 1, hint: 'Someone next to you' }, { n: 'Thrown dagger', ab: 'DEX', die: 4, cnt: 1, hint: 'Up to 20 feet' }], gear: 'a lute, a feathered cap, a colorful doublet',
+        role: 'Charmer', kit: ['lute', 'purse'],
+        strengths: ['You can talk your way out of almost anything.', 'Give you a song or a story and the whole room is yours.', 'You lie beautifully when the truth will not do.'] },
       Cleric: { v: [0.3, 0, 0.3, 1, 0.2, 0, 0.5, 0.7], hd: 8, prio: [0.7, 0.3, 0.8, 0.2, 1, 0.4], color: '#c79a2c',
         blurb: 'Faith made practical. You mend the wounded and stand firm when it counts.', armor: 'scale+shield', skills: ['Insight', 'Medicine', 'Religion'],
-        attacks: [{ n: 'Mace', ab: 'STR', die: 6, cnt: 1, hint: 'Someone next to you' }, { n: 'Guiding Bolt', ab: 'WIS', die: 6, cnt: 4, spell: true, hint: 'Spell, up to 120 feet' }], gear: 'chain and tabard, a mace, a glowing holy symbol' },
+        attacks: [{ n: 'Mace', ab: 'STR', die: 6, cnt: 1, hint: 'Someone next to you' }, { n: 'Guiding Bolt', ab: 'WIS', die: 6, cnt: 4, spell: true, hint: 'Spell, up to 120 feet' }], gear: 'chain and tabard, a mace, a glowing holy symbol',
+        role: 'Healer', kit: ['symbol', 'draught'],
+        strengths: ['You mend wounds and get fallen friends back on their feet.', 'You can tell what someone feels, whatever they say.', 'You know the gods, their rites and what offends them.'] },
       Druid: { v: [0.1, 0.1, 0.4, 0.5, 0, 1, -0.1, 0.3], hd: 8, prio: [0.1, 0.7, 0.8, 0.4, 1, 0.3], color: '#4d7a3a',
         blurb: 'The wild speaks and you answer. Storm, root and claw are yours to call.', armor: 'leather+shield', skills: ['Nature', 'Animal Handling', 'Perception'],
-        attacks: [{ n: 'Produce Flame', ab: 'WIS', die: 8, cnt: 1, spell: true, hint: 'Spell, up to 30 feet' }, { n: 'Scimitar', ab: 'DEX', die: 6, cnt: 1, hint: 'Someone next to you' }], gear: 'a gnarled staff, a cloak of leaves and hide, antler charms' },
+        attacks: [{ n: 'Produce Flame', ab: 'WIS', die: 8, cnt: 1, spell: true, hint: 'Spell, up to 30 feet' }, { n: 'Scimitar', ab: 'DEX', die: 6, cnt: 1, hint: 'Someone next to you' }], gear: 'a gnarled staff, a cloak of leaves and hide, antler charms',
+        role: 'Scout', kit: ['whistle', 'draught'],
+        strengths: ['Beasts trust you, and many will do as you ask.', 'You know every root, track and turn of the weather.', 'Out of doors, very little escapes your notice.'] },
       Fighter: { v: [1, 0.2, 0.1, 0.1, 0.1, 0.1, 0.7, 0.1], hd: 10, prio: [1, 0.6, 0.9, 0.2, 0.4, 0.3], color: '#9a3b2a',
         blurb: 'Steel, drilled until it is instinct. You hold the line so others can shine.', armor: 'chain+shield', skills: ['Athletics', 'Intimidation', 'Perception'],
-        attacks: [{ n: 'Longsword', ab: 'STR', die: 8, cnt: 1, hint: 'Someone next to you' }, { n: 'Light crossbow', ab: 'DEX', die: 8, cnt: 1, hint: 'Up to 80 feet' }], gear: 'chain mail, a longsword, a battered shield' },
+        attacks: [{ n: 'Longsword', ab: 'STR', die: 8, cnt: 1, hint: 'Someone next to you' }, { n: 'Light crossbow', ab: 'DEX', die: 8, cnt: 1, hint: 'Up to 80 feet' }], gear: 'chain mail, a longsword, a battered shield',
+        role: 'Protector', kit: ['shield', 'rope'],
+        strengths: ['You are the best with a blade, and you hold the line.', 'Strong enough to climb it, lift it or break it down.', 'One hard look from you ends most arguments.'] },
       Monk: { v: [0.5, 0.6, 0.2, 0.6, 0, 0.2, 0.9, 0.2], hd: 8, prio: [0.4, 1, 0.7, 0.2, 0.9, 0.2], color: '#c2702a',
         blurb: 'Stillness, then lightning. Your body is the only weapon you need.', armor: 'monk', skills: ['Acrobatics', 'Stealth', 'Insight'],
-        attacks: [{ n: 'Unarmed strike', ab: 'DEX', die: 4, cnt: 1, hint: 'Someone next to you' }, { n: 'Quarterstaff', ab: 'DEX', die: 8, cnt: 1, hint: 'Someone next to you' }], gear: 'simple wrapped robes, bare fists, a quarterstaff' },
+        attacks: [{ n: 'Unarmed strike', ab: 'DEX', die: 4, cnt: 1, hint: 'Someone next to you' }, { n: 'Quarterstaff', ab: 'DEX', die: 8, cnt: 1, hint: 'Someone next to you' }], gear: 'simple wrapped robes, bare fists, a quarterstaff',
+        role: 'Sneak', kit: ['cloak', 'rope'],
+        strengths: ['You are faster than anyone expects, and you never lose your balance.', 'You move without a sound when you choose to.', 'You read a person’s mood before they speak.'] },
       Paladin: { v: [0.8, 0, 0, 0.8, 0.4, 0, 0.8, 0.8], hd: 10, prio: [1, 0.2, 0.8, 0.1, 0.4, 0.9], color: '#b58a2e',
         blurb: 'An oath in shining plate. You protect the weak and smite what threatens them.', armor: 'chain+shield', skills: ['Athletics', 'Persuasion', 'Insight'],
-        attacks: [{ n: 'Longsword', ab: 'STR', die: 8, cnt: 1, hint: 'Someone next to you' }, { n: 'Javelin', ab: 'STR', die: 6, cnt: 1, hint: 'Thrown, up to 30 feet' }], gear: 'polished plate, a longsword, a heraldic shield' },
+        attacks: [{ n: 'Longsword', ab: 'STR', die: 8, cnt: 1, hint: 'Someone next to you' }, { n: 'Javelin', ab: 'STR', die: 6, cnt: 1, hint: 'Thrown, up to 30 feet' }], gear: 'polished plate, a longsword, a heraldic shield',
+        role: 'Protector', kit: ['shield', 'symbol'],
+        strengths: ['You shield your friends, and you are very hard to knock down.', 'People believe you, because you mean what you say.', 'You can tell an honest face from a false one.'] },
       Ranger: { v: [0.4, 0.6, 0.1, 0.1, 0, 1, 0, 0.2], hd: 10, prio: [0.5, 1, 0.7, 0.3, 0.9, 0.2], color: '#3f6b4f',
         blurb: 'Tracker, hunter, scout. Nothing crosses the wilds without you knowing.', armor: 'scale', skills: ['Survival', 'Stealth', 'Perception'],
-        attacks: [{ n: 'Longbow', ab: 'DEX', die: 8, cnt: 1, hint: 'Up to 150 feet' }, { n: 'Shortsword', ab: 'DEX', die: 6, cnt: 1, hint: 'Someone next to you' }], gear: 'a hooded forest cloak, a longbow, a quiver' },
+        attacks: [{ n: 'Longbow', ab: 'DEX', die: 8, cnt: 1, hint: 'Up to 150 feet' }, { n: 'Shortsword', ab: 'DEX', die: 6, cnt: 1, hint: 'Someone next to you' }], gear: 'a hooded forest cloak, a longbow, a quiver',
+        role: 'Scout', kit: ['whistle', 'torch'],
+        strengths: ['You can follow any trail and never lose your way.', 'You see and hear trouble long before it sees you.', 'With a bow in your hands, you rarely miss.'] },
       Rogue: { v: [0, 1, 0.3, 0, 0.5, 0.1, -0.6, -0.3], hd: 8, prio: [0.1, 1, 0.6, 0.6, 0.5, 0.7], color: '#3f4f7a',
         blurb: 'Quick, quiet and clever. You win by being where nobody expects you.', armor: 'leather', skills: ['Stealth', 'Sleight of Hand', 'Deception', 'Perception'],
-        attacks: [{ n: 'Rapier', ab: 'DEX', die: 8, cnt: 1, hint: 'Someone next to you' }, { n: 'Shortbow', ab: 'DEX', die: 6, cnt: 1, hint: 'Up to 80 feet' }], gear: 'dark leathers, a hood, a pair of daggers' },
+        attacks: [{ n: 'Rapier', ab: 'DEX', die: 8, cnt: 1, hint: 'Someone next to you' }, { n: 'Shortbow', ab: 'DEX', die: 6, cnt: 1, hint: 'Up to 80 feet' }], gear: 'dark leathers, a hood, a pair of daggers',
+        role: 'Sneak', kit: ['lockpicks', 'cloak'],
+        strengths: ['You slip in and out without ever being seen.', 'Locks and pockets open for your quick fingers.', 'You lie with a perfectly straight face.'] },
       Sorcerer: { v: [0.1, 0.1, 0.3, 0, 0.9, 0.3, -0.8, 0], hd: 6, prio: [0.1, 0.7, 0.8, 0.3, 0.4, 1], color: '#a23a5a',
         blurb: 'Magic is in your blood, and it does not always ask permission.', armor: 'none', skills: ['Persuasion', 'Arcana', 'Intimidation'],
-        attacks: [{ n: 'Fire Bolt', ab: 'CHA', die: 10, cnt: 1, spell: true, hint: 'Spell, up to 120 feet' }, { n: 'Dagger', ab: 'DEX', die: 4, cnt: 1, hint: 'Next to you, or thrown 20 feet' }], gear: 'travel-worn finery, crackling arcane energy around the hands' },
+        attacks: [{ n: 'Fire Bolt', ab: 'CHA', die: 10, cnt: 1, spell: true, hint: 'Spell, up to 120 feet' }, { n: 'Dagger', ab: 'DEX', die: 4, cnt: 1, hint: 'Next to you, or thrown 20 feet' }], gear: 'travel-worn finery, crackling arcane energy around the hands',
+        role: 'Spellcaster', kit: ['flask', 'purse'],
+        strengths: ['Magic comes naturally to you, and it hits hard.', 'You know a spell when you see one, and what it is likely to do.', 'You can charm people or frighten them, as the moment needs.'] },
       Warlock: { v: [0, 0.5, 0.7, 0, 0.6, 0, -0.2, -0.8], hd: 8, prio: [0.1, 0.7, 0.8, 0.5, 0.4, 1], color: '#5b3a7a',
         blurb: 'You made a bargain for power. The terms were… flexible.', armor: 'leather', skills: ['Deception', 'Arcana', 'Intimidation'],
-        attacks: [{ n: 'Eldritch Blast', ab: 'CHA', die: 10, cnt: 1, spell: true, hint: 'Spell, up to 120 feet' }, { n: 'Dagger', ab: 'DEX', die: 4, cnt: 1, hint: 'Next to you, or thrown 20 feet' }], gear: 'dark robes, an old tome on a chain, a faint eerie glow' },
+        attacks: [{ n: 'Eldritch Blast', ab: 'CHA', die: 10, cnt: 1, spell: true, hint: 'Spell, up to 120 feet' }, { n: 'Dagger', ab: 'DEX', die: 4, cnt: 1, hint: 'Next to you, or thrown 20 feet' }], gear: 'dark robes, an old tome on a chain, a faint eerie glow',
+        role: 'Spellcaster', kit: ['spellbook', 'cloak'],
+        strengths: ['You know dark and secret magic that others would rather not.', 'You can make people believe things that are not so.', 'You are unsettling when you want to be, and people back down.'] },
       Wizard: { v: [0, 0.2, 1, 0.1, 0, 0, 0.4, 0], hd: 6, prio: [0.1, 0.7, 0.7, 1, 0.5, 0.3], color: '#3a5f8a',
         blurb: 'A scholar of the impossible. Fragile, yes, until the spellbook opens.', armor: 'none', skills: ['Arcana', 'History', 'Investigation'],
-        attacks: [{ n: 'Fire Bolt', ab: 'INT', die: 10, cnt: 1, spell: true, hint: 'Spell, up to 120 feet' }, { n: 'Dagger', ab: 'DEX', die: 4, cnt: 1, hint: 'Next to you, or thrown 20 feet' }], gear: 'scholar’s robes, a spellbook, a staff' }
+        attacks: [{ n: 'Fire Bolt', ab: 'INT', die: 10, cnt: 1, spell: true, hint: 'Spell, up to 120 feet' }, { n: 'Dagger', ab: 'DEX', die: 4, cnt: 1, hint: 'Next to you, or thrown 20 feet' }], gear: 'scholar’s robes, a spellbook, a staff',
+        role: 'Spellcaster', kit: ['spellbook', 'torch'],
+        strengths: ['You know more about magic than anyone at the table.', 'You remember old tales, names and dates just when they matter.', 'You work out puzzles and find the clue others missed.'] }
     },
     races: {
       Dwarf: { v: [0.6, 0, 0.3, 0.5, 0, 0.1, 0.8, 0.3], bonus: { CON: 2, WIS: 1 }, speed: 25, tough: true, perk: 'Dwarven toughness: you can take more knocks than most.', look: 'stocky and broad, a thick braided beard or braids, weathered features' },
@@ -224,6 +280,82 @@ FR.scenario({
     { id: 'show', label: 'Perform', hint: 'Sing, juggle, hold the room', skill: 'Performance' }
   ],
   extras: [],
+
+  /* What ties a hero to the rest of the party, and to whatever story the DM has brought. Bonds are asked about
+     another player's hero once a hero is made at a table ({name} is that hero), and the whole table sees the
+     answer. A hook is a private stake a player picks or skips; only they and the DM see it, and a few are kept
+     for certain roles. Voices are ways to talk, for anyone who would like to try one. */
+  ties: {
+    bonds: [
+      'You and {name} were once thrown out of a tavern together. Whose fault was it?',
+      'Why do you owe {name} a favor, and are you hoping they have forgotten?',
+      '{name} once pulled you out of real trouble. What did it cost them?',
+      'What does {name} do on the road that drives you up the wall?',
+      'What did {name} win from you at cards that you still want back?',
+      'Which of your stories does {name} know is not true?',
+      'What would you trust {name} with, and what would you never?',
+      'You and {name} are after the same thing. What is it, and have you told them?'
+    ],
+    hooks: [
+      { id: 'debt', text: 'You owe money to someone patient and unpleasant. Whatever tonight’s work pays, most of it is already spent.' },
+      { id: 'map', text: 'You carry half of an old map. Somebody has the other half, and you look at every stranger as if it might be them.' },
+      { id: 'song', text: 'You want one deed good enough to be sung about. So far the only song about you is rude.' },
+      { id: 'home', text: 'You left home after an argument and said you would be back when you had made something of yourself. You are still working on it.' },
+      { id: 'name', text: 'You are travelling under a name that is not yours. Sooner or later someone in a room like this will use the real one.', roles: ['Sneak', 'Charmer'] },
+      { id: 'oath', text: 'You swore to keep someone safe, and you were not there when it counted. You do not let people out of your sight now.', roles: ['Protector', 'Healer'] },
+      { id: 'page', text: 'One page was torn out of the book that taught you everything. You would give a great deal to read it.', roles: ['Spellcaster'] },
+      { id: 'follower', text: 'Something has been following you since the last forest. It has done you no harm. You have started leaving food out.', roles: ['Scout'] }
+    ],
+    voices: [
+      { label: 'Gruff', tip: 'Short sentences. Long pauses. Let the mug do some of the talking.' },
+      { label: 'Honeyed', tip: 'Warm, slow and flattering. Call everyone “my friend” and mean it about half the time.' },
+      { label: 'Booming', tip: 'Speak to the back of the room. Laugh at your own jokes first.' },
+      { label: 'Hushed', tip: 'Low and quick, with an eye on the door. Never use a name where “a certain someone” will do.' },
+      { label: 'Lofty', tip: 'Choose long words. Sound faintly surprised that anyone else is here.' },
+      { label: 'Plainspoken', tip: 'Say what you mean in as few words as it takes. Shrug a lot.' }
+    ]
+  },
+
+  /* The kit: twelve things a hero might carry, each a card with a "Use" button that tells the DM. Every class
+     starts with two (its `kit`, above). There are no numbers on them: the DM decides what using one does.
+     The token is this cartridge's hero token: the DM hands one out for a great moment, and a player spends it
+     to roll again. */
+  kit: {
+    items: {
+      rope: { name: 'Fifty feet of rope', text: 'Climb it, tie it, lower a friend on it. It solves more problems than a sword does.', uses: 'always' },
+      torch: { name: 'Torches and a tinderbox', text: 'Light in dark places, and a fire when you need one.', uses: 'always' },
+      lockpicks: { name: 'Lockpicks', text: 'A roll of thin tools for doors that were not meant for you.', uses: 'always' },
+      draught: { name: 'Healing draught', text: 'One small bottle. Drink it, or pour it into a friend, and the worst of the hurt is gone.', uses: 'once' },
+      lute: { name: 'A well-travelled lute', text: 'Play it and a room goes quiet, or loud, whichever you were after.', uses: 'always' },
+      spellbook: { name: 'Battered spellbook', text: 'Look up what the glowing thing is, or what the old words on the wall say.', uses: 'always' },
+      symbol: { name: 'Holy symbol', text: 'Hold it up and speak plainly. Things that fear the light take a step back.', uses: 'always' },
+      shield: { name: 'Dented shield', text: 'Plant your feet and raise it. Whoever is behind you is safe for as long as you hold.', uses: 'always' },
+      cloak: { name: 'Grey travelling cloak', text: 'Hood up, head down, and you are one more traveller nobody remembers.', uses: 'always' },
+      whistle: { name: 'Bone whistle', text: 'Too high for people to hear. Animals come to see who is calling.', uses: 'always' },
+      purse: { name: 'Purse of silver', text: 'Enough to buy a round, a rumor or a blind eye. Not all three.', uses: 'once' },
+      flask: { name: 'Flask of something strong', text: 'Courage for you, a bribe for a guard, or a very small fire.', uses: 'once' }
+    },
+    token: { name: 'Lucky coin', plural: 'Lucky coins', text: 'Spend one to roll again when it matters. Your DM slides you one for a deed worth a round of applause.' }
+  },
+
+  /* Soundscapes for the DM to put behind a scene: the engine's seven, made on the spot with no files, each named
+     the way this cartridge would say it. A cartridge may also add its own audio files here, or take one of the
+     seven away with null. */
+  sound: {
+    beds: {
+      fire: { label: 'The hearth', synth: 'fire' },
+      crowd: { label: 'The taproom, busy', synth: 'crowd' },
+      storm: { label: 'A storm outside', synth: 'storm' },
+      wind: { label: 'A cold wind on the road', synth: 'wind' },
+      night: { label: 'Camp at night', synth: 'night' },
+      cave: { label: 'A dripping cave', synth: 'cave' },
+      sea: { label: 'The harbor', synth: 'sea' }
+    }
+  },
+
+  /* The rules underneath: today's, said in plain words. ('light' is the other choice.) */
+  rules: 'open-5e',
+
   story: null,
   music: null,
 

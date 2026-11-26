@@ -444,7 +444,17 @@
                 "hint": "Thrown, up to 30 feet"
               }
             ],
-            "gear": "furs, a heavy greataxe, bare scarred arms"
+            "gear": "furs, a heavy greataxe, bare scarred arms",
+            "role": "Protector",
+            "kit": [
+              "rope",
+              "flask"
+            ],
+            "strengths": [
+              "You are the strongest in the room, and you hit like a falling tree.",
+              "You shrug off knocks that would flatten anyone else.",
+              "You know the wild: its weather, its tracks and its dangers."
+            ]
           },
           "Bard": {
             "v": [
@@ -490,7 +500,17 @@
                 "hint": "Up to 20 feet"
               }
             ],
-            "gear": "a lute, a feathered cap, a colorful doublet"
+            "gear": "a lute, a feathered cap, a colorful doublet",
+            "role": "Charmer",
+            "kit": [
+              "lute",
+              "purse"
+            ],
+            "strengths": [
+              "You can talk your way out of almost anything.",
+              "Give you a song or a story and the whole room is yours.",
+              "You lie beautifully when the truth will not do."
+            ]
           },
           "Cleric": {
             "v": [
@@ -537,7 +557,17 @@
                 "hint": "Spell, up to 120 feet"
               }
             ],
-            "gear": "chain and tabard, a mace, a glowing holy symbol"
+            "gear": "chain and tabard, a mace, a glowing holy symbol",
+            "role": "Healer",
+            "kit": [
+              "symbol",
+              "draught"
+            ],
+            "strengths": [
+              "You mend wounds and get fallen friends back on their feet.",
+              "You can tell what someone feels, whatever they say.",
+              "You know the gods, their rites and what offends them."
+            ]
           },
           "Druid": {
             "v": [
@@ -584,7 +614,17 @@
                 "hint": "Someone next to you"
               }
             ],
-            "gear": "a gnarled staff, a cloak of leaves and hide, antler charms"
+            "gear": "a gnarled staff, a cloak of leaves and hide, antler charms",
+            "role": "Scout",
+            "kit": [
+              "whistle",
+              "draught"
+            ],
+            "strengths": [
+              "Beasts trust you, and many will do as you ask.",
+              "You know every root, track and turn of the weather.",
+              "Out of doors, very little escapes your notice."
+            ]
           },
           "Fighter": {
             "v": [
@@ -630,7 +670,17 @@
                 "hint": "Up to 80 feet"
               }
             ],
-            "gear": "chain mail, a longsword, a battered shield"
+            "gear": "chain mail, a longsword, a battered shield",
+            "role": "Protector",
+            "kit": [
+              "shield",
+              "rope"
+            ],
+            "strengths": [
+              "You are the best with a blade, and you hold the line.",
+              "Strong enough to climb it, lift it or break it down.",
+              "One hard look from you ends most arguments."
+            ]
           },
           "Monk": {
             "v": [
@@ -676,7 +726,17 @@
                 "hint": "Someone next to you"
               }
             ],
-            "gear": "simple wrapped robes, bare fists, a quarterstaff"
+            "gear": "simple wrapped robes, bare fists, a quarterstaff",
+            "role": "Sneak",
+            "kit": [
+              "cloak",
+              "rope"
+            ],
+            "strengths": [
+              "You are faster than anyone expects, and you never lose your balance.",
+              "You move without a sound when you choose to.",
+              "You read a person’s mood before they speak."
+            ]
           },
           "Paladin": {
             "v": [
@@ -722,7 +782,17 @@
                 "hint": "Thrown, up to 30 feet"
               }
             ],
-            "gear": "polished plate, a longsword, a heraldic shield"
+            "gear": "polished plate, a longsword, a heraldic shield",
+            "role": "Protector",
+            "kit": [
+              "shield",
+              "symbol"
+            ],
+            "strengths": [
+              "You shield your friends, and you are very hard to knock down.",
+              "People believe you, because you mean what you say.",
+              "You can tell an honest face from a false one."
+            ]
           },
           "Ranger": {
             "v": [
@@ -768,7 +838,17 @@
                 "hint": "Someone next to you"
               }
             ],
-            "gear": "a hooded forest cloak, a longbow, a quiver"
+            "gear": "a hooded forest cloak, a longbow, a quiver",
+            "role": "Scout",
+            "kit": [
+              "whistle",
+              "torch"
+            ],
+            "strengths": [
+              "You can follow any trail and never lose your way.",
+              "You see and hear trouble long before it sees you.",
+              "With a bow in your hands, you rarely miss."
+            ]
           },
           "Rogue": {
             "v": [
@@ -815,7 +895,17 @@
                 "hint": "Up to 80 feet"
               }
             ],
-            "gear": "dark leathers, a hood, a pair of daggers"
+            "gear": "dark leathers, a hood, a pair of daggers",
+            "role": "Sneak",
+            "kit": [
+              "lockpicks",
+              "cloak"
+            ],
+            "strengths": [
+              "You slip in and out without ever being seen.",
+              "Locks and pockets open for your quick fingers.",
+              "You lie with a perfectly straight face."
+            ]
           },
           "Sorcerer": {
             "v": [
@@ -862,7 +952,17 @@
                 "hint": "Next to you, or thrown 20 feet"
               }
             ],
-            "gear": "travel-worn finery, crackling arcane energy around the hands"
+            "gear": "travel-worn finery, crackling arcane energy around the hands",
+            "role": "Spellcaster",
+            "kit": [
+              "flask",
+              "purse"
+            ],
+            "strengths": [
+              "Magic comes naturally to you, and it hits hard.",
+              "You know a spell when you see one, and what it is likely to do.",
+              "You can charm people or frighten them, as the moment needs."
+            ]
           },
           "Warlock": {
             "v": [
@@ -909,7 +1009,17 @@
                 "hint": "Next to you, or thrown 20 feet"
               }
             ],
-            "gear": "dark robes, an old tome on a chain, a faint eerie glow"
+            "gear": "dark robes, an old tome on a chain, a faint eerie glow",
+            "role": "Spellcaster",
+            "kit": [
+              "spellbook",
+              "cloak"
+            ],
+            "strengths": [
+              "You know dark and secret magic that others would rather not.",
+              "You can make people believe things that are not so.",
+              "You are unsettling when you want to be, and people back down."
+            ]
           },
           "Wizard": {
             "v": [
@@ -956,7 +1066,17 @@
                 "hint": "Next to you, or thrown 20 feet"
               }
             ],
-            "gear": "scholar’s robes, a spellbook, a staff"
+            "gear": "scholar’s robes, a spellbook, a staff",
+            "role": "Spellcaster",
+            "kit": [
+              "spellbook",
+              "torch"
+            ],
+            "strengths": [
+              "You know more about magic than anyone at the table.",
+              "You remember old tales, names and dates just when they matter.",
+              "You work out puzzles and find the clue others missed."
+            ]
           }
         },
         "races": {
@@ -1746,7 +1866,7 @@
           "leaveTable": "Leave table {code}",
           "close": "Close",
           "leaveTitle": "Leave table {code}?",
-          "leaveText": "Your hero stays on this phone. To come back, join with the same name and code.",
+          "leaveText": "Your seat is freed and the table forgets your hero. Your hero stays on this phone.",
           "leaveYes": "Leave the table",
           "stay": "Stay",
           "checkHints": {
@@ -1830,7 +1950,7 @@
           "railHint": "Pick the dice the DM asks for, by how many sides they have.",
           "music": "Music",
           "musicNote": "Music for the title, the game and the fights",
-          "musicNone": "This scenario has no music yet",
+          "musicNone": "This cartridge has no music yet",
           "musicTable": "Starts off at a table, so the phones do not play over each other",
           "sfx": "Sound effects",
           "sfxNote": "Dice, bells and button taps",
@@ -1881,7 +2001,161 @@
           "gotIt": "Got it",
           "countOf": "{i} of {n}",
           "tablePlays": "This table is playing {scenario}. Let’s make you a hero for it.",
-          "reconnecting": "Reconnecting to the table…"
+          "reconnecting": "Reconnecting to the table…",
+          "healthFine": "Fine",
+          "healthHurt": "Hurt",
+          "healthTrouble": "In trouble",
+          "back": "Back",
+          "cancel": "Cancel",
+          "whoHere": "Who’s here",
+          "playedBy": "Played by {name}",
+          "thatsYou": "That’s you",
+          "noHeroYet": "Still making a hero",
+          "moveTable": "Move to another table",
+          "leftTable": "You have left table {code}.",
+          "leaveFailed": "Could not reach the table, so you are still seated. Try again.",
+          "taleTitle": "The story",
+          "tabStory": "Story",
+          "tabQuests": "Quests",
+          "tabClues": "Clues",
+          "tabPeople": "Who’s who",
+          "happening": "What’s happening?",
+          "soFar": "Story so far",
+          "asItWent": "As it happened",
+          "feedEmpty": "Nothing here yet. What your DM shows the table will land here.",
+          "onlyYou": "Only for you",
+          "sceneNow": "The story moves on",
+          "questDone": "Done",
+          "questCount": "{done} of {n} done",
+          "rollYours": "Your roll: {label}",
+          "heroOffer": "Your DM offers you a ready-made hero",
+          "heroTake": "Take this hero",
+          "heroLater": "Not now",
+          "heroSwap": "{name} takes {old}’s place.",
+          "heroAsk": "Your DM suggests you play {name}.",
+          "heroNow": "You are now playing {name}.",
+          "cardsHead": "Here you could…",
+          "cardWaiting": "Asked. Waiting for your DM…",
+          "cardYes": "Your DM says yes.",
+          "cardNo": "Your DM says no.",
+          "cardRoll": "Your DM wants a roll for that.",
+          "askWait": "Your DM is still thinking about three of your ideas. Give them a moment.",
+          "askFailed": "That did not reach the table. Try again.",
+          "intentLabel": "Or say what you do",
+          "intentHint": "I climb up to the window",
+          "intentSend": "Tell the DM",
+          "youSaid": "You said: “{text}”",
+          "reqKicker": "Your DM asks for a roll",
+          "reqGo": "Roll for it",
+          "reqSending": "Telling the table…",
+          "reqDecide": "Your DM will decide how that went.",
+          "reqPassed": "It worked.",
+          "reqFailed": "It did not work.",
+          "reqLost": "That did not reach the table. Tell your DM what you rolled.",
+          "reqOff": "Your DM has called that roll off.",
+          "reqKeep": "Keep the 1",
+          "reqWaiting": "Waiting for your DM: {label}",
+          "realDice": "I rolled real dice",
+          "realTitle": "What did your dice show?",
+          "realOne": "The number on your {s}-sided die",
+          "realEach": "Die {i}, {s}-sided",
+          "realUse": "Use this roll",
+          "realBad": "Type the number each die shows, from 1 to {s}.",
+          "healthTitle": "How is your hero doing?",
+          "healthNote": "Your DM tells you when you are hurt or healed. Mark it here.",
+          "healthOf": "{now} of {max}",
+          "healthLess": "One less",
+          "healthMore": "One more",
+          "healthSet": "Health: {state}. Tap to change.",
+          "creditsHead": "Credits",
+          "armorLight": "Lightly protected",
+          "armorWell": "Well protected",
+          "armorHeavy": "Heavily protected",
+          "tiesMenu": "Bond, stake and voice",
+          "tiesKicker": "Optional · {i} of {n}",
+          "tiesKickerOne": "Optional",
+          "skipStep": "Skip",
+          "tiesLater": "Not now",
+          "choose": "Choose",
+          "change": "Change",
+          "bondTitle": "Who do you know here?",
+          "bondText": "Pick another hero and answer one question about them. The whole table sees your answer.",
+          "bondPick": "Which hero?",
+          "bondOther": "Ask me another",
+          "bondHint": "One line is plenty",
+          "bondSave": "Save this bond",
+          "bondNeed": "Write a few words first, or skip.",
+          "bondClear": "Remove this bond",
+          "bondSaved": "Bond saved. The table can see it under Who’s here.",
+          "bondHead": "Your bond",
+          "bondWith": "Bond with {name}",
+          "bondFrom": "{name}’s bond with {hero}",
+          "bondAdd": "Add a bond with another hero",
+          "bondChange": "Change your bond",
+          "hookTitle": "Your stake in this",
+          "hookText": "Why is {name} here? Pick one, or skip. Only you and your DM see it.",
+          "hookClear": "Go without one",
+          "hookNone": "Nothing chosen yet.",
+          "voiceTitle": "How you talk",
+          "voiceText": "A voice to try for {name}. It is only a suggestion.",
+          "voiceClear": "Use my own voice",
+          "voiceNone": "No voice chosen yet.",
+          "partyMissing": "Nobody is the {role} yet.",
+          "partyAnd": ", the ",
+          "partyOr": " or the ",
+          "roleNeeded": "Nobody at your table plays one yet",
+          "kitHead": "Things you carry",
+          "kitUse": "Use",
+          "kitUndo": "Undo",
+          "kitOnce": "One use",
+          "kitUsed": "Used",
+          "kitSay": "I use: {item}",
+          "kitTell": "Tell your DM you are using: {item}",
+          "tokenSpend": "Spend a {token}: roll again",
+          "tokenSpent": "{token} spent. Roll again.",
+          "voteKicker": "Party vote",
+          "voteNote": "Tap your choice. You can change it until your DM closes the vote.",
+          "voteMine": "Your vote is in. Tap another to change it.",
+          "voteHide": "Hide",
+          "voteShow": "Show",
+          "voteClosed": "The vote is in",
+          "voteYours": "Your pick",
+          "voteNone": "Nobody voted.",
+          "marksLabel": "React",
+          "markCheer": "Cheer",
+          "markLaugh": "Laugh",
+          "markGasp": "Gasp",
+          "markHeart": "Love it",
+          "markClap": "Clap",
+          "markWow": "Wow",
+          "natRolled": "{name} rolled a natural {n}",
+          "natYou": "You rolled a natural {n}",
+          "tabNotes": "Notes",
+          "notesMenu": "Your notes",
+          "pin": "Pin to notes",
+          "pinned": "In your notes",
+          "pinDone": "Pinned to your notes.",
+          "noteLabel": "Write a note",
+          "noteHint": "A name to remember, a plan, a hunch",
+          "noteAdd": "Add note",
+          "noteYours": "Your note",
+          "notePinned": "Pinned from the story",
+          "notesEmpty": "Nothing here yet. Pin anything from the story, or write your own. Notes stay on this phone.",
+          "noteDelete": "Delete",
+          "noteDeleteTitle": "Delete this note?",
+          "noteDeleteYes": "Delete it",
+          "noteKeep": "Keep it",
+          "revealWait": "Wait for it…",
+          "revealHide": "Hide for now",
+          "tabMap": "Map",
+          "mapAlt": "Map: {title}",
+          "mapFound": "Uncovered so far",
+          "mapNone": "Nothing is uncovered yet. Your DM opens the map as you explore.",
+          "tableSound": "Table sounds on this phone",
+          "tableSoundNote": "The sound your DM sets behind a scene. Starts off, so the phones do not play over each other",
+          "tableSoundMuted": "Switch Sound effects on to hear them",
+          "mapBigger": "Bigger map",
+          "mapSmaller": "Smaller map"
         }
       },
       "count": {
@@ -84264,7 +84538,17 @@
                 "hint": "Thrown, up to 30 feet"
               }
             ],
-            "gear": "a thick fur vest and big red mittens, holding a giant snowball overhead"
+            "gear": "a thick fur vest and big red mittens, holding a giant snowball overhead",
+            "role": "Heavy Lifter",
+            "kit": [
+              "snowball",
+              "mitts"
+            ],
+            "strengths": [
+              "You are the strongest one here. Heavy things move when you say so.",
+              "Snow, ice and bad weather never slow you down.",
+              "Not much gets past you. You spot trouble before it lands."
+            ]
           },
           "Caroler": {
             "v": [
@@ -84311,7 +84595,17 @@
                 "hint": "Song, up to 60 feet"
               }
             ],
-            "gear": "a caroler’s cape and long scarf, holding a songbook and a golden bell"
+            "gear": "a caroler’s cape and long scarf, holding a songbook and a golden bell",
+            "role": "Showstopper",
+            "kit": [
+              "carols",
+              "bell"
+            ],
+            "strengths": [
+              "You can sing or talk your way out of almost anything.",
+              "Put you in front of a crowd and the crowd is yours.",
+              "You can tell a whopper without so much as a blush."
+            ]
           },
           "Baker": {
             "v": [
@@ -84358,7 +84652,17 @@
                 "hint": "Kitchen magic, up to 120 feet"
               }
             ],
-            "gear": "a puffy chef hat and apron, holding a tray of softly glowing cookies"
+            "gear": "a puffy chef hat and apron, holding a tray of softly glowing cookies",
+            "role": "Warm Heart",
+            "kit": [
+              "shortbread",
+              "mitts"
+            ],
+            "strengths": [
+              "You patch people up: scraped knees, sore heads, sagging spirits.",
+              "You can tell how someone really feels, whatever they say.",
+              "Your kitchen magic packs a wallop when it has to."
+            ]
           },
           "Tree Tender": {
             "v": [
@@ -84405,7 +84709,17 @@
                 "hint": "Someone next to you"
               }
             ],
-            "gear": "a cloak of pine boughs woven with tiny lights, a staff topped with a glowing star"
+            "gear": "a cloak of pine boughs woven with tiny lights, a staff topped with a glowing star",
+            "role": "Pathfinder",
+            "kit": [
+              "lights",
+              "tinsel"
+            ],
+            "strengths": [
+              "Animals trust you, and most of them will do you a favor.",
+              "You know every plant, track and weather sign in the forest.",
+              "You spot what everyone else walks straight past."
+            ]
           },
           "Candy Cane Knight": {
             "v": [
@@ -84451,7 +84765,17 @@
                 "hint": "Up to 80 feet"
               }
             ],
-            "gear": "armor made of red-and-white peppermint candy, a candy-cane lance and a round cookie shield"
+            "gear": "armor made of red-and-white peppermint candy, a candy-cane lance and a round cookie shield",
+            "role": "Heavy Lifter",
+            "kit": [
+              "cane",
+              "mitts"
+            ],
+            "strengths": [
+              "You stand in front, and whatever you guard stays guarded.",
+              "Strong enough to hold a door shut, or open one that is stuck.",
+              "One stern look from you and most trouble thinks again."
+            ]
           },
           "Ice Skater": {
             "v": [
@@ -84497,7 +84821,17 @@
                 "hint": "Someone next to you"
               }
             ],
-            "gear": "a sleek skating outfit with a short cape, silver ice skates, poised mid-glide"
+            "gear": "a sleek skating outfit with a short cape, silver ice skates, poised mid-glide",
+            "role": "Cookie Thief",
+            "kit": [
+              "skates",
+              "goggles"
+            ],
+            "strengths": [
+              "You never lose your footing: ice, rooftops, tightropes, anything.",
+              "You are quick and quiet, and gone before anyone looks round.",
+              "You read people as easily as you read the ice."
+            ]
           },
           "Santa": {
             "v": [
@@ -84543,7 +84877,17 @@
                 "hint": "Thrown, up to 30 feet"
               }
             ],
-            "gear": "a red Santa suit with white fur trim and a wide black belt, a sack of presents over one shoulder"
+            "gear": "a red Santa suit with white fur trim and a wide black belt, a sack of presents over one shoulder",
+            "role": "Warm Heart",
+            "kit": [
+              "bell",
+              "shortbread"
+            ],
+            "strengths": [
+              "People listen when you speak, and they usually come round.",
+              "You can tell naughty from nice just by looking.",
+              "Strong enough to haul the sack, the sleigh and a friend or two."
+            ]
           },
           "Sleigh Pilot": {
             "v": [
@@ -84589,7 +84933,17 @@
                 "hint": "Someone next to you"
               }
             ],
-            "gear": "aviator goggles, a leather flight cap and a very long scarf streaming in the wind"
+            "gear": "aviator goggles, a leather flight cap and a very long scarf streaming in the wind",
+            "role": "Pathfinder",
+            "kit": [
+              "goggles",
+              "tinsel"
+            ],
+            "strengths": [
+              "You never get lost, and you always find the quick way there.",
+              "Sharp eyes: you see the rooftop long before anyone else does.",
+              "You can land without a sound when you need to."
+            ]
           },
           "Chimney Sneak": {
             "v": [
@@ -84636,7 +84990,17 @@
                 "hint": "Up to 80 feet"
               }
             ],
-            "gear": "soot-smudged dark clothes and a little eye mask, tiptoeing with a coil of rope"
+            "gear": "soot-smudged dark clothes and a little eye mask, tiptoeing with a coil of rope",
+            "role": "Cookie Thief",
+            "kit": [
+              "cane",
+              "tinsel"
+            ],
+            "strengths": [
+              "You get in and out of places without anyone knowing you were there.",
+              "Locks, latches and pockets open for your nimble fingers.",
+              "You can keep a perfectly straight face while telling a fib."
+            ]
           },
           "Frost Mage": {
             "v": [
@@ -84683,7 +85047,17 @@
                 "hint": "Next to you, or thrown 20 feet"
               }
             ],
-            "gear": "an icy blue cloak embroidered with snowflakes, frost magic swirling around the hands"
+            "gear": "an icy blue cloak embroidered with snowflakes, frost magic swirling around the hands",
+            "role": "Showstopper",
+            "kit": [
+              "snowball",
+              "skates"
+            ],
+            "strengths": [
+              "You understand magic: what is glowing, why, and how to make it stop.",
+              "You can charm people round to your way of thinking.",
+              "One frosty stare from you and they behave."
+            ]
           },
           "Mischief Maker": {
             "v": [
@@ -84730,7 +85104,17 @@
                 "hint": "Next to you, or thrown 20 feet"
               }
             ],
-            "gear": "a purple-and-black striped scarf, juggling lumps of coal with a sly grin"
+            "gear": "a purple-and-black striped scarf, juggling lumps of coal with a sly grin",
+            "role": "Bright Spark",
+            "kit": [
+              "sprinkles",
+              "snowball"
+            ],
+            "strengths": [
+              "You can fool almost anyone with a trick, a fib or a straight face.",
+              "You know how magic works, most of all the kind you should not touch.",
+              "When you say “or else”, people believe you."
+            ]
           },
           "Toymaker": {
             "v": [
@@ -84777,7 +85161,17 @@
                 "hint": "Next to you, or thrown 20 feet"
               }
             ],
-            "gear": "a tool apron stuffed with tiny tools, holding a half-built wind-up toy"
+            "gear": "a tool apron stuffed with tiny tools, holding a half-built wind-up toy",
+            "role": "Bright Spark",
+            "kit": [
+              "toolkit",
+              "lights"
+            ],
+            "strengths": [
+              "If it has gears, springs or a puzzle in it, you can work it out.",
+              "You find the clue everyone else missed.",
+              "You have read all the old stories, and you remember the useful bits."
+            ]
           }
         },
         "races": {
@@ -85621,7 +86015,7 @@
           "leaveTable": "Leave table {code}",
           "close": "Close",
           "leaveTitle": "Leave table {code}?",
-          "leaveText": "Your hero stays on this phone. To come back, join with the same name and code.",
+          "leaveText": "Your seat is freed and the table forgets your hero. Your hero stays on this phone.",
           "leaveYes": "Leave the table",
           "stay": "Stay",
           "checkHints": {
@@ -85705,7 +86099,7 @@
           "railHint": "Pick the dice the DM asks for, by how many sides they have.",
           "music": "Music",
           "musicNote": "Carols for the title, the game and the snow fights",
-          "musicNone": "This scenario has no music yet",
+          "musicNone": "This cartridge has no music yet",
           "musicTable": "Starts off at a table, so the phones do not play over each other",
           "sfx": "Sound effects",
           "sfxNote": "Dice, bells and button taps",
@@ -85756,7 +86150,161 @@
           "gotIt": "Got it",
           "countOf": "{i} of {n}",
           "tablePlays": "This table is playing {scenario}. Let’s make you a hero for it.",
-          "reconnecting": "Reconnecting to the table…"
+          "reconnecting": "Reconnecting to the table…",
+          "healthFine": "Merry and bright",
+          "healthHurt": "A bit frazzled",
+          "healthTrouble": "In a real pickle",
+          "back": "Back",
+          "cancel": "Cancel",
+          "whoHere": "Who’s here",
+          "playedBy": "Played by {name}",
+          "thatsYou": "That’s you",
+          "noHeroYet": "Still making a hero",
+          "moveTable": "Move to another table",
+          "leftTable": "You have left table {code}.",
+          "leaveFailed": "Could not reach the table, so you are still seated. Try again.",
+          "taleTitle": "The story",
+          "tabStory": "Story",
+          "tabQuests": "Quests",
+          "tabClues": "Clues",
+          "tabPeople": "Who’s who",
+          "happening": "What’s happening?",
+          "soFar": "Story so far",
+          "asItWent": "As it happened",
+          "feedEmpty": "Nothing here yet. What your DM shows the table will land here.",
+          "onlyYou": "Only for you",
+          "sceneNow": "The story moves on",
+          "questDone": "Done",
+          "questCount": "{done} of {n} done",
+          "rollYours": "Your roll: {label}",
+          "heroOffer": "Your DM offers you a ready-made hero",
+          "heroTake": "Take this hero",
+          "heroLater": "Not now",
+          "heroSwap": "{name} takes {old}’s place.",
+          "heroAsk": "Your DM suggests you play {name}.",
+          "heroNow": "You are now playing {name}.",
+          "cardsHead": "Here you could…",
+          "cardWaiting": "Asked. Waiting for your DM…",
+          "cardYes": "Your DM says yes.",
+          "cardNo": "Your DM says no.",
+          "cardRoll": "Your DM wants a roll for that.",
+          "askWait": "Your DM is still thinking about three of your ideas. Give them a moment.",
+          "askFailed": "That did not reach the table. Try again.",
+          "intentLabel": "Or say what you do",
+          "intentHint": "I climb up to the window",
+          "intentSend": "Tell the DM",
+          "youSaid": "You said: “{text}”",
+          "reqKicker": "Your DM asks for a roll",
+          "reqGo": "Roll for it",
+          "reqSending": "Telling the table…",
+          "reqDecide": "Your DM will decide how that went.",
+          "reqPassed": "It worked.",
+          "reqFailed": "It did not work.",
+          "reqLost": "That did not reach the table. Tell your DM what you rolled.",
+          "reqOff": "Your DM has called that roll off.",
+          "reqKeep": "Keep the 1",
+          "reqWaiting": "Waiting for your DM: {label}",
+          "realDice": "I rolled real dice",
+          "realTitle": "What did your dice show?",
+          "realOne": "The number on your {s}-sided die",
+          "realEach": "Die {i}, {s}-sided",
+          "realUse": "Use this roll",
+          "realBad": "Type the number each die shows, from 1 to {s}.",
+          "healthTitle": "How is your hero doing?",
+          "healthNote": "Your DM tells you when you are hurt or healed. Mark it here.",
+          "healthOf": "{now} of {max}",
+          "healthLess": "One less",
+          "healthMore": "One more",
+          "healthSet": "Health: {state}. Tap to change.",
+          "creditsHead": "Credits",
+          "armorLight": "Lightly protected",
+          "armorWell": "Well protected",
+          "armorHeavy": "Heavily protected",
+          "tiesMenu": "Bond, stake and voice",
+          "tiesKicker": "Optional · {i} of {n}",
+          "tiesKickerOne": "Optional",
+          "skipStep": "Skip",
+          "tiesLater": "Not now",
+          "choose": "Choose",
+          "change": "Change",
+          "bondTitle": "Who do you know here?",
+          "bondText": "Pick another hero and answer one question about them. The whole table sees your answer.",
+          "bondPick": "Which hero?",
+          "bondOther": "Ask me another",
+          "bondHint": "One line is plenty",
+          "bondSave": "Save this bond",
+          "bondNeed": "Write a few words first, or skip.",
+          "bondClear": "Remove this bond",
+          "bondSaved": "Bond saved. The table can see it under Who’s here.",
+          "bondHead": "Your bond",
+          "bondWith": "Bond with {name}",
+          "bondFrom": "{name}’s bond with {hero}",
+          "bondAdd": "Add a bond with another hero",
+          "bondChange": "Change your bond",
+          "hookTitle": "Your stake in this",
+          "hookText": "Why is {name} here? Pick one, or skip. Only you and your DM see it.",
+          "hookClear": "Go without one",
+          "hookNone": "Nothing chosen yet.",
+          "voiceTitle": "How you talk",
+          "voiceText": "A voice to try for {name}. It is only a suggestion.",
+          "voiceClear": "Use my own voice",
+          "voiceNone": "No voice chosen yet.",
+          "partyMissing": "Nobody is the {role} yet.",
+          "partyAnd": ", the ",
+          "partyOr": " or the ",
+          "roleNeeded": "Nobody at your table plays one yet",
+          "kitHead": "Things you carry",
+          "kitUse": "Use",
+          "kitUndo": "Undo",
+          "kitOnce": "One use",
+          "kitUsed": "Used",
+          "kitSay": "I use: {item}",
+          "kitTell": "Tell your DM you are using: {item}",
+          "tokenSpend": "Spend a {token}: roll again",
+          "tokenSpent": "{token} spent. Roll again.",
+          "voteKicker": "Party vote",
+          "voteNote": "Tap your choice. You can change it until your DM closes the vote.",
+          "voteMine": "Your vote is in. Tap another to change it.",
+          "voteHide": "Hide",
+          "voteShow": "Show",
+          "voteClosed": "The vote is in",
+          "voteYours": "Your pick",
+          "voteNone": "Nobody voted.",
+          "marksLabel": "React",
+          "markCheer": "Cheer",
+          "markLaugh": "Laugh",
+          "markGasp": "Gasp",
+          "markHeart": "Love it",
+          "markClap": "Clap",
+          "markWow": "Wow",
+          "natRolled": "{name} rolled a natural {n}",
+          "natYou": "You rolled a natural {n}",
+          "tabNotes": "Notes",
+          "notesMenu": "Your notes",
+          "pin": "Pin to notes",
+          "pinned": "In your notes",
+          "pinDone": "Pinned to your notes.",
+          "noteLabel": "Write a note",
+          "noteHint": "A name to remember, a plan, a hunch",
+          "noteAdd": "Add note",
+          "noteYours": "Your note",
+          "notePinned": "Pinned from the story",
+          "notesEmpty": "Nothing here yet. Pin anything from the story, or write your own. Notes stay on this phone.",
+          "noteDelete": "Delete",
+          "noteDeleteTitle": "Delete this note?",
+          "noteDeleteYes": "Delete it",
+          "noteKeep": "Keep it",
+          "revealWait": "Wait for it…",
+          "revealHide": "Hide for now",
+          "tabMap": "Map",
+          "mapAlt": "Map: {title}",
+          "mapFound": "Uncovered so far",
+          "mapNone": "Nothing is uncovered yet. Your DM opens the map as you explore.",
+          "tableSound": "Table sounds on this phone",
+          "tableSoundNote": "The sound your DM sets behind a scene. Starts off, so the phones do not play over each other",
+          "tableSoundMuted": "Switch Sound effects on to hear them",
+          "mapBigger": "Bigger map",
+          "mapSmaller": "Smaller map"
         }
       },
       "count": {

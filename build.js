@@ -1,13 +1,13 @@
-/* Builds the whole website into public/ from the engine (src/) and the scenario packs (scenarios/).
+/* Builds the whole website into public/ from the engine (src/) and the scenario packs (cartridges/).
    public/ is generated: nothing in it is edited by hand or kept in git. Wrangler runs this before
-   every deploy and every time a file in src/ or scenarios/ changes during `npm run dev`.
+   every deploy and every time a file in src/ or cartridges/ changes during `npm run dev`.
 
      node build.js            the site as it deploys (draft packs are left out)
      node build.js --drafts   include draft packs too, to try one out at ?s=<id>   (or FR_DRAFTS=1)
 
    What comes out:
      public/index.html             the engine, its styles, the list of packs, and the default pack, in one page
-     public/packs/<id>/pack.js     one pack as data: FR.scenario({...})
+     public/packs/<id>/pack.js     one pack as data: FR.cartridge({...})
      public/packs/<id>/pack.css    the pack's theme.css, when it has one
      public/packs/<id>/adventure.js, img/, audio/    the pack's own files
      public/packs/manifest.json    the list of packs, for tools (the page carries its own copy)
@@ -32,7 +32,7 @@ const faults = report.errors.slice();
 /* a draft that is not being built may be half-written; every other pack must be sound */
 report.packs.forEach((p) => { const draft = p.def && p.def.meta && p.def.meta.visibility === 'draft'; if (!draft || drafts) { p.errors.forEach((e) => faults.push(p.id + ': ' + e)); } });
 if (faults.length) { fail(faults.concat('', 'Run "npm run validate" for the full report.')); }
-if (!ship.packs.some((p) => p.id === ship.default)) { fail('There is no default pack to open. Name one in scenarios/packs.json.'); }
+if (!ship.packs.some((p) => p.id === ship.default)) { fail('There is no default pack to open. Name one in cartridges/packs.json.'); }
 const skipped = report.packs.filter((p) => ship.packs.indexOf(p) < 0).map((p) => p.id);
 
 /* ---------- 2. gather everything that goes out, and a hash of each file ---------- */
@@ -69,8 +69,8 @@ const entries = ship.packs.map((p) => {
     put(at + 'adventure.js', '/* First Roll adventure for "' + id + '". Generated from ' + rel + '/adventure.js: edit that, not this. */\nFR.adventure(' + inline(id) + ', ' + inline(JSON.parse(JSON.stringify(adv.def))) + ');\n');
   }
   /* the pack as it ships: plain JSON, with the hashes of its own files */
-  p.call = 'FR.scenario(' + inline(p.def) + ', ' + inline({ assets: Object.assign(only(at + 'img/'), only(at + 'audio/')) }) + ');';
-  put(at + 'pack.js', '/* First Roll scenario pack "' + id + '" ' + p.def.version + '. Generated from ' + rel + '/scenario.js: edit that, not this. */\n' + p.call + '\n');
+  p.call = 'FR.cartridge(' + inline(p.def) + ', ' + inline({ assets: Object.assign(only(at + 'img/'), only(at + 'audio/')) }) + ');';
+  put(at + 'pack.js', '/* First Roll scenario pack "' + id + '" ' + p.def.version + '. Generated from ' + rel + '/cartridge.js: edit that, not this. */\n' + p.call + '\n');
   p.theme = theme;
   return p;
 });
@@ -79,10 +79,12 @@ const entries = ship.packs.map((p) => {
 FR.manifest(FR.MANIFEST, hashes);
 const manifest = { schema: FR.SCHEMA, default: ship.default, packs: entries.map((p) => {
   const id = p.id, at = 'packs/' + id + '/', meta = p.def.meta, whole = FR.resolved(id);
-  FR.scenario(p.def);                                        // again, so its theme is rebuilt with hashed addresses
+  FR.cartridge(p.def);                                        // again, so its theme is rebuilt with hashed addresses
   return { id: id, version: p.def.version, name: meta.name, blurb: meta.blurb, kind: meta.kind, access: meta.access, sku: meta.sku, visibility: meta.visibility,
     extends: p.def.extends === undefined ? 'base' : p.def.extends, thumb: v(whole.art.thumb), js: v(at + 'pack.js'), css: p.theme ? v(at + 'pack.css') : null,
-    adventure: hashes[at + 'adventure.js'] ? v(at + 'adventure.js') : null, fonts: FR.THEMES[id].fonts, credits: meta.credits };
+    adventure: hashes[at + 'adventure.js'] ? v(at + 'adventure.js') : null, fonts: FR.THEMES[id].fonts,
+    /* what a cartridge card shows, and every credit the cartridge carries: its own and the ones the base gives every cartridge (the rules credit) */
+    label: FR.THEMES[id].label, credits: FR.THEMES[id].credits };
 }) };
 put('packs/manifest.json', JSON.stringify(manifest, null, 2) + '\n');
 
@@ -104,7 +106,7 @@ const boot = ['src/rules.js', 'src/registry.js', 'src/base.js'].map(src).concat(
 const main = ['src/dice.js', 'src/audio.js', 'src/fx.js', 'src/flatdice.js'].map(src).concat([
   '/* the screens: started by FR.boot() once the chosen scenario is here */',
   'FR.main = function () {',
-  ['src/app.js', 'src/table.js', 'src/dm.js'].map(src).join('\n'),
+  ['src/app.js', 'src/table.js', 'src/tv.js', 'src/dm.js'].map(src).join('\n'),
   '};',
   'FR.boot();'
 ]).join('\n');
@@ -114,7 +116,9 @@ const fill = {
   '/*CSS*/': cssUrls(engineCss, '', false, 'src/styles.css'),
   '<!--PACKCSS-->': packCss ? '<style data-pack="' + first.id + '">\n' + packCss + '</style>' : '',
   '/*BOOT*/': boot,
-  '<!--LIBS-->': '<script src="' + v('vendor/three.min.js') + '"></script>\n<script src="' + v('vendor/cannon.min.js') + '"></script>\n<script src="' + v('vendor/qrcode.js') + '" defer></script>',
+  /* No library is in the page any more. The QR code maker is fetched when the DM's side first wants one, and the two
+     libraries behind the 3D dice when the dice tray first opens: FR.lib('qr') and FR.lib('dice') in src/registry.js. */
+  '<!--LIBS-->': '<!-- libraries are fetched when first wanted: FR.lib in src/registry.js -->',
   '/*JS*/': main
 };
 let page = src('src/index.html');

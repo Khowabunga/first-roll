@@ -106,6 +106,8 @@ body[data-loading] #app{opacity:0;pointer-events:none}</style>
     <div class="scroll" id="reveal-scroll">
       <div class="reveal-head pad">
         <img class="crest" id="r-crest" alt="" width="420" height="460">
+        <!-- the hero's job in plain words (the cartridge's role for the class), ahead of the class itself -->
+        <p class="ply-role" id="r-role" hidden><b id="r-role-n"></b><span id="r-role-b"></span></p>
         <h2 class="gilt big" id="r-title"></h2>
         <p class="r-sub" id="r-sub"></p>
         <p class="r-name" id="r-name"></p>
@@ -121,7 +123,7 @@ body[data-loading] #app{opacity:0;pointer-events:none}</style>
           <div class="chips" id="r-classes"></div>
           <h3 class="h-ox" data-t="closestRaces"></h3>
           <div class="chips" id="r-races"></div>
-          <p class="match-note" data-t="matchNote"></p>
+          <p class="match-note" id="r-note" data-t="matchNote"></p>
           <p class="note" id="r-perk"></p>
         </div>
       </div>
@@ -201,6 +203,8 @@ body[data-loading] #app{opacity:0;pointer-events:none}</style>
           <dl class="vitals" id="s-skills"></dl>
           <h3 class="h-ox" data-t="originHead"></h3>
           <p class="origin" id="s-origin"></p>
+          <!-- the hero's ties: a stake in the story, a voice to try and, at a table, a bond with another hero (src/app.js, renderTies) -->
+          <div class="ply-ties" id="s-ties" hidden></div>
         </div>
       </div>
     </div>
@@ -216,6 +220,8 @@ body[data-loading] #app{opacity:0;pointer-events:none}</style>
       <div class="hero-id">
         <div class="hero-name" id="pl-name" data-h></div>
         <div class="hero-sub" id="pl-sub"></div>
+        <!-- armor as a phrase ("Well protected"), for everyone who has not asked for the numbers -->
+        <div class="hero-sub" id="pl-armor" hidden></div>
       </div>
       <div class="hero-stats" id="pl-stats"></div>
     </header>
@@ -228,7 +234,40 @@ body[data-loading] #app{opacity:0;pointer-events:none}</style>
     </div>
     <nav class="tabs pad" id="pl-tabs" aria-label="What are you doing?"></nav>
     <p class="nudge" id="pl-nudge" role="note" hidden></p>
-    <div class="scroll list" id="pl-list"></div>
+    <div class="scroll list" id="pl-list">
+      <!-- hero tokens this seat holds, in the cartridge's own word for them: only there when the DM has handed one out -->
+      <p class="ply-tokens" id="pl-tokens" role="status" hidden><b id="pl-tokens-n"></b><span id="pl-tokens-t"></span></p>
+      <!-- At a DM's table (src/app.js, renderGuide): what is new from the DM, where the story is now, the ways to the quests, the
+           clues and the people, what a player might try here, and a box to say it in their own words. Each part is only there
+           when the table has something for it, so a table that publishes no scene looks as it always did. -->
+      <div class="guide" id="pl-guide" hidden>
+        <button type="button" class="strip news" id="pl-news" hidden><span class="strip-t"><small id="pl-news-k"></small><b id="pl-news-t"></b></span></button>
+        <button type="button" class="strip" id="pl-scene" hidden><img id="pl-scene-img" alt="" hidden><span class="strip-t"><small data-t="happening"></small><b id="pl-scene-t"></b><span id="pl-scene-s"></span></span></button>
+        <div class="chips-rail" id="pl-rail" hidden></div>
+        <div class="could" id="pl-try" hidden>
+          <h3 class="guide-h" data-t="cardsHead"></h3>
+          <div class="could-list" id="pl-cards"></div>
+        </div>
+        <form class="intent" id="pl-intent" novalidate hidden>
+          <label class="guide-h" for="pl-say" data-t="intentLabel"></label>
+          <div class="intent-row">
+            <input class="field" id="pl-say" type="text" maxlength="200" autocomplete="off" enterkeyhint="send">
+            <button type="submit" class="btn wax" id="pl-tell" data-t="intentSend"></button>
+          </div>
+          <p class="guide-note" id="pl-why" role="status" hidden></p>
+          <div class="said" id="pl-said"></div>
+        </form>
+        <p class="guide-note" id="pl-wait" role="status" hidden></p>
+        <!-- a roll made for the DM that the DM has still to judge, and then how it went -->
+        <button type="button" class="strip told" id="pl-told" hidden><span class="strip-t"><small id="pl-told-k"></small><b id="pl-told-t"></b></span></button>
+      </div>
+      <!-- what the hero carries (the cartridge's kit for the class): a card each, with a button that tells the DM -->
+      <section class="ply-kit" id="pl-kit" aria-labelledby="pl-kit-h" hidden>
+        <h3 class="guide-h" id="pl-kit-h" data-t="kitHead"></h3>
+        <div class="ply-kit-list" id="pl-kit-list"></div>
+      </section>
+      <div id="pl-rows"></div>
+    </div>
     <footer class="dock pad play-dock">
       <button type="button" class="btn ghost" id="b-free"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7zM12 2v6m0 0l6 9H6zm0 0L3 7m9 1l9-1M6 17l-3 0m15 0l3 0M6 17l6 5 6-5"/></svg><span data-t="free"></span></button>
     </footer>
@@ -261,8 +300,12 @@ body[data-loading] #app{opacity:0;pointer-events:none}</style>
       </div>
       <div class="tray-actions">
         <button type="button" class="btn wax" id="d-roll" data-t="roll"></button>
+        <!-- dice rolled on the real table: type what they show, and it counts like any other roll -->
+        <button type="button" class="btn ghost real" id="d-real" data-t="realDice"></button>
         <button type="button" class="btn ghost" id="d-second" hidden></button>
       </div>
+      <!-- a hero token in hand, after a roll: spend it to roll the same thing again -->
+      <button type="button" class="btn ghost slim ply-spend" id="d-token" hidden></button>
       <!-- shake to roll: only shown where the device can feel a shake -->
       <button type="button" class="shake" id="d-shake" aria-pressed="false" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 3.5h7a1.5 1.5 0 011.5 1.5v14a1.5 1.5 0 01-1.5 1.5h-7A1.5 1.5 0 017 19V5a1.5 1.5 0 011.5-1.5zM3 8.5c-1 2.2-1 4.8 0 7M21 8.5c1 2.2 1 4.8 0 7"/></svg><span id="d-shake-t"></span></button>
       <p class="rail-hint" id="d-rail-hint" hidden></p>
@@ -275,6 +318,18 @@ body[data-loading] #app{opacity:0;pointer-events:none}</style>
         </div>
       </div>
     </footer>
+  </section>
+
+  <!-- 8b. The story at a DM's table: where it is now, the story so far and everything the DM has shown this seat, in order;
+       beside it the quests, the clues and the people met. Tabs with nothing in them are not shown (src/table.js). -->
+  <section class="screen" id="s-tale">
+    <header class="bar pad">
+      <button type="button" class="icon" id="tl-back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="bar-title" data-t="taleTitle" data-h></div>
+      <span class="spacer"></span>
+    </header>
+    <nav class="tabs pad" id="tl-tabs"></nav>
+    <div class="scroll tale" id="tl-body"></div>
   </section>
 
   <!-- Connect OpenAI: only offered when this copy runs on your own computer -->
@@ -336,6 +391,8 @@ body[data-loading] #app{opacity:0;pointer-events:none}</style>
       <button type="button" class="tablechip" id="dm-table" hidden></button>
     </header>
     <div class="toast" id="dm-toast" role="status" hidden></div>
+    <!-- said to a screen reader, not shown: a player is asking for something -->
+    <p class="dm-sr" id="dm-said" role="status"></p>
     <!-- One column on a phone. From 900px the story keeps the main pane and the table sits beside it;
          from 1400px the dictionary has a pane of its own (src/dm.js fills them, src/css/dm.css places them). -->
     <div class="dm-panes" id="dm-panes">
@@ -359,6 +416,14 @@ body[data-loading] #app{opacity:0;pointer-events:none}</style>
         <div class="scroll sheet-b" id="dm-sheet-b"></div>
       </div>
     </div>
+    <!-- one small dialog for the DM's short jobs: sending something as a phone will show it, offering a hero, "They did what?" -->
+    <div class="dmsheet dm-confirm dm-dialog" id="dm-dialog" hidden>
+      <div class="confirm-card dialog-card" role="dialog" aria-modal="true" aria-labelledby="dm-dialog-t">
+        <button type="button" class="icon sheet-x" id="dm-dialog-x" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        <h3 class="sh-t" id="dm-dialog-t"></h3>
+        <div class="dialog-b" id="dm-dialog-b"></div>
+      </div>
+    </div>
     <!-- "are you sure?", for leaving or ending a table and removing a player -->
     <div class="dmsheet dm-confirm" id="dm-confirm" hidden>
       <div class="confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="dm-confirm-t" aria-describedby="dm-confirm-p">
@@ -369,15 +434,73 @@ body[data-loading] #app{opacity:0;pointer-events:none}</style>
     </div>
   </section>
 
-  <!-- What the DM has shown the table -->
-  <div class="handout" id="handout" hidden>
-    <div class="handout-card" role="dialog" aria-modal="true" aria-labelledby="ho-k">
-      <div class="handout-k" id="ho-k" data-t="fromDM"></div>
-      <img id="ho-img" alt="" hidden>
-      <h3 id="ho-title"></h3>
-      <p id="ho-text"></p>
-      <div class="handout-nav" id="ho-nav"><button type="button" class="btn ink" id="ho-prev" data-t="older"></button><span id="ho-count"></span><button type="button" class="btn ink" id="ho-next" data-t="newer"></button></div>
-      <button type="button" class="btn wax" id="ho-ok" data-t="gotIt" data-close></button>
+  <!-- 11. The big screen: a page opened as ?tv=CODE&k=KEY and put on a TV. It shows what the whole table shares and has
+       no controls; src/tv.js draws all of it and src/css/tv.css lays it out. An ordinary visit never opens it. -->
+  <section class="screen tv" id="s-tv" aria-label="The big screen"></section>
+
+  <!-- A roll the DM is asking this seat for: it sits over whatever player screen is open until the roll is made or called off
+       (src/app.js, renderAsked). On the dice tray it is one slim line, so it never covers the dice. -->
+  <div class="req" id="req" role="region" aria-live="polite" aria-labelledby="req-k" hidden>
+    <div class="req-k" id="req-k"></div>
+    <b class="req-t" id="req-t"></b>
+    <p class="req-w" id="req-w" hidden></p>
+    <button type="button" class="btn wax" id="req-go"></button>
+  </div>
+  <!-- A vote the DM puts to the party: over the play and story screens while it is open, then its result as bars (src/app.js, renderVote) -->
+  <div class="ply-vote" id="ply-vote" role="region" aria-live="polite" aria-labelledby="ply-vote-k" hidden>
+    <div class="ply-vote-top"><span class="req-k" id="ply-vote-k"></span><button type="button" class="ply-vote-fold" id="ply-vote-fold"></button></div>
+    <b class="ply-vote-q" id="ply-vote-q"></b>
+    <div class="ply-vote-opts" id="ply-vote-opts" role="group" aria-labelledby="ply-vote-q"></div>
+    <p class="ply-vote-note" id="ply-vote-note"></p>
+    <button type="button" class="btn ghost slim" id="ply-vote-x" data-t="done" hidden></button>
+  </div>
+  <!-- A table moment: one quick wash of light over the whole screen when the DM fires a beat (never under reduced motion) -->
+  <div class="ply-beat" id="ply-beat" aria-hidden="true" hidden></div>
+  <!-- A picture the DM holds face down on every phone, then flips for everyone at once (src/app.js, renderHeld) -->
+  <div class="handout ply-reveal" id="ply-reveal" hidden>
+    <div class="ply-reveal-in" role="dialog" aria-modal="true" aria-labelledby="ply-reveal-t">
+      <div class="ply-flip" id="ply-flip">
+        <div class="ply-face ply-face-down"><i aria-hidden="true"></i><span data-t="revealWait"></span><b id="ply-reveal-t"></b></div>
+        <div class="ply-face ply-face-up"><img id="ply-reveal-img" alt=""><b id="ply-reveal-c"></b></div>
+      </div>
+      <button type="button" class="btn ghost slim" id="ply-reveal-pin" data-t="pin" hidden></button>
+      <button type="button" class="btn ghost slim" id="ply-reveal-x" data-close></button>
+    </div>
+  </div>
+  <!-- the hero's ties, one short step at a time: a bond with another hero, a stake in the story, a voice to try. Each can be skipped. -->
+  <div class="handout" id="ties" hidden>
+    <div class="handout-card" role="dialog" aria-modal="true" aria-labelledby="ti-title">
+      <div class="handout-k" id="ti-k"></div>
+      <h3 id="ti-title"></h3>
+      <p class="fine-ink" id="ti-text"></p>
+      <div class="ply-tie-body" id="ti-body"></div>
+      <p class="err" id="ti-err" role="alert" hidden></p>
+      <button type="button" class="btn ink" id="ti-skip" data-t="skipStep"></button>
+      <button type="button" class="btn ink" id="ti-x" data-t="tiesLater" data-close></button>
+    </div>
+  </div>
+  <!-- dice rolled on the real table, typed in: one box for each die -->
+  <div class="handout" id="typed" hidden>
+    <form class="handout-card" id="ty-form" role="dialog" aria-modal="true" aria-labelledby="ty-title" novalidate>
+      <h3 id="ty-title" data-t="realTitle"></h3>
+      <div class="typed-list" id="ty-list"></div>
+      <p class="err" id="ty-err" role="alert" hidden></p>
+      <button type="submit" class="btn wax" id="ty-ok" data-t="realUse"></button>
+      <button type="button" class="btn ink" id="ty-x" data-t="cancel" data-close></button>
+    </form>
+  </div>
+  <!-- how the hero is doing: fine, hurt or in trouble (and, with rules details on, the number) -->
+  <div class="handout" id="health" hidden>
+    <div class="handout-card" role="dialog" aria-modal="true" aria-labelledby="hl-title">
+      <h3 id="hl-title" data-t="healthTitle"></h3>
+      <p class="fine-ink" data-t="healthNote"></p>
+      <div class="hl-step" id="hl-step" hidden>
+        <button type="button" class="btn ink" id="hl-less">&minus;</button>
+        <b id="hl-now" aria-live="polite"></b>
+        <button type="button" class="btn ink" id="hl-more">+</button>
+      </div>
+      <div class="menu-list" id="hl-list" role="group" aria-labelledby="hl-title"></div>
+      <button type="button" class="btn ink" id="hl-x" data-t="done" data-close></button>
     </div>
   </div>
   <div class="handout" id="audio" hidden>
@@ -385,6 +508,8 @@ body[data-loading] #app{opacity:0;pointer-events:none}</style>
       <h3 id="au-title" data-t="settings"></h3>
       <button type="button" class="switch" id="au-music" role="switch" aria-checked="true"><span><b data-t="music"></b><small id="au-music-note"></small></span><i aria-hidden="true"></i></button>
       <button type="button" class="switch" id="au-sfx" role="switch" aria-checked="true"><span><b data-t="sfx"></b><small data-t="sfxNote"></small></span><i aria-hidden="true"></i></button>
+      <!-- the soundscape the DM sets behind a scene: only offered to a player seated at a table, and off until they switch it on -->
+      <button type="button" class="switch" id="au-table" role="switch" aria-checked="false" hidden><span><b data-t="tableSound"></b><small id="au-table-note"></small></span><i aria-hidden="true"></i></button>
       <button type="button" class="switch" id="au-details" role="switch" aria-checked="false"><span><b data-t="details"></b><small data-t="detailsNote"></small></span><i aria-hidden="true"></i></button>
       <!-- AI extras: one line that says whether they are on, and the way to connect where this copy allows it -->
       <div class="ai-extras" id="au-ai" hidden>
@@ -393,6 +518,8 @@ body[data-loading] #app{opacity:0;pointer-events:none}</style>
         <button type="button" class="btn ink" id="b-connect-title" hidden></button>
       </div>
       <small class="credit" id="au-credit" hidden></small>
+      <!-- the credits every cartridge carries (the rules it plays by) and any more of its own -->
+      <small class="credit" id="au-rules" hidden></small>
       <button type="button" class="btn wax" id="au-x" data-t="done" data-close></button>
     </div>
   </div>
@@ -410,14 +537,20 @@ body[data-loading] #app{opacity:0;pointer-events:none}</style>
       <div class="handout-k" data-t="tableKicker"></div>
       <h3 id="sw-title"></h3>
       <p class="fine-ink" id="sw-who" hidden></p>
+      <!-- seated at a table: everyone who is here, each with a portrait and one thing they are good at -->
+      <div class="here" id="sw-here" role="group" hidden></div>
       <!-- the one place "DM" is explained to someone joining a table -->
       <p class="fine-ink" id="sw-dm" data-t="dmIs"></p>
-      <label class="lbl" for="sw-name" data-t="yourName"></label>
-      <input class="field" id="sw-name" type="text" autocomplete="given-name" maxlength="24">
-      <label class="lbl" for="sw-code" id="sw-lbl"></label>
-      <input class="field code" id="sw-code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="4" placeholder="ABCD">
-      <p class="err" id="sw-err" role="alert" hidden></p>
-      <button type="button" class="btn wax" id="sw-join"></button>
+      <!-- the name and the code: always there for someone joining; tucked behind "Move to another table" for someone seated -->
+      <div class="sw-form" id="sw-form">
+        <label class="lbl" for="sw-name" data-t="yourName"></label>
+        <input class="field" id="sw-name" type="text" autocomplete="given-name" maxlength="24">
+        <label class="lbl" for="sw-code" id="sw-lbl"></label>
+        <input class="field code" id="sw-code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="4" placeholder="ABCD">
+        <p class="err" id="sw-err" role="alert" hidden></p>
+        <button type="button" class="btn wax" id="sw-join"></button>
+      </div>
+      <button type="button" class="btn ink" id="sw-move" data-t="moveTable" hidden></button>
       <button type="button" class="btn ink" id="sw-leave" hidden></button>
       <button type="button" class="btn ink" id="sw-x" data-t="close" data-close></button>
     </div>
@@ -426,6 +559,7 @@ body[data-loading] #app{opacity:0;pointer-events:none}</style>
   <div class="handout" id="ask" hidden>
     <div class="handout-card" role="alertdialog" aria-modal="true" aria-labelledby="ask-title" aria-describedby="ask-text">
       <div class="handout-k" id="ask-k" hidden></div>
+      <img id="ask-img" alt="" hidden>
       <h3 id="ask-title"></h3>
       <p id="ask-text" hidden></p>
       <button type="button" class="btn wax" id="ask-yes"></button>

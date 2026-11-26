@@ -10,7 +10,7 @@ const P = require('../../scripts/lib/packs.js');
 /* the engine with every pack in it, then src/app.js: with no `document` it stops after FR.play */
 function engine() {
   const FR = P.engine();
-  P.list().forEach((p) => { const l = P.load(p.file); assert.strictEqual(l.error, '', p.id + ' ' + l.error); FR.scenario(l.def); });
+  P.list().forEach((p) => { const l = P.load(p.file); assert.strictEqual(l.error, '', p.id + ' ' + l.error); FR.cartridge(l.def); });
   new Function('FR', fs.readFileSync(path.join(P.ROOT, 'src', 'app.js'), 'utf8'))(FR);
   assert.ok(FR.play, 'src/app.js defines FR.play before it touches the page');
   return FR;

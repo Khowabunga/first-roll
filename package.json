@@ -6,7 +6,7 @@
   "scripts": {
     "build": "node build.js",
     "validate": "node scripts/validate.js",
-    "new-scenario": "node scripts/new-scenario.js",
+    "new-cartridge": "node scripts/new-cartridge.js",
     "dev": "wrangler dev",
     "test": "node --test test/unit/*.test.js",
     "check": "npm run validate && npm run build && npm test",

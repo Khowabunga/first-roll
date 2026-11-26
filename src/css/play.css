@@ -77,6 +77,8 @@
 .nudge { flex-shrink: 0; margin: 10px max(20px, env(safe-area-inset-right, 0px)) 0 max(20px, env(safe-area-inset-left, 0px)); padding: 10px 14px; border-radius: max(var(--r-chip), 8px); background: rgba(var(--gilt-rgb), 0.16); border: var(--bw) solid rgba(var(--gilt-rgb), 0.6); color: var(--bone); font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.35; }
 /* "Good at this": said in words where a bare bonus would only puzzle */
 .row-g { flex-shrink: 0; padding: 4px 10px; border-radius: var(--r-pill); border: var(--bw) solid rgba(var(--gilt-rgb), 0.55); color: var(--gilt-hi); font-family: var(--f-ui); font-weight: 700; font-size: var(--t-xs); white-space: nowrap; }
+/* "Fair at this" (the light rules): the same badge, quieter, so the things a hero is good at stand out beside it */
+.row-g.fair { border-style: dashed; border-color: rgba(var(--gilt-rgb), 0.45); color: var(--bone); font-weight: 500; }
 
 /* ---------- the dice tray ---------- */
 /* in plain words the three choices are short sentences, so they may take two lines */
@@ -110,3 +112,277 @@
 }
 .hero-name { font-size: var(--t-lg); }
 .tray-title { font-size: var(--t-xl); }
+
+/* ---------- the table art waits for a hero ----------
+   The play screen's picture is not asked for on the title: src/app.js marks #app with data-art the
+   first time a screen that leads to the table is opened, and only then does the browser fetch it. */
+#app:not([data-art]) #s-play { background-image: none; }
+
+/* ---------- at a DM's table: the guide at the top of the play screen ----------
+   What is new from the DM, where the story is, the ways to the quests, clues and people, what a
+   player might try here, and a box to say it in their own words. Each part is hidden when the
+   table has nothing for it (src/app.js, renderGuide). */
+.guide { display: flex; flex-direction: column; gap: var(--s-2); margin-bottom: var(--s-3); }
+.strip { width: 100%; display: flex; align-items: center; gap: var(--s-3); min-height: 60px; padding: var(--s-2) var(--s-3); text-align: left; color: var(--bone); background: var(--row-bg); border: var(--bw) solid var(--row-edge); border-radius: max(var(--r-chip), 8px); box-shadow: var(--sh-row); transition: transform var(--d-fast) var(--ease-bounce), filter var(--d-base) ease; }
+.strip:hover { filter: brightness(1.12); }
+.strip:active { transform: var(--press); }
+.strip img { width: 56px; height: 56px; flex-shrink: 0; object-fit: cover; border-radius: var(--r-media); background: rgba(var(--bone-rgb), 0.08); }
+.strip-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.strip-t small { font-family: var(--f-sc); font-weight: var(--w-label); font-size: var(--t-xs); letter-spacing: var(--track); font-variant-caps: var(--caps-variant); text-transform: var(--caps-transform); color: var(--accent); }
+.strip-t b { font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-md); line-height: 1.15; color: var(--bone); overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.strip-t span { font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.3; color: var(--mute); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+/* something new from the DM: the one strip that is filled in, so it is seen first */
+.strip.news { background: var(--sel-bg); border-color: var(--sel-bg); }
+.strip.news .strip-t small, .strip.news .strip-t b { color: var(--sel-ink); }
+.strip.told { border-color: var(--accent); }
+/* three chips share one line where they fit; in a wider typeface the last takes a line of its own rather than being cut off */
+.chips-rail { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.rail-chip { flex: 1 1 auto; min-height: var(--hit); padding: 0 var(--s-2) 0 var(--s-3); display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); border-radius: var(--r-pill); border: var(--bw) solid var(--rim); background: rgba(var(--bone-rgb), 0.1); color: var(--accent); font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-sm); white-space: nowrap; }
+.rail-chip small { min-width: 24px; height: 24px; padding: 0 6px; display: grid; place-items: center; border-radius: var(--r-pill); background: var(--sel-bg); color: var(--sel-ink); font-size: var(--t-xs); font-variant-numeric: tabular-nums; }
+.rail-chip:active { transform: var(--press); }
+.guide-h { display: block; margin-top: var(--s-2); font-family: var(--f-sc); font-weight: var(--w-label); font-size: var(--t-sm); letter-spacing: var(--track); font-variant-caps: var(--caps-variant); text-transform: var(--caps-transform); color: var(--accent); text-shadow: var(--sh-text); }
+.could, .intent { display: flex; flex-direction: column; gap: var(--s-2); }
+.could-list { display: flex; flex-direction: column; gap: var(--s-2); }
+/* a card is a row with the scene's own light on it; once tapped it says where the asking stands */
+.row.could-card { margin: 0; background: linear-gradient(rgba(var(--gilt-rgb), 0.14), rgba(var(--gilt-rgb), 0.14)), var(--row-bg); border-color: var(--accent); }
+.row.could-card:disabled { cursor: default; filter: none; transform: none; }
+.row.could-card:disabled:not(.is-asked) { opacity: 0.6; }
+.row-s { display: block; margin-top: 2px; font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-xs); line-height: 1.3; color: var(--accent); }
+.row.could-card.is-no .row-s { color: var(--danger-hi); }
+.intent-row { display: flex; gap: var(--s-2); }
+.intent .field { flex: 1; min-width: 0; min-height: 50px; padding: var(--s-2) var(--s-3); background: rgba(var(--bone-rgb), 0.08); color: var(--bone); border: var(--bw) solid var(--rim); caret-color: var(--accent); }
+.intent .field::placeholder { color: var(--mute); }
+.intent .btn { width: auto; flex-shrink: 0; min-height: 50px; padding: 0 var(--s-4); font-size: var(--t-md); }
+.guide-note { font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.35; color: var(--mute); }
+#pl-why { color: var(--accent); font-weight: var(--w-strong); }
+.said { display: flex; flex-direction: column; gap: var(--s-2); }
+.said-p { font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.35; color: var(--mute); }
+.said-p b { display: block; color: var(--bone); font-weight: var(--w-strong); }
+.said-p.is-no b { color: var(--danger-hi); }
+
+/* ---------- health as a word you can tap ---------- */
+.hero-stats .stat-btn { min-width: var(--hit); min-height: var(--hit); padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: 0; font-family: var(--f-sc); font-weight: var(--w-label); font-size: var(--t-xs); letter-spacing: var(--track); font-variant-caps: var(--caps-variant); text-transform: var(--caps-transform); color: var(--mute); text-shadow: var(--sh-text); }
+.hero-stats .stat-btn strong { text-decoration: underline dotted; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: var(--rim); }
+/* the word is short, but a cartridge's own may run to three ("Merry and bright"): it takes two lines rather than room from the hero's name */
+.hero-stats { gap: var(--s-2); }
+.hero-stats .stat-btn.word strong { max-width: 90px; font-size: var(--t-sm); line-height: 1.1; letter-spacing: 0; text-transform: none; font-variant-caps: normal; }
+.hero-stats .stat-btn.is-hurt strong { color: var(--gilt); }
+.hero-stats .stat-btn.is-trouble strong { color: var(--danger-hi); }
+.hl-step { display: grid; grid-template-columns: 56px 1fr 56px; align-items: center; gap: var(--s-2); text-align: center; }
+.hl-step b { font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-xl); color: var(--oxblood); }
+.hl-step .btn { width: 100%; padding: 0; font-size: var(--t-xl); }
+#hl-list .btn.on { background: var(--oxblood); border-color: var(--oxblood); color: var(--on-wax); }
+
+/* ---------- a roll the DM asks for: the card over whatever screen is open ---------- */
+.req { position: absolute; left: var(--s-3); right: var(--s-3); bottom: max(var(--s-3), env(safe-area-inset-bottom, 0px)); z-index: 20; max-height: calc(100% - 2 * var(--s-3)); overflow-y: auto; display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-4); border-radius: var(--r-dialog); background: var(--soot); border: 2px solid var(--accent); box-shadow: var(--sh-pop), 0 0 0 6px rgba(var(--night-rgb), 0.6); animation: pop-in var(--d-slow) var(--ease-bounce); }
+.req-k { font-family: var(--f-sc); font-weight: var(--w-label); font-size: var(--t-sm); letter-spacing: var(--track); font-variant-caps: var(--caps-variant); text-transform: var(--caps-transform); color: var(--accent); }
+.req-t { font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-xl); line-height: 1.15; color: var(--bone); text-wrap: balance; overflow-wrap: anywhere; }
+.req-w { font-family: var(--f-ui); font-size: var(--t-md); line-height: 1.35; color: var(--bone); }
+/* on the dice tray, where another roll is open, it is one line and never covers the dice */
+.req.slim { bottom: auto; flex-direction: row; align-items: center; padding: var(--s-2) var(--s-2) var(--s-2) var(--s-3); }
+.req.slim .req-k { display: none; }
+.req.slim .req-t { flex: 1; min-width: 0; font-size: var(--t-md); }
+.req.slim .btn { width: auto; flex-shrink: 0; min-height: var(--hit); padding: 0 var(--s-3); font-size: var(--t-sm); }
+
+/* ---------- the tray: real dice beside Roll, and a roll for the DM told as story ---------- */
+.tray-actions .btn.real { flex: 0 1 36%; min-width: 0; padding-inline: var(--s-2); font-size: var(--t-xs); line-height: 1.1; letter-spacing: calc(var(--track) * 0.5); white-space: normal; text-wrap: balance; }
+.tray-actions:not(:has(#d-second:not([hidden]))) #d-roll { font-size: var(--t-lg); }
+.result.told { align-items: flex-start; }
+.result.told .result-num { font-size: var(--t-2xl); line-height: 1.2; min-width: 0; }
+.result.told .result-math { font-family: var(--f-body); font-weight: var(--w-medium); font-size: var(--t-lg); line-height: 1.3; color: var(--bone); text-wrap: pretty; }
+.result.told .result-say { margin-top: 2px; font-family: var(--f-ui); font-weight: var(--w-body); font-size: var(--t-xs); letter-spacing: 0; text-transform: none; font-variant-caps: normal; }
+.typed-list { display: flex; flex-direction: column; gap: var(--s-3); }
+
+/* ---------- who is here (the table dialog) and who is who (the story screen) ---------- */
+.sw-form { display: flex; flex-direction: column; gap: var(--s-3); }
+.here { display: flex; flex-direction: column; gap: var(--s-2); }
+.here-p { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-2); text-align: left; border: var(--bw) solid var(--rule); border-radius: var(--r-media); background: var(--field-bg); }
+.here-p.me { border-color: var(--oxblood); }
+.here-p img, .handout-card .here-p img, .here-none { width: 52px; height: 52px; max-height: none; flex-shrink: 0; border-radius: 50%; object-fit: cover; object-position: 50% 18%; background: var(--parch); }
+.here-p img.here-crest, .handout-card .here-p img.here-crest { object-fit: contain; padding: 4px; }
+.here-none { display: grid; place-items: center; font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-xl); color: var(--ink-soft); border: var(--bw) solid var(--rule); }
+.here-t { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.here-t b { font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-lg); line-height: 1.15; color: var(--oxblood); overflow-wrap: anywhere; }
+.here-t small { font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.3; color: var(--ink-soft); }
+.here-t span { font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.3; color: var(--ink); }
+.handout-card #ask-img { align-self: center; width: 132px; height: 164px; max-height: none; object-fit: cover; object-position: 50% 18%; }
+
+/* ---------- the story screen ---------- */
+.tale { display: flex; flex-direction: column; gap: var(--s-5); padding: var(--s-3) max(var(--gutter), env(safe-area-inset-right, 0px)) var(--s-7) max(var(--gutter), env(safe-area-inset-left, 0px)); }
+.tl-sec { display: flex; flex-direction: column; gap: var(--s-2); flex-shrink: 0; }
+.tl-h { padding-bottom: var(--s-1); font-family: var(--f-sc); font-weight: var(--w-label); font-size: var(--t-sm); letter-spacing: var(--track); font-variant-caps: var(--caps-variant); text-transform: var(--caps-transform); color: var(--accent); border-bottom: var(--bw) solid var(--hairline); }
+.tl-img { display: block; width: 100%; max-height: 46vh; object-fit: cover; border-radius: var(--r-media); background: rgba(var(--bone-rgb), 0.06); }
+.tl-t { font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-xl); line-height: 1.15; color: var(--accent); text-wrap: balance; overflow-wrap: anywhere; }
+.tl-c { font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.3; color: var(--mute); }
+.tl-p { font-family: var(--f-body); font-size: var(--t-md); line-height: var(--lh); color: var(--bone); white-space: pre-line; text-wrap: pretty; overflow-wrap: anywhere; }
+.tl-item { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-3); background: var(--row-bg); border: var(--bw) solid var(--row-edge); border-radius: max(var(--r-chip), 8px); }
+.tl-item.tl-scene { padding: var(--s-3) 0 0; background: none; border: 0; border-top: var(--bw) solid var(--hairline); border-radius: 0; }
+.tl-k { align-self: flex-start; font-family: var(--f-sc); font-weight: var(--w-label); font-size: var(--t-xs); letter-spacing: var(--track); font-variant-caps: var(--caps-variant); text-transform: var(--caps-transform); color: var(--accent); }
+/* a note sent to this seat alone says so, in the one filled-in label on the screen */
+.tl-item.tl-own { border-color: var(--accent); }
+.tl-item.tl-own .tl-k { padding: 2px var(--s-2); border-radius: var(--r-pill); background: var(--sel-bg); color: var(--sel-ink); }
+.tl-item.tl-new { box-shadow: 0 0 0 2px var(--sel-bg); }
+.tl-item .tl-img { max-height: 60vh; object-fit: contain; }
+.tl-item.tl-hero .tl-img { align-self: center; width: 132px; height: 164px; object-fit: cover; object-position: 50% 18%; }
+.tl-item.tl-hero .tl-t, .tl-item.tl-hero .tl-c { text-align: center; }
+.tl-empty { padding: var(--s-6) 0; font-family: var(--f-ui); font-size: var(--t-md); color: var(--mute); text-align: center; }
+.tl-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-2); }
+.tl-list li { display: flex; align-items: flex-start; gap: var(--s-3); padding: var(--s-3); background: var(--row-bg); border: var(--bw) solid var(--row-edge); border-radius: max(var(--r-chip), 8px); font-family: var(--f-body); font-size: var(--t-md); line-height: 1.35; color: var(--bone); }
+.tl-list li span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.tl-list li small { flex-shrink: 0; font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-xs); color: var(--accent); white-space: nowrap; }
+.tl-list li i { flex-shrink: 0; width: 20px; height: 20px; margin-top: 2px; border: 2px solid var(--rim); border-radius: var(--r-chip); }
+.tl-list.quests li.is-done i { background: var(--sel-bg); border-color: var(--sel-bg); box-shadow: inset 0 0 0 3px var(--night); }
+.tl-list.quests li.is-done span { color: var(--mute); }
+.tl-list.clues li i { width: var(--mark-size); height: var(--mark-size); margin-top: 7px; border: 0; border-radius: var(--mark-r); background: var(--accent); transform: var(--mark-turn); }
+.tale .here-p { background: var(--row-bg); border-color: var(--row-edge); }
+.tale .here-t b { color: var(--accent); }
+.tale .here-t span { color: var(--bone); }
+.tale .here-none { background: rgba(var(--bone-rgb), 0.08); color: var(--accent); border-color: var(--rim); }
+
+/* ==========================================================================================
+   The shared table, the player's side (docs/PHASE2.md, section 4): ties, roles, the kit, hero
+   tokens, the party vote, marks and notes, and the table moments. Every class here starts
+   "ply-", so none can meet a class from another sheet. Each piece is only on screen when the
+   cartridge or the table has something for it.
+   ========================================================================================== */
+
+/* ---------- roles: the hero's job in plain words, ahead of the class ---------- */
+.ply-role { display: flex; flex-direction: column; align-items: center; gap: 2px; max-width: 34ch; text-align: center; }
+.ply-role b { font-family: var(--f-sc); font-weight: var(--w-label); font-size: var(--t-lg); letter-spacing: var(--track); font-variant-caps: var(--caps-variant); text-transform: var(--caps-transform); color: var(--accent); text-shadow: var(--sh-text); }
+.ply-role span { font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.3; color: var(--bone); text-wrap: balance; text-shadow: var(--sh-text); }
+#s-reveal.intro .ply-role { animation: rise 0.9s 2.35s var(--ease) both; }
+/* the ready-made heroes, gathered under the job each one does */
+.ply-role-h { display: flex; flex-direction: column; gap: 2px; margin-top: var(--s-3); padding-bottom: var(--s-1); border-bottom: var(--bw) solid var(--hairline); }
+.ply-role-h:first-child { margin-top: 0; }
+.ply-role-h h3 { font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-xl); line-height: 1.15; color: var(--accent); text-shadow: var(--sh-text); }
+.ply-role-h p { font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.3; color: var(--bone); text-shadow: var(--sh-text); }
+.ply-role-h small { align-self: flex-start; margin-top: 2px; padding: 2px var(--s-2); border-radius: var(--r-pill); background: var(--sel-bg); color: var(--sel-ink); font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-xs); line-height: 1.3; }
+/* a class on the reveal says its role first, the class beneath */
+.chip.ply-chip { flex-direction: column; align-items: flex-start; justify-content: center; gap: 0; min-height: 50px; padding-block: var(--s-1); text-align: left; }
+.ply-chip i { font-style: normal; font-family: var(--f-sc); font-weight: var(--w-label); font-size: var(--t-xs); line-height: 1.2; letter-spacing: var(--track); font-variant-caps: var(--caps-variant); text-transform: var(--caps-transform); color: var(--ink-soft); }
+.ply-chip span { display: inline-flex; align-items: baseline; gap: var(--s-2); }
+.chip.on.ply-chip i { color: inherit; opacity: 0.9; }
+/* who is here: the role and its line, then the class; a bond sits under both heroes it joins */
+.here-t .ply-here-role { font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.3; color: var(--ink); }
+.here-t .ply-here-role strong { font-weight: var(--w-strong); color: var(--oxblood); }
+.here-t .ply-bond { margin-top: 2px; padding-left: var(--s-2); border-left: 2px solid var(--rule); font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.35; color: var(--ink-soft); overflow-wrap: anywhere; }
+.here-t .ply-bond strong { display: block; font-weight: var(--w-strong); color: var(--ink); }
+.here-p:has(.ply-bond) { align-items: flex-start; }
+.ply-missing { font-family: var(--f-ui); font-weight: var(--w-medium); font-size: var(--t-sm); line-height: 1.35; color: var(--ink-soft); text-align: center; text-wrap: balance; }
+
+/* ---------- ties: the steps in the dialog, and where they show on the sheet ---------- */
+.ply-tie-body { display: flex; flex-direction: column; gap: var(--s-3); }
+.ply-pick { width: 100%; min-height: 50px; padding: var(--s-2) var(--s-3); display: flex; flex-direction: column; gap: 2px; text-align: left; color: var(--ink); background: var(--field-bg); border: var(--bw) solid var(--field-edge); border-radius: var(--r-media); font-family: var(--f-body); font-weight: var(--w-medium); font-size: var(--t-md); line-height: 1.35; transition: transform var(--d-fast) var(--ease-bounce); }
+.ply-pick b { font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-lg); line-height: 1.15; color: var(--oxblood); }
+.ply-pick small { font-family: var(--f-ui); font-weight: var(--w-body); font-size: var(--t-sm); line-height: 1.3; color: var(--ink-soft); }
+.ply-pick:hover { background: rgba(var(--ox-rgb), 0.1); }
+.ply-pick:active { transform: var(--press); }
+.ply-pick[aria-pressed="true"] { border-color: var(--oxblood); box-shadow: 0 0 0 2px var(--oxblood); }
+.ply-prompt { font-family: var(--f-body); font-weight: var(--w-medium); font-size: var(--t-lg); line-height: 1.35; color: var(--ink); text-wrap: pretty; overflow-wrap: anywhere; }
+.ply-tie-body .btn.ink { align-self: flex-start; min-height: var(--hit); }
+.ply-ties { display: flex; flex-direction: column; gap: var(--s-3); }
+.ply-tie { display: flex; flex-direction: column; gap: var(--s-1); }
+.ply-tie p { font-family: var(--f-body); font-size: var(--t-md); line-height: 1.4; color: var(--ink); overflow-wrap: anywhere; }
+.ply-tie p.is-none { font-style: var(--em-style); color: var(--ink-soft); }
+.ply-tie small { font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.3; color: var(--ink-soft); }
+.ply-tie .btn { align-self: flex-start; min-height: var(--hit); }
+
+/* ---------- hero tokens, and the things a hero carries ---------- */
+.ply-tokens { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-height: var(--hit); margin: 0 0 var(--s-2); padding: var(--s-2) var(--s-3); border-radius: max(var(--r-chip), 8px); background: rgba(var(--gilt-rgb), 0.16); border: var(--bw) solid var(--rim); }
+.ply-tokens b { flex-shrink: 0; font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-lg); line-height: 1.15; color: var(--gilt-hi); }
+.ply-tokens span { min-width: 0; font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.3; color: var(--bone); }
+.ply-kit { display: flex; flex-direction: column; gap: var(--s-2); margin-bottom: var(--s-3); }
+.ply-kit-list { display: flex; flex-direction: column; gap: var(--s-2); }
+.ply-item { display: flex; align-items: center; gap: var(--s-3); min-height: 62px; padding: var(--s-2) var(--s-2) var(--s-2) var(--s-4); color: var(--bone); background: var(--row-bg); border: var(--bw) solid var(--row-edge); border-radius: var(--r-btn); box-shadow: var(--sh-row); }
+.ply-item img { width: var(--hit); height: var(--hit); flex-shrink: 0; object-fit: cover; border-radius: var(--r-media); background: rgba(var(--bone-rgb), 0.08); }
+.ply-item .btn { width: auto; flex-shrink: 0; min-height: var(--hit); padding: 0 var(--s-4); font-size: var(--t-md); }
+.ply-item.is-used .row-n { color: var(--mute); text-decoration: line-through; }
+.ply-item.is-used .row-h { color: var(--mute); }
+.ply-once { display: block; margin-top: 2px; font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-xs); line-height: 1.3; color: var(--accent); }
+/* in the tray, after a roll, with a token in hand */
+.btn.ply-spend { align-self: center; width: auto; max-width: 100%; min-height: var(--hit); padding: var(--s-1) var(--s-4); font-size: var(--t-sm); white-space: normal; text-wrap: balance; color: var(--gilt-hi); border-color: var(--gilt); }
+
+/* ---------- the party vote: a card over the play and story screens ---------- */
+.ply-vote { position: absolute; left: var(--s-3); right: var(--s-3); bottom: max(var(--s-3), env(safe-area-inset-bottom, 0px)); z-index: 19; max-height: calc(100% - 2 * var(--s-3)); overflow-y: auto; display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-4); border-radius: var(--r-dialog); background: var(--soot); border: 2px solid var(--accent); box-shadow: var(--sh-pop), 0 0 0 6px rgba(var(--night-rgb), 0.6); animation: pop-in var(--d-slow) var(--ease-bounce); }
+.ply-vote-top { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); }
+.ply-vote-top .req-k { min-width: 0; overflow-wrap: anywhere; }
+.ply-vote-fold { flex-shrink: 0; min-width: var(--hit); min-height: var(--hit); padding: 0 var(--s-3); background: none; border: var(--bw) solid var(--rim); border-radius: var(--r-pill); color: var(--accent); font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-sm); }
+.ply-vote-q { font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-xl); line-height: 1.15; color: var(--bone); text-wrap: balance; overflow-wrap: anywhere; }
+.ply-vote-opts { display: flex; flex-direction: column; gap: var(--s-2); }
+.ply-opt { width: 100%; min-height: 50px; padding: var(--s-2) var(--s-3); display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); text-align: left; background: rgba(var(--bone-rgb), 0.08); border: var(--bw) solid var(--rim); border-radius: var(--r-btn); color: var(--bone); font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-md); line-height: 1.25; overflow-wrap: anywhere; transition: transform var(--d-fast) var(--ease-bounce); }
+.ply-opt:active { transform: var(--press); }
+.ply-opt small { flex-shrink: 0; font-size: var(--t-xs); font-weight: var(--w-strong); }
+.ply-opt[aria-pressed="true"] { background: var(--sel-bg); border-color: var(--sel-bg); color: var(--sel-ink); }
+.ply-vote-note { font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.35; color: var(--mute); }
+/* folded away: one line that says a vote is open, and the way back to it */
+.ply-vote.is-folded { padding: var(--s-2) var(--s-2) var(--s-2) var(--s-3); }
+.ply-vote.is-folded .req-k { font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-sm); letter-spacing: 0; text-transform: none; font-variant-caps: normal; color: var(--bone); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+/* closed: each choice with its count, and a bar as long as its share of the most-picked one */
+.ply-bar { display: grid; grid-template-columns: 1fr auto; gap: 2px var(--s-2); align-items: baseline; font-family: var(--f-ui); font-size: var(--t-md); line-height: 1.25; color: var(--bone); }
+.ply-bar span { min-width: 0; overflow-wrap: anywhere; }
+.ply-bar span small { margin-left: var(--s-2); padding: 1px var(--s-2); border-radius: var(--r-pill); background: var(--sel-bg); color: var(--sel-ink); font-size: var(--t-xs); font-weight: var(--w-strong); white-space: nowrap; }
+.ply-bar strong { font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-lg); color: var(--mute); font-variant-numeric: tabular-nums; }
+.ply-bar i { grid-column: 1 / -1; height: var(--bar-h); border-radius: var(--r-chip); background: rgba(var(--bone-rgb), 0.14); overflow: hidden; }
+.ply-bar i u { display: block; height: 100%; border-radius: inherit; background: var(--mute); }
+.ply-bar.is-top { font-weight: var(--w-strong); }
+.ply-bar.is-top strong { color: var(--gilt-hi); }
+.ply-bar.is-top i u { background: var(--gilt-hi); }
+
+/* ---------- marks on things in the story, and pinning one to the notes ---------- */
+.ply-foot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+.ply-marks { display: flex; flex-wrap: wrap; gap: var(--s-1); }
+.ply-mark { min-width: var(--hit); min-height: var(--hit); padding: 0 var(--s-2); display: inline-flex; align-items: center; justify-content: center; gap: var(--s-1); background: none; border: var(--bw) solid transparent; border-radius: var(--r-pill); color: var(--mute); font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-xs); line-height: 1; font-variant-numeric: tabular-nums; transition: transform var(--d-fast) var(--ease-bounce); }
+.ply-mark svg { width: 22px; height: 22px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: var(--icon-stroke); stroke-linecap: round; stroke-linejoin: round; }
+.ply-mark.has { border-color: var(--hairline); color: var(--bone); }
+.ply-mark.on { background: var(--sel-bg); border-color: var(--sel-bg); color: var(--sel-ink); }
+.ply-mark:active { transform: var(--press); }
+.ply-pin { min-height: var(--hit); margin-left: auto; padding: 0 var(--s-3); background: none; border: var(--bw) solid var(--rim); border-radius: var(--r-pill); color: var(--accent); font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-xs); white-space: nowrap; }
+.ply-pin:disabled { border-color: transparent; color: var(--mute); cursor: default; }
+.ply-pin.is-del { color: var(--danger-hi); border-color: var(--hairline); }
+/* a natural 20 or a natural 1, as the whole table saw it */
+.tl-item.ply-nat { border-color: var(--gilt); }
+.tl-item.ply-nat.is-low { border-color: var(--danger-hi); }
+.tl-item.ply-nat.is-low .tl-k { color: var(--danger-hi); }
+
+/* ---------- notes, kept on this phone ---------- */
+.ply-note-form { display: flex; flex-direction: column; gap: var(--s-2); }
+.ply-note-in { min-height: 84px; resize: none; padding: var(--s-2) var(--s-3); background: rgba(var(--bone-rgb), 0.08); color: var(--bone); border: var(--bw) solid var(--rim); caret-color: var(--accent); line-height: 1.4; }
+.ply-note-in::placeholder { color: var(--mute); }
+.ply-note-form .btn { align-self: flex-end; width: auto; min-height: var(--ctl-slim); padding: 0 var(--s-5); font-size: var(--t-md); }
+.ply-note-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); }
+
+/* ---------- the map: the picture, fog over what is not yet found, a name on what is ---------- */
+.ply-map-pan { overflow: auto; border-radius: var(--r-media); border: var(--bw) solid var(--rim); background: var(--night); overscroll-behavior: contain; }
+.ply-map { position: relative; width: 100%; overflow: hidden; }
+.ply-map.is-big { width: 230%; }
+.ply-map img { display: block; width: 100%; height: auto; }
+.ply-region { position: absolute; display: grid; place-items: end center; }
+.ply-region.is-fog { background: var(--soot); box-shadow: 0 0 0 1px var(--soot); }
+.ply-region.is-open { z-index: 1; }
+.ply-region span { max-width: 100%; margin-bottom: 2px; padding: 1px var(--s-2); border-radius: var(--r-chip); background: rgba(var(--night-rgb), 0.8); color: var(--bone); font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-xs); line-height: 1.2; text-align: center; overflow-wrap: anywhere; }
+
+/* ---------- table moments: a wash of light for a beat, and the card that flips ---------- */
+.ply-beat { position: absolute; inset: 0; z-index: 58; pointer-events: none; opacity: 0; background: var(--bone); }
+.ply-beat.is-bell { background: var(--gilt-hi); }
+.ply-beat.is-hit, .ply-beat.is-crash { background: var(--wax-hi); }
+.ply-beat.is-hush { background: var(--night); }
+.ply-beat.is-on { animation: ply-beat 0.7s ease-out both; }
+@keyframes ply-beat { 0% { opacity: 0; } 14% { opacity: 0.42; } 100% { opacity: 0; } }
+/* under the roll the DM asks for and the vote: either can arrive while a picture is still open, and must be seen */
+.handout.ply-reveal { z-index: 18; }
+.ply-reveal-in { width: 100%; max-width: 380px; max-height: 100%; display: flex; flex-direction: column; align-items: center; gap: var(--s-3); animation: pop-in var(--d-slow) var(--ease-bounce); }
+.ply-flip { position: relative; flex-shrink: 0; width: min(100%, 46vh); aspect-ratio: 3 / 4; transform: perspective(1400px) rotateY(0deg); transform-style: preserve-3d; transition: transform var(--d-scene) var(--ease); }
+.ply-flip.is-up { transform: perspective(1400px) rotateY(180deg); }
+.ply-flip.is-set { transition: none; }
+.ply-face { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s-3); padding: var(--s-4); overflow: hidden; border-radius: var(--r-dialog); border: 2px solid var(--accent); box-shadow: var(--sh-pop); text-align: center; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+.ply-face-down { background: repeating-linear-gradient(45deg, rgba(var(--gilt-rgb), 0.12) 0 10px, transparent 10px 20px), repeating-linear-gradient(-45deg, rgba(var(--gilt-rgb), 0.12) 0 10px, transparent 10px 20px), var(--soot); }
+.ply-face-down i { width: 52px; height: 52px; margin-bottom: var(--s-2); border: 2px solid var(--accent); border-radius: var(--r-chip); transform: rotate(45deg); }
+.ply-face-down span { font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-2xl); line-height: 1.1; color: var(--accent); }
+.ply-face-down b { font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-md); line-height: 1.3; color: var(--bone); overflow-wrap: anywhere; }
+.ply-face-up { padding: 0; justify-content: flex-end; background: var(--night); transform: rotateY(180deg); }
+.ply-face-up img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.ply-face-up b { position: relative; width: 100%; padding: var(--s-6) var(--s-3) var(--s-3); background: linear-gradient(rgba(var(--night-rgb), 0), rgba(var(--night-rgb), 0.92)); font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-lg); line-height: 1.2; color: var(--bone); overflow-wrap: anywhere; }
+/* for people who asked for less motion nothing turns: the picture simply takes the card's place */
+.ply-reveal.is-still .ply-flip, .ply-reveal.is-still .ply-flip.is-up { transform: none; transition: none; }
+.ply-reveal.is-still .ply-face-up { transform: none; }
+.ply-reveal.is-still .ply-flip:not(.is-up) .ply-face-up, .ply-reveal.is-still .ply-flip.is-up .ply-face-down { visibility: hidden; }

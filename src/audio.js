@@ -1,7 +1,9 @@
 /* First Roll: music, and the cheerful little sounds.
    The sounds are made on the spot with the same Web Audio set-up the dice use (FR.Dice.Sound),
    so they need no files. Music is ordinary audio files named by the theme (theme.music); a
-   theme without music is simply quiet. Sound effects and music have separate switches. */
+   theme without music is simply quiet. Sound effects and music have separate switches.
+   Last comes ambience (FR.Ambience): a quiet soundscape behind a scene, made on the spot too
+   unless the cartridge brings a file for it. It follows the sound effects switch. */
 (function () {
   'use strict';
   var Sound = FR.Dice.Sound;
@@ -269,5 +271,326 @@
     unlock: function () { if (!M.unlocked) { M.unlocked = true; } if (!M.el) { tune(); } },
     has: function () { return !!M.tracks; },
     playing: function () { return M.el ? M.src : ''; }
+  };
+
+  /* ---------- ambience ----------
+     A soundscape ("bed") behind a scene: wind, a fire, rain, a busy room. The DM picks one for the table
+     (a cartridge lists its beds under sound.beds; FR.theme.beds is that list as the page holds it) and
+     every device with sound on plays it quietly, under the talking. A bed is either one of the cartridge's
+     audio files ({ file }) or one of the voices below ({ synth }). The voices are made on the spot from
+     filtered noise and slow movement: no recordings, nothing to download, and no loop point to hear,
+     because nothing in them comes round on a beat. They play through the same set-up as every other
+     sound here (Sound.ctx, Sound.out, Sound.rev), obey the same switch (Sound.muted) and go quiet while
+     the page is hidden, to pick up again when it is back.
+
+       FR.Ambience.play(bed)     bed is { synth: 'wind' }, { file: 'packs/x/audio/rain.mp3' } or the id of one
+                                 of FR.theme.beds; nothing (or an id nobody knows) stops it. Asking for the bed
+                                 that is already playing changes nothing, so it is safe to call on every poll.
+       FR.Ambience.stop()        fade out, and forget what was asked for
+       FR.Ambience.level(0..1)   how loud, as the DM set it; with no number it says what it is
+       FR.Ambience.playing()     the voice or the file sounding now, or ''
+       FR.Ambience.voices        the names play understands as `synth` (FR.AMBIENCE in src/registry.js)
+       FR.Ambience.build(ctx, out, name, rev)
+                                 one voice wired into any audio graph, sounding from ctx.currentTime; it gives
+                                 back { stop(at) }. play() uses it, and so do the tests and the measurements
+                                 (an OfflineAudioContext renders a voice without a speaker).
+
+     Browsers only allow sound after a tap, so a bed asked for before the first one starts with it.
+     A bed that is a file is music: whoever asks for one should hush the scene music first (FR.Music.scene). */
+  var IN = 1.2, OUT = 1.0, FILE_VOL = 0.2;                 // seconds to fade in and out; how loud a file bed is, out of 1
+  var kept = typeof WeakMap === 'function' ? new WeakMap() : null;
+  function keep(ctx) { var k = kept && kept.get(ctx); if (!k) { k = {}; if (kept) { kept.set(ctx, k); } } return k; }
+  /* Five and a half seconds of white noise for a context, made once. Every voice reads this one buffer,
+     each reader from its own place and at its own speed, so no two of them ever line up. */
+  function whiteOf(ctx) {
+    var k = keep(ctx), d, i, n = 262144;
+    if (!k.white) { k.white = ctx.createBuffer(1, n, ctx.sampleRate); d = k.white.getChannelData(0); for (i = 0; i < n; i++) { d[i] = Math.random() * 2 - 1; } }
+    return k.white;
+  }
+  /* the same run of numbers every time, so a pattern of drips or chirps is the one that was listened to */
+  function steady(seed) { var s = seed >>> 0; return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+  /* A few seconds of something drawn by hand (water dripping, a cricket), made once for a context and looped.
+     It starts and ends in silence, so the join cannot be heard. */
+  function drawn(ctx, name, seconds, draw) {
+    var k = keep(ctx), rate = 22050;
+    if (!k[name]) { k[name] = ctx.createBuffer(1, Math.floor(rate * seconds), rate); draw(k[name].getChannelData(0), rate); }
+    return k[name];
+  }
+  /* drops of water: each a short note that rises as it rings, none the same pitch or the same wait apart */
+  function drips(d, rate) {
+    var rnd = steady(7), t = 0.35, end = d.length / rate - 0.5, f, a, up, n, k, i, x, ph;
+    while (t < end) {
+      f = 950 + rnd() * 1500; a = 0.35 + rnd() * 0.65; up = 0.35 + rnd() * 0.5; n = Math.floor((0.07 + rnd() * 0.05) * rate); k = Math.floor(t * rate); ph = 0;
+      for (i = 0; i < n; i++) { x = i / n; ph += 2 * Math.PI * f * (1 + up * x) / rate; d[k + i] += Math.sin(ph) * Math.min(1, i / 12) * Math.exp(-x * 5.5) * a; }
+      t += 1.1 + rnd() * 2.4;
+    }
+  }
+  /* a cricket: three quick pulses of one high note, again and again, stopping now and then to listen */
+  function chirps(d, rate) {
+    var rnd = steady(11), t = 0.2, end = d.length / rate - 0.3, f, a, p, n, k, i;
+    while (t < end) {
+      f = 4250 + rnd() * 120; a = 0.7 + rnd() * 0.3; n = Math.floor(0.017 * rate);
+      for (p = 0; p < 3; p++) {
+        k = Math.floor((t + p * 0.031) * rate);
+        for (i = 0; i < n; i++) { d[k + i] += Math.sin(2 * Math.PI * f * i / rate) * Math.pow(Math.sin(Math.PI * i / n), 2) * a * (p ? 1 : 0.7); }
+      }
+      t += rnd() < 0.12 ? 1.2 + rnd() * 1.4 : 0.46 + rnd() * 0.1;
+    }
+  }
+
+  /* The parts every voice is built from, wired into one audio graph. Whatever makes sound or movement
+     (a noise reader, a slow wave) is remembered, so the whole voice can be stopped at once. */
+  function rig(ctx, out, rev) {
+    var t0 = ctx.currentTime, live = [], white = whiteOf(ctx), R;
+    var begun = function (node, offset) { node.start(t0, offset || 0); live.push(node); return node; };
+    R = {
+      ctx: ctx, out: out, rev: rev || null,
+      gain: function (v) { var g = ctx.createGain(); g.gain.value = v; return g; },
+      filter: function (type, f, q) { var b = ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q === undefined ? 0.7 : q; return b; },
+      pan: function (v) { var p; if (!ctx.createStereoPanner) { return R.gain(1); } p = ctx.createStereoPanner(); p.pan.value = v; return p; },
+      delay: function (seconds) { var d = ctx.createDelay(Math.max(1, seconds * 2)); d.delayTime.value = seconds; return d; },
+      /* white noise without end, read at `rate` times its own speed (slower is darker) */
+      noise: function (rate) { var s = ctx.createBufferSource(); s.buffer = white; s.loop = true; s.playbackRate.value = rate || 1; return begun(s, Math.random() * white.duration); },
+      /* Two readers of the noise added together, the second going round a shorter stretch of it, so the pair
+         never comes back to where it began: for dust (below), whose clicks would otherwise fall into a pattern
+         that came round every few seconds. */
+      grit: function () {
+        var sum = ctx.createGain(), b = ctx.createBufferSource(), from = 0.37 + Math.random() * 0.2, to = white.duration - 0.55 - Math.random() * 0.2;
+        sum.gain.value = 0.5; R.noise(1).connect(sum);
+        b.buffer = white; b.loop = true; b.loopStart = from; b.loopEnd = to;
+        begun(b, from + Math.random() * (to - from)).connect(sum);
+        return sum;
+      },
+      /* something drawn (see drawn, above), going round */
+      loop: function (buffer, rate, offset) { var s = ctx.createBufferSource(); s.buffer = buffer; s.loop = true; s.playbackRate.value = rate || 1; return begun(s, offset || 0); },
+      /* A slow, wandering signal between about -1 and 1: sines at speeds that never line up, so it does
+         not repeat for hours. Each part is [cycles a second, weight, where in its cycle it starts (0 to 1)]. */
+      wave: function (parts) {
+        var sum = ctx.createGain(), total = 0;
+        parts.forEach(function (p) { total += p[1] === undefined ? 1 : p[1]; });
+        parts.forEach(function (p) {
+          var o = ctx.createOscillator(), g = ctx.createGain(), ph = (p[2] || 0) * 2 * Math.PI;
+          o.frequency.value = p[0];
+          if (ph && ctx.createPeriodicWave) { o.setPeriodicWave(ctx.createPeriodicWave(new Float32Array([0, Math.sin(ph)]), new Float32Array([0, Math.cos(ph)]), { disableNormalization: true })); }
+          g.gain.value = (p[1] === undefined ? 1 : p[1]) / total;
+          o.connect(g); g.connect(sum); begun(o);
+        });
+        return sum;
+      },
+      /* One shape, drawn over a single cycle by fn(0..1), played again and again at `hz`: a wave of the sea.
+         It comes out centred on nothing, with its average height given beside it for whoever needs it. */
+      cycle: function (hz, fn) {
+        var N = 1024, H = 40, re = new Float32Array(H + 1), im = new Float32Array(H + 1), mean = 0, o = ctx.createOscillator(), i, h, v;
+        for (i = 0; i < N; i++) { v = fn(i / N); mean += v / N; for (h = 1; h <= H; h++) { re[h] += 2 * v * Math.cos(2 * Math.PI * h * i / N) / N; im[h] += 2 * v * Math.sin(2 * Math.PI * h * i / N) / N; } }
+        o.frequency.value = hz; o.setPeriodicWave(ctx.createPeriodicWave(re, im, { disableNormalization: true }));
+        return { node: begun(o), mean: mean };
+      },
+      /* bend a signal: every value x (-1 to 1) becomes fn(x) */
+      shape: function (fn, points) { var w = ctx.createWaveShaper(), n = points || 1024, c = new Float32Array(n), i; for (i = 0; i < n; i++) { c[i] = fn(i / (n - 1) * 2 - 1); } w.curve = c; return w; },
+      /* "Dust": lets through only the rare sample of noise that lands above `floor` (just under 1), as a
+         click of its own size. Noise in, scattered clicks out: a fire spitting, single drops of rain. The
+         higher the floor, the fewer. `under` takes them from the other side of the noise, so two lots of
+         dust fed from the one noise never click together. Fed from grit (above), a floor of 0.972 gives
+         about twenty clicks a second, 0.98 ten and 0.993 one. */
+      dust: function (floor, under) { return R.shape(function (x) { var v = under ? -x : x; return v > floor ? (v - floor) / (1 - floor) : 0; }, 65536); },
+      /* let a signal move a setting (a filter's pitch, a loudness) by up to `depth` either way */
+      to: function (signal, param, depth) { var g = ctx.createGain(); g.gain.value = depth; signal.connect(g); g.connect(param); },
+      /* join parts end to end; gives back the last */
+      chain: function () { var a = arguments, i; for (i = 0; i < a.length - 1; i++) { a[i].connect(a[i + 1]); } return a[a.length - 1]; },
+      stop: function (at) { live.forEach(function (n) { try { n.stop(at); } catch (e) { /* stopped already */ } }); live = []; }
+    };
+    return R;
+  }
+
+  /* How loud each voice is let out. Set by measurement, so that every bed sits at about the same quiet
+     level whichever is chosen: well under a speaking voice, with nothing in it that jumps out. */
+  var TRIM = { wind: 0.58, fire: 1, storm: 0.9, crowd: 1.15, cave: 1.25, night: 1.5, sea: 0.9 };
+
+  /* The voices. Each is a few layers of filtered noise, moved slowly. */
+  var VOICES = {
+    /* Wind: a low moan that swells and sinks in gusts, a thin whistle that comes only with the gusts,
+       and a hiss of fine snow or grit in the air. */
+    wind: function (R) {
+      var gust = R.wave([[0.11, 1, 0.1], [0.067, 0.7, 0.55], [0.031, 0.6, 0.8], [0.29, 0.25, 0.3]]), drift = R.wave([[0.083, 1, 0.4], [0.047, 0.7, 0.05]]);
+      var rise = R.chain(gust, R.shape(function (x) { var v = Math.max(0, x + 0.1); return v * v; }));              // 0 in a lull, 1 at the top of a gust
+      [[-0.45, 0.97, 400], [0.45, 1.09, 520]].forEach(function (s) {                 // the body of it, a little different in each ear
+        var bp = R.filter('bandpass', s[2], 0.9), g = R.gain(0.42);
+        R.chain(R.noise(s[1]), R.filter('lowpass', 1100, 0.5), bp, g, R.pan(s[0]), R.out);
+        R.to(gust, bp.frequency, s[2] * 0.5); R.to(drift, bp.frequency, s[2] * 0.2); R.to(gust, g.gain, 0.2);
+      });
+      [[1180, 16, 0.09, -0.2], [760, 11, 0.07, 0.3]].forEach(function (s, i) {      // the whistle round a corner
+        var bp = R.filter('bandpass', s[0], s[1]), g = R.gain(0);
+        R.chain(R.noise(0.9 + i * 0.3), bp, g, R.pan(s[3]), R.out);
+        R.to(i ? gust : drift, bp.frequency, s[0] * 0.18); R.to(rise, g.gain, s[2]);
+      });
+      var air = R.gain(0.02);
+      R.chain(R.noise(1.3), R.filter('highpass', 2600, 0.5), R.filter('lowpass', 7500, 0.5), air, R.out); R.to(rise, air.gain, 0.05);
+      R.chain(R.noise(0.55), R.filter('lowpass', 180, 0.6), R.gain(0.12), R.out);                                    // its weight against a wall
+    },
+    /* Fire: a low, restless roar; a little hiss; small snaps that come in runs; now and then a log pops. */
+    fire: function (R) {
+      var breathe = R.wave([[0.13, 1, 0.2], [0.31, 0.6, 0.7], [0.071, 0.8, 0.5]]), flutter = R.wave([[1.7, 1, 0], [2.9, 0.8, 0.3], [4.3, 0.6, 0.6], [7.1, 0.3, 0.1]]);
+      var roar = R.gain(0.16), body = R.gain(0.12), hiss = R.gain(0.018), room = R.rev ? R.gain(0.35) : null;
+      R.chain(R.noise(0.5), R.filter('lowpass', 240, 0.7), R.filter('lowpass', 380, 0.5), roar, R.out); R.to(flutter, roar.gain, 0.07); R.to(breathe, roar.gain, 0.05);
+      R.chain(R.noise(0.8), R.filter('bandpass', 480, 0.7), body, R.out); R.to(flutter, body.gain, 0.03);
+      R.chain(R.noise(1.2), R.filter('bandpass', 3400, 0.6), hiss, R.out); R.to(breathe, hiss.gain, 0.006);
+      var runs = R.chain(breathe, R.shape(function (x) { return 0.35 + 0.65 * Math.max(0, x); }));
+      var spit = R.grit();
+      [[0.972, false, 'highpass', 1400, 0.7, 0.21, -0.3], [0.98, true, 'bandpass', 2300, 1.4, 0.4, 0.35]].forEach(function (s) {
+        var g = R.gain(0), last = R.chain(spit, R.dust(s[0], s[1]), R.filter(s[2], s[3], s[4]), R.filter('lowpass', 7000, 0.5), g, R.pan(s[6]));
+        last.connect(R.out); if (room) { last.connect(room); } R.to(runs, g.gain, s[5]);
+      });
+      R.chain(R.grit(), R.dust(0.993, false), R.filter('bandpass', 700, 1.1), R.gain(0.6), R.out);
+      if (room) { room.connect(R.rev); }
+    },
+    /* Storm: steady rain, single drops too many to count, the weight of the downpour, and thunder a long
+       way off. The thunder is a low rumble let through only when three slow waves happen to rise together:
+       once a few seconds after the storm begins, then every half minute or so, never the same size twice. */
+    storm: function (R) {
+      var sheets = R.wave([[0.09, 1, 0.3], [0.041, 0.8, 0.7], [0.23, 0.3, 0.1]]), rain = R.gain(0.075), wash = R.gain(0.07), rumble = R.gain(0), wobble = R.gain(1);
+      R.chain(R.noise(1), R.filter('highpass', 700, 0.5), R.filter('lowpass', 5200, 0.5), rain, R.out); R.to(sheets, rain.gain, 0.025);
+      R.chain(R.noise(0.8), R.filter('bandpass', 560, 0.5), R.gain(0.035), R.out);                                         // the roar of it on the ground
+      [[false, -0.5], [true, 0.5]].forEach(function (s) { R.chain(R.noise(1), R.dust(0.994, s[0]), R.filter('highpass', 1500, 0.6), R.filter('lowpass', 6500, 0.5), R.gain(0.07), R.pan(s[1]), R.out); });
+      R.chain(R.grit(), R.dust(0.976, false), R.filter('bandpass', 1000, 2.2), R.gain(0.26), R.pan(0.2), R.out);          // fat drops on a sill
+      R.chain(R.noise(0.5), R.filter('lowpass', 320, 0.6), wash, R.out); R.to(sheets, wash.gain, 0.025);
+      var roll = R.chain(R.wave([[0.047, 1, 0.13], [0.071, 0.85, 0.02], [0.019, 0.6, 0.2]]), R.shape(function (x) { var v = Math.max(0, x - 0.42) / 0.58; return v * v; }));
+      R.chain(R.noise(0.3), R.filter('lowpass', 130, 0.8), R.filter('lowpass', 240, 0.5), wobble, rumble, R.out);
+      R.to(R.wave([[2.3, 1, 0], [3.7, 0.8, 0.4], [6.1, 0.5, 0.7]]), wobble.gain, 0.45); R.to(roll, rumble.gain, 0.5);
+    },
+    /* Crowd: a room full of people talking, none of them close enough to follow. Six "talkers", each a
+       band of noise at a pitch a voice has, let through in syllables, in turns, and never quite still;
+       under them everyone further off, and the rumble of a full room. */
+    crowd: function (R) {
+      var room = R.rev ? R.gain(0.5) : null;
+      [[330, 3.2, 0.95, -0.6, 0.8], [470, 3.8, 1.07, 0.5, 0.72], [640, 4.2, 0.88, -0.2, 0.6], [900, 4.6, 1.13, 0.3, 0.44], [1350, 5, 0.93, -0.4, 0.29], [2050, 5.5, 1.21, 0.6, 0.18]].forEach(function (s, i) {
+        var bp = R.filter('bandpass', s[0], s[1]), g = R.gain(0), who = R.gain(0);
+        var syllables = R.chain(R.wave([[2.3 + i * 0.47, 1, i * 0.17], [3.9 + i * 0.31, 0.8, i * 0.29], [5.7 - i * 0.23, 0.5, i * 0.41]]), R.shape(function (x) { return Math.pow(Math.max(0, x + 0.6) / 1.6, 1.3); }));
+        var turns = R.chain(R.wave([[0.07 + i * 0.023, 1, i * 0.31], [0.19 - i * 0.011, 0.7, i * 0.13]]), R.shape(function (x) { return 0.25 + 0.75 * Math.max(0, Math.min(1, x * 1.2 + 0.5)); }));
+        R.chain(R.noise(s[2]), bp, g, who, R.pan(s[3]), R.out);
+        R.to(syllables, g.gain, s[4]); R.to(turns, who.gain, 1);
+        R.to(R.wave([[0.37 + i * 0.09, 1, i * 0.2], [0.83 + i * 0.07, 0.6, i * 0.5]]), bp.frequency, s[0] * 0.14);
+        if (room) { who.connect(room); }
+      });
+      R.chain(R.noise(1), R.filter('bandpass', 620, 0.45), R.gain(0.045), R.out);
+      R.chain(R.noise(0.45), R.filter('lowpass', 240, 0.6), R.gain(0.045), R.out);
+      if (room) { room.connect(R.rev); }
+    },
+    /* Cave: cold air moving very slowly, the hollow note a draught makes across an opening, and water
+       dripping somewhere, each drop answered by its echo off the far wall. */
+    cave: function (R) {
+      var breath = R.wave([[0.05, 1, 0.3], [0.083, 0.6, 0.6], [0.021, 0.5, 0.1]]), air = R.gain(0.1);
+      R.chain(R.noise(0.4), R.filter('lowpass', 160, 0.7), R.filter('lowpass', 260, 0.5), air, R.out); R.to(breath, air.gain, 0.035);
+      [[196, 7, 0.16, -0.4, 0.7], [311, 9, 0.08, 0.4, 0.9]].forEach(function (s) {
+        var g = R.gain(s[2]); R.chain(R.noise(s[4]), R.filter('bandpass', s[0], s[1]), g, R.pan(s[3]), R.out); R.to(breath, g.gain, s[2] * 0.6);
+      });
+      var water = drawn(R.ctx, 'drips', 9.3, drips), wet = R.gain(1), echo = R.delay(0.37), far = R.filter('lowpass', 2200, 0.5), back = R.gain(0.42);
+      R.chain(R.loop(water, 1, 0), R.gain(0.13), R.pan(-0.3), wet); R.chain(R.loop(water, 0.81, 4.1), R.gain(0.09), R.pan(0.45), wet);
+      wet.connect(R.out); R.chain(wet, echo, far, back, echo); R.chain(far, R.gain(0.55), R.out);
+      if (R.rev) { R.chain(wet, R.gain(0.6), R.rev); }
+    },
+    /* Night: open air, leaves that stir when the air does, two crickets (one nearer) and a field of them far off. */
+    night: function (R) {
+      var stir = R.wave([[0.06, 1, 0.6], [0.11, 0.6, 0.2], [0.027, 0.5, 0.9]]), air = R.gain(0.07), leaves = R.gain(0), field = R.gain(0.008);
+      var song = drawn(R.ctx, 'chirps', 7.3, chirps);
+      R.chain(R.noise(0.5), R.filter('lowpass', 300, 0.6), air, R.out); R.to(stir, air.gain, 0.025);
+      R.chain(R.noise(1.1), R.filter('bandpass', 4300, 0.8), leaves, R.pan(0.25), R.out);
+      R.to(R.chain(stir, R.shape(function (x) { var v = Math.max(0, x - 0.1); return v * v; })), leaves.gain, 0.06);
+      R.chain(R.loop(song, 1, 0), R.gain(0.09), R.pan(-0.55), R.out); R.chain(R.loop(song, 1.07, 3.3), R.gain(0.05), R.pan(0.6), R.out);
+      R.chain(R.noise(1), R.filter('bandpass', 6100, 12), field, R.out); R.to(R.wave([[13, 1, 0], [0.09, 0.5, 0.3]]), field.gain, 0.005);
+    },
+    /* Sea: one wave, over and over: it gathers, breaks and draws back with a hiss. Two sets of waves at
+       different paces, so no two arrive alike, over the sea further out, which never stops. */
+    sea: function (R) {
+      var swell = function (p) { p = p - Math.floor(p); return p < 0.32 ? Math.pow(p / 0.32, 2.2) : Math.max(0, (Math.exp(-(p - 0.32) / 0.2) - 0.033) / 0.967); };
+      [[0.103, 0.1, 0.3, 1], [0.074, 0.8, -0.35, 0.75]].forEach(function (s, i) {      // [waves a second, how far into one it starts, which side, how big]
+        var w = R.cycle(s[0], function (p) { return swell(p + s[1]); }), lp = R.filter('lowpass', 420, 0.6), surf = R.gain(0.03), foam = R.gain(0), deep = R.gain(0.03), late = R.delay(1.1);
+        var move = function (param, depth) { param.value += w.mean * depth; R.to(w.node, param, depth); };
+        R.chain(R.noise(1 - i * 0.14), lp, surf, R.pan(s[2]), R.out); move(lp.frequency, 2400); move(surf.gain, 0.2 * s[3]);
+        R.chain(R.noise(0.4 + i * 0.07), R.filter('lowpass', 115, 0.7), deep, R.out); move(deep.gain, 0.14 * s[3]);
+        R.chain(R.noise(1.25 + i * 0.1), R.filter('highpass', 3000, 0.5), foam, R.pan(-s[2]), R.out);
+        foam.gain.value = w.mean * 0.04 * s[3]; w.node.connect(late); R.to(late, foam.gain, 0.04 * s[3]);                   // the hiss comes a moment after the break
+      });
+      R.chain(R.noise(0.7), R.filter('bandpass', 900, 0.4), R.gain(0.035), R.out);
+    }
+  };
+
+  function build(ctx, out, name, rev) {
+    var make = VOICES[name], trim, R;
+    if (!make) { return { stop: function () {} }; }
+    trim = ctx.createGain(); trim.gain.value = TRIM[name] || 1; trim.connect(out);
+    R = rig(ctx, trim, rev);
+    make(R);
+    return { stop: function (at) { R.stop(at); } };
+  }
+
+  /* what is asked for, and what is sounding */
+  var AMB = { want: null, cur: null, level: 1, master: null };
+  var nameOf = function (bed) { return bed ? (bed.file || bed.synth || '') : ''; };
+  function ramp(el, to, seconds, then) {             // a file bed is an <audio>, so its fades are done by hand
+    var from = el.volume, t0 = Date.now(), id = setInterval(function () {
+      var k = Math.min(1, (Date.now() - t0) / (seconds * 1000));
+      try { el.volume = Math.max(0, Math.min(1, from + (to - from) * k)); } catch (e) { /* some phones fix the volume */ }
+      if (k >= 1) { clearInterval(id); if (then) { then(); } }
+    }, 40);
+    return id;
+  }
+  function synthBed(bed) {
+    var ctx, g, voice, t;
+    if (!Sound.ctx) { Sound.unlock(); }
+    ctx = Sound.ctx;
+    if (!ctx) { return null; }
+    if (ctx.state === 'suspended' && ctx.resume) { try { ctx.resume(); } catch (e) { /* the next tap will */ } }
+    if (!AMB.master || AMB.master.context !== ctx) { AMB.master = ctx.createGain(); AMB.master.gain.value = AMB.level; AMB.master.connect(Sound.out); }
+    t = ctx.currentTime; g = ctx.createGain();
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(1, t + IN); g.connect(AMB.master);
+    voice = build(ctx, g, bed.synth, Sound.rev);
+    return { name: bed.synth, end: function () {
+      var now = ctx.currentTime;
+      try { g.gain.cancelScheduledValues(now); g.gain.setValueAtTime(g.gain.value, now); g.gain.linearRampToValueAtTime(0, now + OUT); } catch (e) { /* already gone */ }
+      voice.stop(now + OUT + 0.1);
+      setTimeout(function () { try { g.disconnect(); } catch (e) { /* already gone */ } }, (OUT + 0.4) * 1000);
+    }, level: function () { try { AMB.master.gain.setTargetAtTime(AMB.level, ctx.currentTime, 0.08); } catch (e) { AMB.master.gain.value = AMB.level; } } };
+  }
+  function fileBed(bed) {
+    var el = new Audio(), fading = 0, me, p;
+    el.preload = 'auto'; el.loop = true; el.volume = 0; el.src = bed.file;
+    var gone = function () { clearInterval(fading); if (AMB.cur === me) { AMB.cur = null; } };       // a missing file, or not allowed yet: the next tap tries again
+    me = { name: bed.file, end: function () { clearInterval(fading); el.onerror = null; ramp(el, 0, OUT, function () { el.pause(); el.removeAttribute('src'); }); },
+      level: function () { clearInterval(fading); fading = ramp(el, FILE_VOL * AMB.level, 0.25); } };
+    el.onerror = gone;
+    p = el.play(); if (p && p.catch) { p.catch(gone); }
+    fading = ramp(el, FILE_VOL * AMB.level, IN);
+    return me;
+  }
+  /* make what is sounding match what is asked for, given the sound switch and whether the page can be seen */
+  function settle() {
+    var want = AMB.want && !Sound.muted && !document.hidden ? AMB.want : null;
+    if (AMB.cur && nameOf(want) === AMB.cur.name) { return; }
+    if (AMB.cur) { AMB.cur.end(); AMB.cur = null; }
+    if (want) { AMB.cur = want.file ? fileBed(want) : synthBed(want); }
+  }
+  /* The sound switch is a plain setting (Sound.muted) that anything may flip. Ambience has to hear it
+     flip, to fall silent at once and to come back, so the setting tells it when it changes. */
+  (function () {
+    var muted = !!Sound.muted;
+    try { Object.defineProperty(Sound, 'muted', { configurable: true, enumerable: true, get: function () { return muted; }, set: function (v) { v = !!v; if (v !== muted) { muted = v; settle(); } } }); } catch (e) { /* then play() and the next tap notice instead */ }
+  })();
+  document.addEventListener('visibilitychange', settle);
+  document.addEventListener('pointerdown', function () { if (AMB.want && !AMB.cur) { settle(); } }, true);      // the tap that lets sound begin
+
+  FR.Ambience = {
+    voices: Object.keys(VOICES),
+    build: build,
+    play: function (bed) {
+      if (typeof bed === 'string') { bed = (FR.theme && FR.theme.beds && FR.theme.beds[bed]) || null; }
+      AMB.want = bed && typeof bed === 'object' && ((typeof bed.file === 'string' && bed.file) || VOICES[bed.synth]) ? (bed.file ? { file: bed.file } : { synth: bed.synth }) : null;
+      settle();
+    },
+    stop: function () { AMB.want = null; settle(); },
+    level: function (v) {
+      if (typeof v === 'number' && isFinite(v)) { AMB.level = Math.max(0, Math.min(1, v)); if (AMB.cur) { AMB.cur.level(); } else if (AMB.master) { AMB.master.gain.value = AMB.level; } }
+      return AMB.level;
+    },
+    playing: function () { return AMB.cur ? AMB.cur.name : ''; }
   };
 })();

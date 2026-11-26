@@ -8,8 +8,11 @@
 /* ---------- the frame: one column until there is room for panes ---------- */
 .dm-panes, .dm-main { flex: 1; min-height: 0; min-width: 0; display: flex; flex-direction: column; }
 .dm-side, .dm-views { display: none; }
-.dm-tabs { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
-.dmtab { position: relative; min-width: 0; }
+/* a chapter's name may take a second line (src/css/play.css), so the bar at the top grows to hold it */
+.dm-top { height: auto; min-height: 62px; padding-block: var(--s-1); }
+/* six tabs on a phone: each is at least as wide as its word, and they share what is left */
+.dm-tabs { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(min-content, 1fr); }
+.dmtab { position: relative; min-width: 0; padding: 0 var(--s-1); }
 .dmtab span { white-space: nowrap; }
 /* how many rolls have come in since the DM last looked at them */
 .dm-count { min-width: 20px; height: 20px; padding: 0 6px; display: inline-grid; place-items: center; border-radius: var(--r-pill); background: var(--wax); border: var(--bw) solid var(--gilt-hi); color: var(--on-wax); font-family: var(--f-ui); font-style: normal; font-weight: 800; font-size: var(--t-xs); line-height: 1; }
@@ -23,7 +26,9 @@
 .dm-views button:hover, .dm-sidetabs button:hover { background: rgba(var(--gilt-rgb), 0.14); }
 .dm-views button.on, .dm-sidetabs button.on { background: var(--sel-bg); border-color: var(--sel-bg); color: var(--sel-ink); }
 .dm-views svg { width: 20px; height: 20px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: var(--icon-stroke); stroke-linecap: round; stroke-linejoin: round; }
-.dm-sidetabs { flex-shrink: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; padding: 10px 14px; border-bottom: var(--bw) solid rgba(var(--gilt-rgb), 0.22); }
+.dm-sidetabs { flex-shrink: 0; display: flex; gap: 6px; padding: 10px 14px; border-bottom: var(--bw) solid rgba(var(--gilt-rgb), 0.22); }
+.dm-sidetabs button { flex: 1 1 auto; position: relative; padding: 0 var(--s-2); }
+.dm-sidetabs .dm-count { position: absolute; top: -7px; right: -4px; }
 .dm-side-b { padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 12px; }
 .dm-side-b.dict { padding-top: 0; }
 .dm-side-b.dict > .btn.back { margin-top: 14px; }
@@ -111,6 +116,277 @@ button.tb-p::after { content: ""; flex-shrink: 0; width: 8px; height: 8px; margi
 /* ---------- the door ---------- */
 .door-hint { margin-top: -6px; font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.35; color: var(--ink-soft); }
 
+/* ---------- the table list: a second button beside a row ---------- */
+.tb-row { display: flex; align-items: center; gap: var(--s-2); }
+.tb-row > button.tb-p { flex: 1; min-width: 0; width: auto; }
+.tb-row .mini, .tb-p.sent .mini, .rq-foot .mini { flex-shrink: 0; min-height: var(--hit); margin-left: 0; }
+.tb-p.sent > span { flex: 1; }
+.tb-qr-slot { display: contents; }
+.confirm-note { margin-top: -2px; font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.35; color: var(--mute); }
+
+/* ---------- a phone, drawn small: what players see, and what is about to be sent ---------- */
+.ph { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-3) var(--s-4) var(--s-4); border-radius: var(--r-dialog); background: var(--page-bg); color: var(--ink); box-shadow: var(--sh-pop); }
+.ph-k, .ph-h { font-family: var(--f-sc); font-weight: var(--w-label); font-size: var(--t-xs); letter-spacing: var(--track); color: var(--oxblood); }
+.ph-img { width: 100%; max-height: 220px; object-fit: contain; border-radius: var(--r-media); background: rgba(var(--ink-rgb), 0.08); }
+.ph-img.tall { width: 132px; height: 176px; align-self: center; object-position: 50% 18%; }
+.ph-c { font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-xs); color: var(--ink-soft); }
+.ph-t { margin: 0; font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-xl); line-height: 1.15; color: var(--oxblood); overflow-wrap: anywhere; }
+.ph-p { font-family: var(--f-body); font-weight: var(--w-medium); font-size: var(--t-md); line-height: 1.45; white-space: pre-line; overflow-wrap: anywhere; }
+.ph-btn { min-height: var(--hit); display: grid; place-items: center; border-radius: var(--r-btn); background: var(--wax); color: var(--on-wax); font-family: var(--f-sc); font-weight: var(--w-label); font-size: var(--t-md); }
+.ph-sec { display: flex; flex-direction: column; gap: 6px; padding-top: var(--s-2); border-top: var(--bw) solid var(--rule); }
+.ph-card { padding: 6px var(--s-3); border: var(--bw) solid rgba(var(--ink-rgb), 0.4); border-radius: var(--r-chip); background: rgba(255, 250, 235, 0.45); }
+.ph-card b, .ph-who b { display: block; font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-sm); line-height: 1.25; }
+.ph-card small, .ph-who small { display: block; font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.3; color: var(--ink-soft); }
+.ph-li { position: relative; padding-left: 16px; font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.35; }
+.ph-li::before { content: ""; position: absolute; left: 2px; top: 0.5em; width: 6px; height: 6px; border-radius: 50%; background: var(--oxblood); }
+.ph-li.done { color: var(--ink-soft); }
+.ph-who { display: flex; align-items: center; gap: var(--s-2); }
+.ph-who img { width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; object-fit: cover; object-position: 50% 18%; }
+.see { border: var(--bw) solid var(--row-edge); border-radius: max(var(--r-chip), 10px); background: var(--row-bg); }
+.see summary { min-height: 52px; display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; align-items: center; column-gap: var(--s-3); padding: 6px var(--s-3); cursor: pointer; list-style: none; color: var(--bone); }
+.see summary::-webkit-details-marker { display: none; }
+.see summary::after { content: "+"; grid-column: 3; grid-row: 1 / span 2; font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-xl); color: var(--accent-2); }
+.see[open] summary::after { content: "\2212"; }
+.see summary b { grid-column: 2; font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-sm); line-height: 1.2; }
+.see summary small { grid-column: 2; grid-row: 2; font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.2; color: var(--mute); }
+.see-dot { grid-row: 1 / span 2; width: 10px; height: 10px; border-radius: 50%; background: var(--mute); }
+.see-dot.sent { background: var(--accent); box-shadow: 0 0 0 3px rgba(var(--gilt-rgb), 0.25); }
+.see-dot.sending { background: var(--accent-2); }
+.see-dot.failed { background: var(--danger-hi); }
+.see-b { display: flex; flex-direction: column; gap: var(--s-2); padding: 0 var(--s-3) var(--s-3); }
+
+/* ---------- the DM's small dialog: the composer, a hero to offer, "They did what?" ---------- */
+.dialog-card { position: relative; max-width: 520px; }
+.dialog-card > .sh-t { padding-right: 52px; font-size: var(--t-xl); text-wrap: balance; }
+.dialog-b { display: flex; flex-direction: column; gap: var(--s-3); }
+.cf-l { display: flex; flex-direction: column; gap: 4px; }
+.cf-l > span { font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-xs); color: var(--mute); }
+.cf-pic { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.cf-pic .btn { flex: 1 1 180px; width: auto; }
+.hero-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: var(--s-2); }
+.hero-opt { display: flex; align-items: center; gap: var(--s-2); min-height: 60px; padding: 4px var(--s-2) 4px 4px; text-align: left; border-radius: max(var(--r-chip), 10px); border: var(--bw) solid var(--row-edge); background: var(--row-bg); color: var(--bone); }
+.hero-opt img { width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; object-fit: cover; object-position: 50% 18%; }
+.hero-opt b { display: block; font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-sm); line-height: 1.2; }
+.hero-opt small { display: block; font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.3; color: var(--mute); }
+.hero-opt.on { background: var(--sel-bg); border-color: var(--sel-bg); color: var(--sel-ink); }
+.hero-opt.on small { color: var(--sel-ink); }
+.hero-opt:disabled { opacity: 0.55; cursor: default; }
+.ways { display: flex; flex-direction: column; gap: var(--s-2); }
+.way { min-height: 64px; padding: var(--s-2) var(--s-4); text-align: left; border-radius: var(--r-btn); border: var(--bw) solid var(--row-edge); background: var(--row-bg); color: var(--bone); transition: border-color var(--d-base) ease; }
+.way:hover { border-color: var(--accent); }
+.way b { display: block; font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-lg); line-height: 1.2; color: var(--accent); }
+.way small { display: block; font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.35; }
+.err-line { font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-sm); color: var(--danger-hi); }
+
+/* ---------- asks: what players want to do, and the rolls the DM asked for ---------- */
+.aks, .rqs, .rf, .rf-form, .ak-list, .rq-list { display: flex; flex-direction: column; gap: var(--s-2); }
+.aks > .dm-h, .rqs > .dm-h, .rf > .dm-h { margin: 0; }
+.ak, .rq { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-3); border-radius: max(var(--r-chip), 10px); border: var(--bw) solid var(--row-edge); background: var(--row-bg); color: var(--bone); }
+.ak { box-shadow: inset 4px 0 0 var(--accent-2); }
+.ak-who { display: flex; align-items: center; gap: var(--s-2); min-width: 0; }
+.ak-who img, .ak-who .lk-dot { width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; object-fit: cover; object-position: 50% 18%; }
+.ak-who b { flex: 1; min-width: 0; overflow-wrap: anywhere; font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-md); line-height: 1.2; }
+.ak-who b i { font-family: var(--f-ui); font-style: normal; font-weight: var(--w-medium); font-size: var(--t-xs); color: var(--mute); }
+.ak-who time, .rq-foot small { flex-shrink: 0; font-family: var(--f-ui); font-size: var(--t-xs); color: var(--mute); }
+.ak-what { font-family: var(--f-body); font-weight: var(--w-strong); font-size: var(--t-lg); line-height: 1.3; color: var(--accent); overflow-wrap: anywhere; }
+.ak-late { font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-xs); color: var(--danger-hi); }
+.ak-go { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.ak-go .btn { padding: var(--s-1); font-size: var(--t-sm); letter-spacing: 0; }
+.ak-pick { display: flex; flex-direction: column; gap: var(--s-2); padding-top: var(--s-2); border-top: var(--bw) solid var(--hairline); }
+.ak-old { display: flex; flex-direction: column; gap: 4px; }
+.ak-old .dm-h { margin-top: 2px; }
+.ak-done { font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.35; color: var(--mute); overflow-wrap: anywhere; }
+.ak-done b { color: var(--bone); }
+.rq.done { border-color: var(--accent-2); }
+.rq.off { opacity: 0.72; border-style: dashed; }
+.rq-h b { display: block; font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-md); line-height: 1.2; overflow-wrap: anywhere; }
+.rq-h small { display: block; font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.3; color: var(--mute); }
+.rq-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: var(--s-2); min-height: 48px; padding: 4px var(--s-3) 4px 4px; border-radius: max(var(--r-chip), 8px); border: var(--bw) solid var(--hairline); background: rgba(255, 255, 255, 0.04); }
+.rq-row > img, .rq-row > .lk-dot { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; object-position: 50% 18%; }
+.rq-who b { display: block; overflow-wrap: anywhere; font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-sm); line-height: 1.2; }
+.rq-who small { display: block; overflow-wrap: anywhere; font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.3; color: var(--mute); }
+/* passed glows, failed goes cold, and each also says so in words */
+.rq-row.pass { border-color: var(--gilt); background: rgba(var(--gilt-rgb), 0.14); }
+.rq-row.pass .rq-how { color: var(--gilt-hi); font-weight: var(--w-strong); }
+.rq-row.fail { border-style: dashed; border-color: rgba(255, 255, 255, 0.45); background: rgba(0, 0, 0, 0.25); }
+.rq-row.fail .rq-how { color: var(--bone); font-weight: var(--w-strong); }
+.rq-row.fail .to-n { color: var(--mute); }
+.rq-row.open .rq-how { color: var(--accent); font-weight: var(--w-strong); }
+.rq-call { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.rq-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); min-height: 28px; }
+.rq .outs { margin-top: 0; padding-top: var(--s-2); border-top: var(--bw) solid var(--hairline); }
+.rq .outs .dm-h { margin-top: 0; }
+
+/* ---------- in the story: who rolls, a roll in one tap, handouts, "They did what?" ---------- */
+/* a try's "if it works" line sits with the lines around it (the players' screens have a .say of their own, with room around it) */
+.kv.say { padding: 0; }
+.tries-h { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px var(--s-3); }
+.who { display: inline-flex; align-items: center; gap: var(--s-2); font-family: var(--f-ui); font-size: var(--t-sm); color: var(--mute); }
+.who .field { width: auto; max-width: 210px; min-height: var(--hit); }
+.try-w { position: relative; }
+.try-ask { min-height: var(--hit); margin: 0 0 var(--s-2) var(--s-7); padding: 0 var(--s-3); display: inline-flex; align-items: center; gap: 6px; border-radius: var(--r-pill); border: var(--bw) solid var(--rim); background: rgba(var(--gilt-rgb), 0.14); color: var(--accent); font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-xs); white-space: nowrap; }
+.try-ask svg { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: var(--icon-stroke); stroke-linecap: round; stroke-linejoin: round; }
+.try-ask.hand { background: transparent; color: var(--bone); }
+.try-ask:hover { background: rgba(var(--gilt-rgb), 0.26); }
+.try-ask[disabled] { opacity: 0.55; cursor: default; }
+.what { display: flex; flex-wrap: wrap; align-items: center; gap: 6px var(--s-3); }
+.what .btn { width: auto; padding: 0 var(--s-4); }
+.what small { flex: 1 1 200px; font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.35; color: var(--mute); }
+.gives { display: flex; flex-direction: column; gap: 6px; }
+.chipd.give { white-space: normal; text-align: left; line-height: 1.2; padding-block: 6px; }
+.chipd.give.gone { border-style: dashed; color: var(--mute); }
+.good.label li { font-weight: var(--w-medium); }
+
+/* ---------- the brief: one page before the first game ---------- */
+.brief { display: flex; flex-direction: column; gap: var(--s-3); padding-top: var(--s-4); }
+.brief-t { font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-2xl); line-height: 1.1; color: var(--bone); outline: none; text-wrap: balance; }
+.brief-tools { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.brief-tools .btn { flex: 1 1 200px; width: auto; }
+.brief-s { display: flex; flex-direction: column; gap: var(--s-2); }
+.brief-s .scene-t { margin-top: var(--s-2); }
+.brief-ppl { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--s-2); }
+.brief-p { display: flex; align-items: flex-start; gap: var(--s-3); padding: var(--s-2); text-align: left; border-radius: max(var(--r-chip), 10px); border: var(--bw) solid var(--row-edge); background: var(--row-bg); color: var(--bone); }
+.brief-p img { width: 72px; height: 72px; flex-shrink: 0; border-radius: var(--r-media); object-fit: cover; object-position: 50% 18%; }
+.brief-p b { display: block; font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-lg); line-height: 1.15; }
+.brief-p small { display: block; margin-top: 3px; font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.35; color: var(--bone); }
+.brief-p small.role { color: var(--accent); font-weight: var(--w-strong); }
+/* on paper: the brief alone, black on white, with nothing of the screen around it */
+@media print {
+  html:has(#s-dm.on[data-view="brief"]), html:has(#s-dm.on[data-view="brief"]) body { height: auto; overflow: visible; background: #fff; }
+  html:has(#s-dm.on[data-view="brief"]) #backdrop, #s-dm[data-view="brief"] ~ *, #app:has(#s-dm.on[data-view="brief"]) > :not(#s-dm) { display: none; }
+  #app:has(#s-dm.on[data-view="brief"]) { position: static; height: auto; max-width: none; top: auto; transform: none; overflow: visible; background: #fff; border-radius: 0; box-shadow: none; }
+  #s-dm.on[data-view="brief"] { position: static; display: block; background: #fff; }
+  #s-dm[data-view="brief"] > :not(.dm-panes), #s-dm[data-view="brief"] .dm-side, #s-dm[data-view="brief"] .dm-ask, #s-dm[data-view="brief"] .brief-tools { display: none; }
+  #s-dm[data-view="brief"] .dm-panes, #s-dm[data-view="brief"] .dm-main, #s-dm[data-view="brief"] .dm-body { display: block; height: auto; min-height: 0; overflow: visible; padding: 0; }
+  #s-dm[data-view="brief"] .brief { padding: 0; color: #000; }
+  #s-dm[data-view="brief"] .brief * { color: #000; background: none; box-shadow: none; text-shadow: none; }
+  #s-dm[data-view="brief"] .brief li, #s-dm[data-view="brief"] .brief-p { border-color: #999; break-inside: avoid; }
+  #s-dm[data-view="brief"] .dmnotes li::before { background: #000; }
+}
+
+/* ================= the shared table (docs/PHASE2.md): the stage, the big screen, tokens, the clock, the map ================= */
+
+/* ---------- "For the whole table": the stage controls beside a scene ---------- */
+.stg { border: var(--bw) solid var(--row-edge); border-radius: max(var(--r-chip), 10px); background: var(--row-bg); }
+.stg > summary { min-height: 56px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--s-3); padding: var(--s-2) var(--s-3); cursor: pointer; list-style: none; color: var(--bone); }
+.stg > summary::-webkit-details-marker { display: none; }
+.stg > summary::after { content: "+"; grid-column: 2; grid-row: 1 / span 2; font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-xl); color: var(--accent-2); }
+.stg[open] > summary::after { content: "\2212"; }
+.stg > summary b { grid-column: 1; font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-lg); line-height: 1.2; color: var(--accent); }
+.stg > summary small { grid-column: 1; grid-row: 2; font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.3; color: var(--mute); }
+.stg-b { display: flex; flex-direction: column; padding: 0 var(--s-3) var(--s-2); }
+.stg-row { display: grid; grid-template-columns: 78px minmax(0, 1fr); align-items: start; gap: var(--s-2) var(--s-3); padding: var(--s-3) 0; border-top: var(--bw) solid var(--hairline); }
+.stg-l { padding-top: 12px; font-family: var(--f-sc); font-weight: var(--w-label); font-size: var(--t-xs); letter-spacing: var(--track); font-variant-caps: var(--caps-variant); text-transform: var(--caps-transform); color: var(--mute); }
+.stg-c { min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+.stg-c > .btn { width: auto; max-width: 100%; height: auto; min-height: var(--ctl-slim); padding: 6px var(--s-4); line-height: 1.2; white-space: normal; text-align: center; }
+.stg-c > .field { flex: 1 1 200px; width: auto; min-height: var(--hit); }
+.stg-c > .seg3 { flex: 1 1 200px; }
+.stg-c .chipd { flex-shrink: 1; white-space: normal; text-align: left; line-height: 1.2; padding-block: 6px; }
+.stg-c .mini, .tb-tok .mini { min-height: var(--hit); margin-left: 0; font-size: var(--t-xs); }
+.stg-c .mini.on { background: var(--sel-bg); border-color: var(--sel-bg); color: var(--sel-ink); }
+.stg-s { flex: 1 1 100%; font-family: var(--f-ui); font-size: var(--t-sm); line-height: 1.35; color: var(--bone); overflow-wrap: anywhere; }
+.stg-n { flex: 1 1 100%; font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.35; color: var(--mute); }
+.stg-c > .perk { flex: 1 1 100%; }
+.stg-o { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-4); }
+/* a switch: its knob says whether it is on, and so does aria-checked */
+.stg-f { min-height: var(--hit); display: inline-flex; align-items: center; gap: var(--s-2); padding: 0; border: 0; background: none; color: var(--bone); font-family: var(--f-ui); font-size: var(--t-sm); text-align: left; }
+.stg-f i { position: relative; flex-shrink: 0; width: 40px; height: 24px; border-radius: var(--r-pill); border: var(--bw) solid var(--rim); background: rgba(var(--bone-rgb), 0.1); }
+.stg-f i::after { content: ""; position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--mute); transition: transform var(--d-fast) ease; }
+.stg-f.on i { background: var(--sel-bg); border-color: var(--sel-bg); }
+.stg-f.on i::after { transform: translateX(16px); background: var(--sel-ink); }
+@media (max-width: 520px) { .stg-row { grid-template-columns: minmax(0, 1fr); } .stg-l { padding-top: 0; } }
+
+/* the map, drawn small in its panel: fog where it is still covered, and one button for each place */
+.mp { position: relative; overflow: hidden; border-radius: var(--r-media); background: var(--night); border: var(--bw) solid var(--rim); }
+.mp img { display: block; width: 100%; max-width: none; }
+.mp-r { position: absolute; background: rgba(var(--soot-rgb), 0.94); box-shadow: 0 0 0 var(--bw) rgba(var(--bone-rgb), 0.16); transition: opacity var(--d-slow) ease; }
+.mp-r.open { opacity: 0; }
+.mp-l { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.mp-b { min-height: 52px; padding: 6px var(--s-3); text-align: left; border-radius: max(var(--r-chip), 8px); border: var(--bw) solid var(--row-edge); background: var(--row-bg); color: var(--bone); }
+.mp-b b { display: block; font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-sm); line-height: 1.2; overflow-wrap: anywhere; }
+.mp-b small { display: block; font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.3; color: var(--mute); }
+.mp-b.on { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); }
+.mp-b.on small { color: var(--accent); font-weight: var(--w-strong); }
+
+/* a vote: each choice with its count as a bar and a number */
+.vt { flex: 1 1 100%; display: flex; flex-direction: column; gap: var(--s-1); }
+.vt-r { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); min-height: 40px; padding: 6px var(--s-3); border-radius: var(--r-chip); border: var(--bw) solid var(--hairline); }
+.vt-r i { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(var(--gilt-rgb), 0.28); transition: width var(--d-slow) var(--ease); }
+.vt-r span { position: relative; min-width: 0; font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-sm); line-height: 1.25; overflow-wrap: anywhere; }
+.vt-r b { position: relative; flex-shrink: 0; font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-lg); line-height: 1; color: var(--gilt-hi); font-variant-numeric: lining-nums; }
+.vt-r.win { border-color: var(--gilt-hi); box-shadow: 0 0 0 var(--bw) var(--gilt-hi); }
+
+/* the few words back to a player: as tall as what is in it, so a line about to be sent can be read whole */
+.ak-note { min-height: var(--ctl-slim); resize: none; overflow: hidden; line-height: 1.35; font-family: var(--f-ui); }
+
+/* ---------- a seat in the table list: the player, then their tokens ---------- */
+.tb-seat { display: flex; flex-direction: column; gap: 2px; }
+.tb-seat + .tb-seat { padding-top: var(--s-2); border-top: var(--bw) solid var(--hairline); }
+.tb-tok { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-left: 4px; }
+.tb-stars { flex: 1 1 auto; min-width: 86px; font-size: var(--t-md); line-height: 1; letter-spacing: 0.1em; color: var(--gilt-hi); }
+.tb-p small.sp-q { color: var(--accent); }
+.sp, .pc, .tvb { display: flex; flex-direction: column; gap: var(--s-2); }
+.sp > .dm-h, .pc > .dm-h, .tvb > .dm-h { margin-top: 6px; }
+.sp .btn, .pc .btn { height: auto; min-height: var(--ctl-slim); padding: 6px var(--s-4); line-height: 1.2; white-space: normal; }
+.pc-top { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); }
+.pc-top b { font-family: var(--f-display); font-weight: var(--w-display); font-size: var(--t-xl); line-height: 1.1; color: var(--bone); font-variant-numeric: lining-nums; }
+.pc-chip { padding: 4px var(--s-3); border-radius: var(--r-pill); border: var(--bw) solid var(--rim); font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-xs); line-height: 1.3; color: var(--bone); }
+.pc-chip.on { background: rgba(var(--gilt-rgb), 0.16); }
+.pc-chip.ahead { background: var(--sel-bg); border-color: var(--sel-bg); color: var(--sel-ink); }
+.pc-chip.behind { background: var(--wax); border-color: var(--wax-hi); color: var(--on-wax); }
+.tvb .tb-how { flex: 1; min-width: 0; margin: 0; }
+.tvb-b { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.tvb-b .btn { flex: 1 1 150px; width: auto; height: auto; min-height: var(--ctl-slim); padding: 6px var(--s-3); line-height: 1.2; white-space: normal; text-align: center; text-decoration: none; }
+
+/* ---------- a foe in the turn order: how it is doing in a word, and what it might do ---------- */
+.to-row.foe > img { width: 40px; height: 40px; border-radius: max(var(--r-chip), 6px); object-fit: cover; }
+.to-st { padding: 4px var(--s-2); border-radius: var(--r-pill); border: var(--bw) solid var(--rim); font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-xs); line-height: 1.2; white-space: nowrap; color: var(--bone); }
+.to-st.hurt { border-color: var(--gilt); color: var(--gilt-hi); }
+.to-st.nearly { background: var(--wax); border-color: var(--wax-hi); color: var(--on-wax); }
+.to-st.out { border-style: dashed; color: var(--mute); }
+.to-row.out .to-who b { text-decoration: line-through; color: var(--mute); }
+.to-foe { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 2px 0 4px; }
+.to-foe .btn { flex: 1 1 120px; width: auto; min-height: var(--hit); padding: 0 var(--s-3); }
+.to-bar { flex: 1 1 100%; height: 6px; overflow: hidden; border-radius: var(--r-pill); background: rgba(var(--bone-rgb), 0.14); }
+.to-bar i { display: block; height: 100%; border-radius: var(--r-pill); background: var(--gilt); transition: width var(--d-base) ease; }
+.to-moves { flex: 1 1 100%; }
+.to-moves .try-b { padding-left: var(--s-3); }
+
+/* ---------- what a phone will show: the phone's own card, in a frame the width of a phone ---------- */
+.dm-phone-wrap { display: flex; justify-content: center; }
+/* the sizes a phone has (--col wide, and tall enough that 60vh there is about 500px), so a picture is fitted exactly as a phone fits it */
+.dm-phone { width: 100%; max-width: 390px; display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-3) var(--gutter); border-radius: var(--r-frame); border: var(--bw) solid var(--rim); background: var(--night); box-shadow: var(--sh-pop); }
+.dm-phone .tl-item .tl-img { max-height: 506px; }
+.dm-phone .tl-item .btn { pointer-events: none; }
+
+/* ---------- the story as a map ---------- */
+.gm-wrap { display: flex; flex-direction: column; gap: var(--s-2); margin-top: var(--s-3); }
+.gm { position: relative; width: 100%; }
+.gm svg { position: absolute; left: 0; top: 0; overflow: visible; }
+.gm-e { fill: none; stroke: var(--mute); stroke-width: 1.6; }
+.gm-e.taken { stroke: var(--gilt-hi); stroke-width: 3; }
+.gm-e.closed { stroke-dasharray: 6 5; opacity: 0.45; }
+.gm-e.short { stroke-dasharray: 1 6; stroke-width: 3; stroke-linecap: round; }
+.gm-arrow { fill: var(--mute); }
+.gm-arrow.taken { fill: var(--gilt-hi); }
+.gm-arrow.closed { opacity: 0.45; }
+.gm-n { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 4px 6px; overflow: hidden; text-align: center; border-radius: max(var(--r-chip), 8px); border: var(--bw) solid var(--rim); background: var(--soot); color: var(--bone); }
+.gm-n b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; font-family: var(--f-ui); font-weight: var(--w-strong); font-size: var(--t-xs); line-height: 1.15; }
+.gm-n small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.2; color: var(--mute); }
+.gm-n.hub { border-style: double; border-width: 3px; }
+.gm-n.interlude { border-radius: var(--r-pill); }
+.gm-n.end { border-radius: var(--r-pill); background: transparent; }
+.gm-n.seen { border-color: var(--accent-2); }
+.gm-n.seen small { color: var(--accent); }
+.gm-n.here { border-color: var(--sel-bg); background: var(--sel-bg); color: var(--sel-ink); box-shadow: 0 0 0 3px rgba(var(--gilt-rgb), 0.3); }
+.gm-n.here small { color: var(--sel-ink); font-weight: var(--w-strong); }
+.gm-n.closed { border-style: dashed; opacity: 0.55; }
+.gm-n.closed b { text-decoration: line-through; }
+button.gm-n:hover { border-color: var(--accent); }
+.gm-key { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-4); }
+.gm-key li { display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-ui); font-size: var(--t-xs); line-height: 1.3; color: var(--mute); }
+.gm-key svg { width: 34px; height: 10px; flex-shrink: 0; overflow: visible; }
+
 /* ================= from 900px: the story takes the window ================= */
 @media (min-width: 900px) {
   /* the stage stops being a phone-sized card */
@@ -145,6 +421,11 @@ button.tb-p::after { content: ""; flex-shrink: 0; width: 8px; height: 8px; margi
   #app[data-screen="dm"] .dm-body .try-else, #app[data-screen="dm"] .dm-body .outdone { font-size: var(--t-sm); }
   #app[data-screen="dm"] .dm-body .outs { margin-top: 10px; }
   #app[data-screen="dm"] .dm-body .errand img { width: 132px; height: 88px; }
+  /* room on the try's own line for its roll */
+  #app[data-screen="dm"] .try-w.asks .try summary { padding-right: 184px; }
+  #app[data-screen="dm"] .try-ask { position: absolute; top: 3px; right: 0; margin: 0; }
+  #app[data-screen="dm"] .dm-body .what small, #app[data-screen="dm"] .dm-body .who { font-size: var(--t-sm); }
+  #app[data-screen="dm"] .dm-confirm.dm-dialog { align-items: center; }
 
   /* a player at a glance slides in over the side of the window, and the story stays in view */
   #app[data-screen="dm"] #dm-sheet { align-items: stretch; justify-content: flex-end; background: rgba(2, 6, 14, 0.5); }

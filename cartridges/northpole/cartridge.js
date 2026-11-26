@@ -6,8 +6,8 @@
 
    It is data only: the build reads this call, checks it (npm run validate) and ships it as JSON.
    The look is the `tokens` block below (theme.css beside this file holds the few rules tokens cannot say);
-   the contract is in README.md under "Make a new scenario". */
-FR.scenario({
+   the contract is in README.md under "Make a new cartridge". */
+FR.cartridge({
   schema: 1,
   id: 'northpole',
   version: '1.0.0',
@@ -19,12 +19,21 @@ FR.scenario({
     kind: 'one-shot',              // 'one-shot' or 'campaign'
     access: 'free', sku: null,     // for a store later: 'paid' packs name the product they belong to. The app ignores both for now.
     visibility: 'public',          // 'public' is listed, 'unlisted' opens only with ?s=northpole, 'draft' is not built
-    /* shown on the Music and sound sheet: the licence asks for it, so keep it while the music stays */
+    /* what the cartridge's card tells someone choosing what to play, and what the DM sees on the cover */
+    label: {
+      length: 'About 2½ hours',
+      players: '3 to 6 players',
+      tone: 'Silly and warm',
+      dm: 'Good for a first-time DM',
+      rating: 'everyone',
+      flags: ['Toilet humor']                // the bad cookies cause endless farts, sneezes and one enormous runny nose
+    },
+    /* shown on the Music and sound sheet: the licence asks for it, so keep it while the music stays.
+       (The rules credit every cartridge carries comes from src/base.js and is not repeated here.) */
     credits: [{ type: 'music', text: 'Music: “We Wish You a Merry Christmas”, “Jingle Bells (Calm)”, “Dance of the Sugar Plum Fairies”, “Oh, Christmas Tree”, “Sugar Plum Breakdown” and “Sugar Plum Dark Mix” by Kevin MacLeod (incompetech.com), licensed under Creative Commons: By Attribution 3.0.' }]
   },
 
-  /* The DM's adventure that belongs to this pack. For now it is still bundled with the engine
-     (src/story-cookie.js); it moves to adventure.js beside this file. */
+  /* The DM's adventure that belongs to this cartridge: the id written inside adventure.js, beside this file. */
   adventure: 'cookie',
 
   /* The look: "Iced gingerbread at midnight". The world is a deep aurora-blue night. Everything you
@@ -183,56 +192,101 @@ FR.scenario({
 
   cast: {
     /* Callings. Each sits on a familiar rules chassis so the DM can run it as written.
-       [might, guile, lore, faith, charm, wild, order(-chaos), light(-shadow)] */
+       [might, guile, lore, faith, charm, wild, order(-chaos), light(-shadow)]
+       `strengths` is what a calling is good at, in three plain sentences: players see them in the lobby
+       and on the sheet, the DM beside each player. The first is the one shown where there is room for one.
+       `role` is the calling's job on the team (one of the six below) and `kit` is what a hero of that
+       calling starts with: two things from `kit.items`, further down. */
+    /* Jobs on the team: what a hero mostly does at the table. Players see them as cards over the callings,
+       and the lobby says which job nobody has taken yet. Two callings to each job. (`trait` is only the
+       fallback for a calling that names no job; every calling here names its own.) */
+    roles: {
+      'Heavy Lifter': { trait: 'might', blurb: 'You go first, and whatever is behind you stays safe.',
+        does: 'Shove, haul, block and hold the door. When the snowballs start flying, you are the one standing in front.' },
+      'Cookie Thief': { trait: 'guile', blurb: 'In, out, and nobody saw a thing. Possibly not even you.',
+        does: 'Tiptoe, skate, pick a lock with a candy cane and keep a straight face. You go where the others cannot.' },
+      'Bright Spark': { trait: 'lore', blurb: 'You know how it works, or you will in a minute.',
+        does: 'Work out the gadget, read the tiny instructions, and say what is odd about the glowing thing before anyone touches it.' },
+      'Warm Heart': { trait: 'faith', blurb: 'You look after everyone, including whoever is causing the trouble.',
+        does: 'Patch people up, cheer them on and notice who needs a kind word. Most problems up here melt if you are nice to them.' },
+      Showstopper: { trait: 'charm', blurb: 'Give you an audience and the room is yours.',
+        does: 'Sing, charm, bargain and talk people round. When somebody has to step up and say something, it is you.' },
+      Pathfinder: { trait: 'wild', blurb: 'You find the way, spot the trouble and get on with the reindeer.',
+        does: 'Follow tracks, read the weather, calm an animal and see what everyone else walked past. Go ahead and report back.' }
+    },
     classes: {
       'Blizzard Brawler': { v: [1, 0.1, 0, 0.1, 0.1, 0.7, -0.7, 0], hd: 12, prio: [1, 0.7, 0.9, 0.1, 0.4, 0.3], color: '#3d6fb0',
         blurb: 'When the snowball fight starts, you are the avalanche.', armor: 'unarmored', skills: ['Athletics', 'Perception', 'Survival'],
         attacks: [{ n: 'Giant snowball', ab: 'STR', die: 12, cnt: 1, hint: 'Someone next to you' }, { n: 'Icicle toss', ab: 'STR', die: 6, cnt: 1, hint: 'Thrown, up to 30 feet' }],
-        gear: 'a thick fur vest and big red mittens, holding a giant snowball overhead' },
+        gear: 'a thick fur vest and big red mittens, holding a giant snowball overhead',
+        role: 'Heavy Lifter', kit: ['snowball', 'mitts'],
+        strengths: ['You are the strongest one here. Heavy things move when you say so.', 'Snow, ice and bad weather never slow you down.', 'Not much gets past you. You spot trouble before it lands.'] },
       Caroler: { v: [0, 0.5, 0.4, 0.1, 1, 0.1, -0.5, 0.2], hd: 8, prio: [0.1, 0.8, 0.6, 0.4, 0.4, 1], color: '#b0457a',
         blurb: 'Your song can lift a whole room, or crack an icicle clean in two.', armor: 'leather', skills: ['Persuasion', 'Performance', 'Deception'],
         attacks: [{ n: 'Jingle-bell flail', ab: 'DEX', die: 8, cnt: 1, hint: 'Someone next to you' }, { n: 'Piercing high note', ab: 'CHA', die: 6, cnt: 1, spell: true, hint: 'Song, up to 60 feet' }],
-        gear: 'a caroler’s cape and long scarf, holding a songbook and a golden bell' },
+        gear: 'a caroler’s cape and long scarf, holding a songbook and a golden bell',
+        role: 'Showstopper', kit: ['carols', 'bell'],
+        strengths: ['You can sing or talk your way out of almost anything.', 'Put you in front of a crowd and the crowd is yours.', 'You can tell a whopper without so much as a blush.'] },
       Baker: { v: [0.3, 0, 0.3, 1, 0.2, 0, 0.5, 0.7], hd: 8, prio: [0.7, 0.3, 0.8, 0.2, 1, 0.4], color: '#c9862c',
         blurb: 'Still a baker at heart. Your treats mend scraped knees and sagging spirits.', armor: 'scale+shield', skills: ['Insight', 'Medicine', 'Religion'],
         attacks: [{ n: 'Rolling pin', ab: 'STR', die: 6, cnt: 1, hint: 'Someone next to you' }, { n: 'Oven blast', ab: 'WIS', die: 6, cnt: 4, spell: true, hint: 'Kitchen magic, up to 120 feet' }],
-        gear: 'a puffy chef hat and apron, holding a tray of softly glowing cookies' },
+        gear: 'a puffy chef hat and apron, holding a tray of softly glowing cookies',
+        role: 'Warm Heart', kit: ['shortbread', 'mitts'],
+        strengths: ['You patch people up: scraped knees, sore heads, sagging spirits.', 'You can tell how someone really feels, whatever they say.', 'Your kitchen magic packs a wallop when it has to.'] },
       'Tree Tender': { v: [0.1, 0.1, 0.4, 0.5, 0, 1, -0.1, 0.3], hd: 8, prio: [0.1, 0.7, 0.8, 0.4, 1, 0.3], color: '#2f7d4f',
         blurb: 'The evergreens whisper, and you whisper back.', armor: 'leather+shield', skills: ['Nature', 'Animal Handling', 'Perception'],
         attacks: [{ n: 'Pine-needle burst', ab: 'WIS', die: 8, cnt: 1, spell: true, hint: 'Tree magic, up to 30 feet' }, { n: 'Holly whip', ab: 'DEX', die: 6, cnt: 1, hint: 'Someone next to you' }],
-        gear: 'a cloak of pine boughs woven with tiny lights, a staff topped with a glowing star' },
+        gear: 'a cloak of pine boughs woven with tiny lights, a staff topped with a glowing star',
+        role: 'Pathfinder', kit: ['lights', 'tinsel'],
+        strengths: ['Animals trust you, and most of them will do you a favor.', 'You know every plant, track and weather sign in the forest.', 'You spot what everyone else walks straight past.'] },
       'Candy Cane Knight': { v: [1, 0.2, 0.1, 0.1, 0.1, 0.1, 0.7, 0.1], hd: 10, prio: [1, 0.6, 0.9, 0.2, 0.4, 0.3], color: '#c8102e',
         blurb: 'Peppermint armor, a striped lance and a promise to hold the line.', armor: 'chain+shield', skills: ['Athletics', 'Intimidation', 'Perception'],
         attacks: [{ n: 'Candy-cane lance', ab: 'STR', die: 8, cnt: 1, hint: 'Someone next to you' }, { n: 'Gumdrop crossbow', ab: 'DEX', die: 8, cnt: 1, hint: 'Up to 80 feet' }],
-        gear: 'armor made of red-and-white peppermint candy, a candy-cane lance and a round cookie shield' },
+        gear: 'armor made of red-and-white peppermint candy, a candy-cane lance and a round cookie shield',
+        role: 'Heavy Lifter', kit: ['cane', 'mitts'],
+        strengths: ['You stand in front, and whatever you guard stays guarded.', 'Strong enough to hold a door shut, or open one that is stuck.', 'One stern look from you and most trouble thinks again.'] },
       'Ice Skater': { v: [0.5, 0.6, 0.2, 0.6, 0, 0.2, 0.9, 0.2], hd: 8, prio: [0.4, 1, 0.7, 0.2, 0.9, 0.2], color: '#7a6fc0',
         blurb: 'You glide, you spin, and it is over before anyone blinks.', armor: 'monk', skills: ['Acrobatics', 'Stealth', 'Insight'],
         attacks: [{ n: 'Spinning skate kick', ab: 'DEX', die: 4, cnt: 1, hint: 'Someone next to you' }, { n: 'Hockey stick', ab: 'DEX', die: 8, cnt: 1, hint: 'Someone next to you' }],
-        gear: 'a sleek skating outfit with a short cape, silver ice skates, poised mid-glide' },
+        gear: 'a sleek skating outfit with a short cape, silver ice skates, poised mid-glide',
+        role: 'Cookie Thief', kit: ['skates', 'goggles'],
+        strengths: ['You never lose your footing: ice, rooftops, tightropes, anything.', 'You are quick and quiet, and gone before anyone looks round.', 'You read people as easily as you read the ice.'] },
       Santa: { v: [0.8, 0, 0, 0.8, 0.4, 0, 0.8, 0.8], hd: 10, prio: [1, 0.2, 0.8, 0.1, 0.4, 0.9], color: '#b3122b',
         blurb: 'The red suit fits. You lead with a laugh and a sack full of surprises.', armor: 'chain+shield', skills: ['Athletics', 'Persuasion', 'Insight'],
         attacks: [{ n: 'Sack of presents', ab: 'STR', die: 8, cnt: 1, hint: 'Swing it at someone next to you' }, { n: 'Lump of coal', ab: 'STR', die: 6, cnt: 1, hint: 'Thrown, up to 30 feet' }],
-        gear: 'a red Santa suit with white fur trim and a wide black belt, a sack of presents over one shoulder' },
+        gear: 'a red Santa suit with white fur trim and a wide black belt, a sack of presents over one shoulder',
+        role: 'Warm Heart', kit: ['bell', 'shortbread'],
+        strengths: ['People listen when you speak, and they usually come round.', 'You can tell naughty from nice just by looking.', 'Strong enough to haul the sack, the sleigh and a friend or two.'] },
       'Sleigh Pilot': { v: [0.4, 0.6, 0.1, 0.1, 0, 1, 0, 0.2], hd: 10, prio: [0.5, 1, 0.7, 0.3, 0.9, 0.2], color: '#2f6f8f',
         blurb: 'Fastest thing in the winter sky, and you never miss a rooftop.', armor: 'scale', skills: ['Survival', 'Stealth', 'Perception'],
         attacks: [{ n: 'Snowball slingshot', ab: 'DEX', die: 8, cnt: 1, hint: 'Up to 150 feet' }, { n: 'Harness hook', ab: 'DEX', die: 6, cnt: 1, hint: 'Someone next to you' }],
-        gear: 'aviator goggles, a leather flight cap and a very long scarf streaming in the wind' },
+        gear: 'aviator goggles, a leather flight cap and a very long scarf streaming in the wind',
+        role: 'Pathfinder', kit: ['goggles', 'tinsel'],
+        strengths: ['You never get lost, and you always find the quick way there.', 'Sharp eyes: you see the rooftop long before anyone else does.', 'You can land without a sound when you need to.'] },
       'Chimney Sneak': { v: [0, 1, 0.3, 0, 0.5, 0.1, -0.6, -0.3], hd: 8, prio: [0.1, 1, 0.6, 0.6, 0.5, 0.7], color: '#48566f',
         blurb: 'Down the chimney and out again before the cocoa cools.', armor: 'leather', skills: ['Stealth', 'Sleight of Hand', 'Deception', 'Perception'],
         attacks: [{ n: 'Fireplace poker', ab: 'DEX', die: 8, cnt: 1, hint: 'Someone next to you' }, { n: 'Pea shooter', ab: 'DEX', die: 6, cnt: 1, hint: 'Up to 80 feet' }],
-        gear: 'soot-smudged dark clothes and a little eye mask, tiptoeing with a coil of rope' },
+        gear: 'soot-smudged dark clothes and a little eye mask, tiptoeing with a coil of rope',
+        role: 'Cookie Thief', kit: ['cane', 'tinsel'],
+        strengths: ['You get in and out of places without anyone knowing you were there.', 'Locks, latches and pockets open for your nimble fingers.', 'You can keep a perfectly straight face while telling a fib.'] },
       'Frost Mage': { v: [0.1, 0.1, 0.3, 0, 0.9, 0.3, -0.8, 0], hd: 6, prio: [0.1, 0.7, 0.8, 0.3, 0.4, 1], color: '#3aa0c8',
         blurb: 'Winter itself does what you ask. Mostly.', armor: 'none', skills: ['Persuasion', 'Arcana', 'Intimidation'],
         attacks: [{ n: 'Frost ray', ab: 'CHA', die: 10, cnt: 1, spell: true, hint: 'Snow magic, up to 120 feet' }, { n: 'Pocket icicle', ab: 'DEX', die: 4, cnt: 1, hint: 'Next to you, or thrown 20 feet' }],
-        gear: 'an icy blue cloak embroidered with snowflakes, frost magic swirling around the hands' },
+        gear: 'an icy blue cloak embroidered with snowflakes, frost magic swirling around the hands',
+        role: 'Showstopper', kit: ['snowball', 'skates'],
+        strengths: ['You understand magic: what is glowing, why, and how to make it stop.', 'You can charm people round to your way of thinking.', 'One frosty stare from you and they behave.'] },
       'Mischief Maker': { v: [0, 0.5, 0.7, 0, 0.6, 0, -0.2, -0.8], hd: 8, prio: [0.1, 0.7, 0.8, 0.5, 0.4, 1], color: '#6a3f9a',
         blurb: 'You know every trick on the Naughty List, and a few that are not on it yet.', armor: 'leather', skills: ['Deception', 'Arcana', 'Intimidation'],
         attacks: [{ n: 'Coal blast', ab: 'CHA', die: 10, cnt: 1, spell: true, hint: 'Naughty magic, up to 120 feet' }, { n: 'Pointy icicle', ab: 'DEX', die: 4, cnt: 1, hint: 'Next to you, or thrown 20 feet' }],
-        gear: 'a purple-and-black striped scarf, juggling lumps of coal with a sly grin' },
+        gear: 'a purple-and-black striped scarf, juggling lumps of coal with a sly grin',
+        role: 'Bright Spark', kit: ['sprinkles', 'snowball'],
+        strengths: ['You can fool almost anyone with a trick, a fib or a straight face.', 'You know how magic works, most of all the kind you should not touch.', 'When you say “or else”, people believe you.'] },
       Toymaker: { v: [0, 0.2, 1, 0.1, 0, 0, 0.4, 0], hd: 6, prio: [0.1, 0.7, 0.7, 1, 0.5, 0.3], color: '#2f8f8a',
         blurb: 'If it can be built, wound up or glued, you can finish it by Christmas Eve.', armor: 'none', skills: ['Arcana', 'History', 'Investigation'],
         attacks: [{ n: 'Wind-up rocket', ab: 'INT', die: 10, cnt: 1, spell: true, hint: 'Gadget, up to 120 feet' }, { n: 'Trusty wrench', ab: 'DEX', die: 4, cnt: 1, hint: 'Next to you, or thrown 20 feet' }],
-        gear: 'a tool apron stuffed with tiny tools, holding a half-built wind-up toy' }
+        gear: 'a tool apron stuffed with tiny tools, holding a half-built wind-up toy',
+        role: 'Bright Spark', kit: ['toolkit', 'lights'],
+        strengths: ['If it has gears, springs or a puzzle in it, you can work it out.', 'You find the clue everyone else missed.', 'You have read all the old stories, and you remember the useful bits.'] }
     },
     /* Forms: what the cookie turns you into. */
     races: {
@@ -323,6 +377,93 @@ FR.scenario({
     { id: 'beast', label: 'Calm an animal', hint: 'Easy now, easy', skill: 'Animal Handling' },
     { id: 'show', label: 'Sing or show off', hint: 'Hold the whole room', skill: 'Performance' }
   ],
+
+  /* "Or say what you do": this story's own words for the checks, on top of the everyday ones in src/base.js */
+  intent: {
+    words: {
+      skate: 'Acrobatics', ski: 'Acrobatics', sled: 'Acrobatics', reindeer: 'Animal Handling', penguin: 'Animal Handling',
+      snowball: 'Athletics', shovel: 'Athletics', chimney: 'Acrobatics', carol: 'Performance', jingle: 'Performance', tickle: 'Sleight of Hand',
+      bake: 'Performance', decorate: 'Performance', icing: 'Performance', cocoa: 'Medicine', forgive: 'Insight', hug: 'Persuasion', thank: 'Persuasion'
+    }
+  },
+
+  /* What ties a hero to the rest of the team and to tonight. Bonds are asked about another player's hero once
+     a hero is made at a table ({name} is that hero), and everyone sees the answer. A hook is a private stake in
+     the story: a player picks one or skips it, and only they and the DM see it. Some hooks are kept for
+     certain jobs. Voices are ways to talk, for anyone who fancies trying one. */
+  ties: {
+    bonds: [
+      'At the bake-off, {name} saved your bake from disaster. What went wrong, and what did they do?',
+      'Which cookie does {name} always steal off the tray, and why do you let them?',
+      'What did {name} do at the bake-off that you have not quite forgiven? It is nearly Christmas, after all.',
+      'What is the one thing {name} bakes better than you, and how do you feel about that?',
+      'You and {name} have a secret team handshake. Show the table.',
+      'What about {name}’s new shape makes you laugh every time you look at them?',
+      'What did you borrow from {name}’s kitchen and never give back?',
+      'Why did you want {name} on your bake-off team in the first place?'
+    ],
+    hooks: [
+      { id: 'recipe', text: 'The winning recipe was your grandmother’s, and you never told the team. If cookies are going wrong up here, you need to know it was not her recipe’s fault.' },
+      { id: 'sorry', text: 'You said something sharp to a teammate just before the judging and never took it back. Tonight would be a good night to put that right.' },
+      { id: 'list', text: 'You are fairly sure you are on the Naughty List this year, and you know why. A good deed at the North Pole itself might be just enough to tip it.', roles: ['Cookie Thief', 'Showstopper'] },
+      { id: 'letter', text: 'When you were small you wrote to Santa every year and never once got an answer. Now you are at the North Pole, and you have a few questions.' },
+      { id: 'home', text: 'Someone at home is waiting up for you. You have no idea how you got here, never mind how to get back, and you promised you would not be late.' },
+      { id: 'byhand', text: 'You have always said nothing beats baking by hand: no mixes, no shortcuts, no gadgets. You have waited years for the chance to prove it.', roles: ['Bright Spark', 'Warm Heart'] },
+      { id: 'shape', text: 'You rather like what the cookie turned you into. Part of you hopes nobody finds a way to turn you back before you have tried everything this body can do.', roles: ['Pathfinder', 'Heavy Lifter'] },
+      { id: 'trophy', text: 'You dropped the trophy on the way out of the hall and glued it back together. Nobody has noticed. You would like to win something you have not broken.' }
+    ],
+    voices: [
+      { label: 'Jolly', tip: 'Start every sentence with a laugh. Finish most of them with one too.' },
+      { label: 'Squeaky', tip: 'High and fast, as if you have had six cups of cocoa. You probably have.' },
+      { label: 'Grumbly', tip: 'Low and slow. Sigh before you answer. Secretly enjoy everything.' },
+      { label: 'Proper', tip: 'Very correct, very polite. Say “I do beg your pardon” to things you bump into.' },
+      { label: 'Sing-song', tip: 'Let your sentences go up and down like a carol. Hum while you think.' },
+      { label: 'Whispery', tip: 'Speak as if the snow might be listening. Lean in. Everything is a secret.' }
+    ]
+  },
+
+  /* The kit: twelve things a hero might carry, each a card with a "Use" button that tells the DM. Every calling
+     starts with two (its `kit`, above). None of them has numbers: the DM decides what using one does. The token
+     is this story's hero token: the DM hands one out for a great moment, and a player spends it to roll again. */
+  kit: {
+    items: {
+      snowball: { name: 'The perfect snowball', text: 'One snowball that never melts and never misses. Save it for the moment a snowball is the only answer.', uses: 'once' },
+      mitts: { name: 'Extra-large oven mitts', text: 'Pick up anything hot, sharp, sticky or cross without coming to harm.', uses: 'always' },
+      carols: { name: 'Book of carols', text: 'Start one and most people cannot help joining in. Good for a distraction, better for a truce.', uses: 'always' },
+      bell: { name: 'Sleigh bell', text: 'Ring it and every reindeer within a mile looks up. So does everybody else.', uses: 'always' },
+      shortbread: { name: 'Tin of shortbread', text: 'Share it with someone in a real pickle and they are merry and bright again. There is only enough for one go.', uses: 'once' },
+      lights: { name: 'String of twinkle lights', text: 'They never go out. Enough to read by, to mark the way back, or to be seen from a rooftop.', uses: 'always' },
+      tinsel: { name: 'Coil of tinsel', text: 'Stronger than it looks. Tie it, climb it, swing on it, or decorate with it in an emergency.', uses: 'always' },
+      cane: { name: 'Candy cane crook', text: 'Hook it, hang from it, pick a lock with it. If you get hungry, that is your business.', uses: 'always' },
+      skates: { name: 'Ice skates', text: 'On ice you are faster than anyone on foot. Off ice they make a terrible noise.', uses: 'always' },
+      goggles: { name: 'Flying goggles', text: 'See clearly through a blizzard, a cloud of flour or a face full of sprinkles.', uses: 'always' },
+      sprinkles: { name: 'Pocketful of sprinkles', text: 'Throw them and everyone nearby stops to look. Sparkly things are very hard to ignore.', uses: 'once' },
+      toolkit: { name: 'Pocket toolkit', text: 'Tiny screwdrivers, a tiny wrench, a tiny oil can. Most gadgets come apart if you ask nicely.', uses: 'always' }
+    },
+    token: { name: 'Gold star', plural: 'Gold stars', text: 'Spend one to roll again. Your DM hands them out for the moments that make the whole table laugh.' }
+  },
+
+  /* Soundscapes for the DM to put behind a scene. Four are the engine's own, made on the spot and named the North
+     Pole way; three more of the engine's are taken away (there is no rain, cricket or seaside up here); and six
+     are this cartridge's own music, played quietly. The adventure names them by id (sound: 'wind'). */
+  sound: {
+    beds: {
+      wind: { label: 'Snow on the wind', synth: 'wind' },
+      fire: { label: 'By a crackling fire', synth: 'fire' },
+      crowd: { label: 'The village, out and about', synth: 'crowd' },
+      cave: { label: 'Down in the Coal Cellar', synth: 'cave' },
+      storm: null, night: null, sea: null,
+      carols: { label: 'Carols, softly', file: 'audio/game_jingle.mp3' },
+      tiptoe: { label: 'Sugar plums, on tiptoe', file: 'audio/game_sugarplum.mp3' },
+      warm: { label: 'A slow, warm carol', file: 'audio/game_tree.mp3' },
+      trouble: { label: 'Something is wrong', file: 'audio/fight_dark.mp3' },
+      frantic: { label: 'Everything at once', file: 'audio/fight_breakdown.mp3' },
+      merry: { label: 'A merry Christmas', file: 'audio/intro.mp3' }
+    }
+  },
+
+  /* The rules underneath: today's, said in plain words. ('light' is the other choice.) */
+  rules: 'open-5e',
 
   /* extra rolls that only this story has */
   extras: [
@@ -426,6 +567,8 @@ FR.scenario({
     originHead: 'How you got here', originWait: 'The narrator clears their throat…', toTable: 'Off to the North Pole',
     tabs: ['I want to…', 'Checks', 'Snow fight'],
     shove: 'Shove or grab', hideHint: 'duck behind a snowdrift',
+    /* nobody gets hurt in this story, so health is a mood: fine, a bit worn, properly stuck */
+    healthFine: 'Merry and bright', healthHurt: 'A bit frazzled', healthTrouble: 'In a real pickle',
     checkHints: { STR: 'Push, lift, haul the sleigh', DEX: 'Quick hands, quick feet', CON: 'Brave the cold, hold your breath', INT: 'Recall, reason, puzzle it out', WIS: 'Notice, sense, trust your gut', CHA: 'Charm, cheer, perform' },
     howRoll: 'Press Roll, or flick the tin.',
     nat20: 'A natural 20, the best roll there is. Jingle all the way!', nat1: 'A natural 1, the worst roll there is. Oh, crumbs.',

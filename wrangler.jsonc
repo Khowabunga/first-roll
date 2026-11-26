@@ -6,9 +6,9 @@
   "name": "first-roll",
   "main": "worker.js",
   "compatibility_date": "2026-11-01",
-  // public/ is not kept in git: wrangler builds it from src/ and scenarios/ before every deploy,
+  // public/ is not kept in git: wrangler builds it from src/ and cartridges/ before every deploy,
   // and again whenever a file in either folder changes while "npm run dev" is running
-  "build": { "command": "node build.js", "watch_dir": ["src", "scenarios", "server"] },
+  "build": { "command": "node build.js", "watch_dir": ["src", "cartridges", "server"] },
   // the app's pages, pictures and scripts; anything under /api goes to worker.js
   "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": ["/api/*"] },
   // one small stateful object per table: players, handouts, painted pictures

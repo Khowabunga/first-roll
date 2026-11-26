@@ -5,15 +5,37 @@
 
    A pack must bring its own: meta, quiz.questions, quiz.quick, cast (classes, races, names,
    samples) and roster (demo, premades). `npm run validate` says what is missing.
+   What every cartridge is given from here even though `meta` is otherwise its own: the label
+   (meta.label) and the rules credit (meta.credits).
 
    Every piece of copy the screens use must have a key in `text` below; validation checks that. */
 var FR = (typeof FR !== 'undefined') ? FR : {};
-if (typeof module !== 'undefined' && typeof require === 'function' && !FR.scenario) { FR = require('./registry.js'); }
+if (typeof module !== 'undefined' && typeof require === 'function' && !FR.cartridge) { FR = require('./registry.js'); }
 
-FR.scenario({
+FR.cartridge({
   schema: 1,
   id: 'base',
   version: '1.0.0',
+
+  /* A cartridge's `meta` is its own and is never inherited, with two exceptions that every cartridge
+     gets from here:
+       label    what a cartridge card says when the cartridge says nothing itself. A cartridge's own
+                meta.label is laid over this one key by key (FR.theme.label).
+       credits  credits of type 'rules' are carried by every cartridge (FR.theme.credits, and the manifest),
+                because every cartridge plays by the engine's rules. */
+  meta: {
+    label: {
+      length: 'One sitting',                 // how long a game takes
+      players: 'Up to 8 players',            // how many can sit at one table
+      tone: 'Adventure',                     // the mood, in a word or two
+      dm: 'First-time DMs welcome',          // how much the DM needs to know
+      rating: 'everyone',                    // 'everyone', 'teen' or 'mature'
+      flags: []                              // anything a table may want to know first, e.g. 'Spiders'
+    },
+    /* The rules under every cartridge derive from the System Reference Document 5.2. This is the attribution
+       its licence (CC BY 4.0) asks for, word for word; keep it. It is shown in Settings and listed in the README. */
+    credits: [{ type: 'rules', text: 'This work includes material from the System Reference Document 5.2 (“SRD 5.2”) by Wizards of the Coast LLC, available at https://www.dndbeyond.com/srd. The SRD 5.2 is licensed under the Creative Commons Attribution 4.0 International License, available at https://creativecommons.org/licenses/by/4.0/legalcode.' }]
+  },
 
   tokens: {
     fonts: {
@@ -46,7 +68,45 @@ FR.scenario({
     }
   },
 
-  cast: { armorNotes: null },
+  cast: {
+    armorNotes: null,
+    /* Roles: six plain jobs a hero can do at the table, for the role cards and for "the party has no Protector
+       yet". `blurb` is the one line that sells the role and `does` is what you actually do with it. A cartridge's
+       classes each say which role is theirs (role: 'Protector'). A class that does not is filed under the role
+       whose `trait` is the class's strongest (might, guile, lore, faith, charm or wild), so every class of every
+       cartridge has a role without anybody writing one. A cartridge that writes `roles` replaces all six. */
+    roles: {
+      Protector: { trait: 'might', blurb: 'You stand in front, so your friends do not have to.', does: 'Push, lift, block and hold the line. When trouble arrives, it meets you first.' },
+      Trickster: { trait: 'guile', blurb: 'You get in where you are not wanted, and out again unnoticed.', does: 'Sneak, pick a lock or a pocket, and pull a fast one when plain dealing will not do.' },
+      Thinker: { trait: 'lore', blurb: 'You know things, and you work out the rest.', does: 'Solve the puzzle, read the strange writing, and remember the old story that explains it all.' },
+      Healer: { trait: 'faith', blurb: 'You keep everyone on their feet and in good heart.', does: 'Patch people up, calm them down, and notice who is not as fine as they say.' },
+      Talker: { trait: 'charm', blurb: 'You do the talking, and people tend to listen.', does: 'Persuade, bargain, perform and make friends. Words get you where muscle cannot.' },
+      Scout: { trait: 'wild', blurb: 'You go ahead, see trouble coming and find the way through.', does: 'Follow a trail, spot what is hidden, and get on with animals. You are happiest out of doors.' }
+    },
+    /* What a class is good at, in plain sentences, when it does not say so itself: one sentence for each
+       skill. A class with no `strengths` of its own gets the sentences of its first three skills
+       (FR.theme.classes[Name].strengths). A cartridge may reword any of them. */
+    skillStrengths: {
+      Athletics: 'You are strong: climbing, lifting and shoving come easily.',
+      Acrobatics: 'You are nimble, and you keep your feet where others fall.',
+      'Sleight of Hand': 'Your fingers are quick: locks, knots and pockets give way.',
+      Stealth: 'You move quietly and are hard to spot.',
+      Arcana: 'You know magic when you see it, and how it tends to behave.',
+      History: 'You remember the old tales, and they are often useful.',
+      Investigation: 'You find the clue that everyone else missed.',
+      Nature: 'You know plants, animals and the weather.',
+      Religion: 'You know the old faiths, their rites and their stories.',
+      'Animal Handling': 'Animals trust you, and will often do as you ask.',
+      Insight: 'You can tell what people are feeling, and when they are lying.',
+      Medicine: 'You can patch people up and get them back on their feet.',
+      Perception: 'You notice things: a sound, a movement, something out of place.',
+      Survival: 'You can follow a trail and never lose your way.',
+      Deception: 'You can lie with a perfectly straight face.',
+      Intimidation: 'One hard look from you makes people think twice.',
+      Performance: 'Give you an audience and you will hold it.',
+      Persuasion: 'You can talk your way out of almost anything.'
+    }
+  },
 
   look: {
     options: {
@@ -85,6 +145,170 @@ FR.scenario({
     { id: 'show', label: 'Perform', hint: 'Sing, juggle, hold the room', skill: 'Performance' }
   ],
   extras: [],
+
+  /* "Or say what you do": when a player types what their hero does, FR.checkFor(text) suggests the skill it
+     most likely comes down to. `words` maps a word, or a short phrase, to a skill; write them in lower case
+     and in their plain form ("climb" also answers for climbs, climbed and climbing). A cartridge adds its
+     own (words: { skate: 'Acrobatics' }), moves one to another skill, or drops one with null.
+     `why` is the plain reason shown with the suggestion; {why} becomes the cartridge's own words for that
+     skill (text.whyAthletics and the rest, below). */
+  intent: {
+    why: 'That comes down to {why}.',
+    words: {
+      /* muscle */
+      climb: 'Athletics', jump: 'Athletics', leap: 'Athletics', swim: 'Athletics', push: 'Athletics', pull: 'Athletics', lift: 'Athletics', shove: 'Athletics',
+      grab: 'Athletics', wrestle: 'Athletics', smash: 'Athletics', force: 'Athletics', haul: 'Athletics', drag: 'Athletics', carry: 'Athletics', throw: 'Athletics',
+      run: 'Athletics', sprint: 'Athletics', kick: 'Athletics', tackle: 'Athletics', heave: 'Athletics', 'break down': 'Athletics', 'hold on': 'Athletics',
+      /* balance and quick feet */
+      swing: 'Acrobatics', flip: 'Acrobatics', tumble: 'Acrobatics', balance: 'Acrobatics', dodge: 'Acrobatics', roll: 'Acrobatics', vault: 'Acrobatics',
+      slide: 'Acrobatics', somersault: 'Acrobatics', cartwheel: 'Acrobatics', tightrope: 'Acrobatics', dive: 'Acrobatics', duck: 'Acrobatics', squeeze: 'Acrobatics',
+      /* quick fingers */
+      lock: 'Sleight of Hand', unlock: 'Sleight of Hand', lockpick: 'Sleight of Hand', pickpocket: 'Sleight of Hand', steal: 'Sleight of Hand', swipe: 'Sleight of Hand',
+      pocket: 'Sleight of Hand', palm: 'Sleight of Hand', untie: 'Sleight of Hand', disarm: 'Sleight of Hand', 'pick the lock': 'Sleight of Hand',
+      /* not being noticed */
+      sneak: 'Stealth', hide: 'Stealth', creep: 'Stealth', tiptoe: 'Stealth', quietly: 'Stealth', silently: 'Stealth', unseen: 'Stealth', skulk: 'Stealth',
+      lurk: 'Stealth', 'slip past': 'Stealth', 'stay low': 'Stealth', 'without being seen': 'Stealth',
+      /* magic */
+      magic: 'Arcana', magical: 'Arcana', spell: 'Arcana', rune: 'Arcana', enchant: 'Arcana', enchanted: 'Arcana', arcane: 'Arcana', glow: 'Arcana', curse: 'Arcana',
+      potion: 'Arcana', wand: 'Arcana', ritual: 'Arcana',
+      /* what you have heard of */
+      remember: 'History', recall: 'History', history: 'History', legend: 'History', lore: 'History', ancient: 'History', recognise: 'History', recognize: 'History',
+      'heard of': 'History', 'old tale': 'History', 'know about': 'History',
+      /* working it out */
+      search: 'Investigation', investigate: 'Investigation', examine: 'Investigation', inspect: 'Investigation', study: 'Investigation', clue: 'Investigation',
+      rummage: 'Investigation', deduce: 'Investigation', puzzle: 'Investigation', 'look for': 'Investigation', 'look through': 'Investigation', 'figure out': 'Investigation',
+      'work out': 'Investigation',
+      /* the living world */
+      plant: 'Nature', herb: 'Nature', tree: 'Nature', weather: 'Nature', mushroom: 'Nature', berry: 'Nature', flower: 'Nature',
+      /* faith */
+      pray: 'Religion', prayer: 'Religion', god: 'Religion', holy: 'Religion', temple: 'Religion', shrine: 'Religion', bless: 'Religion', blessing: 'Religion',
+      /* animals */
+      animal: 'Animal Handling', calm: 'Animal Handling', pet: 'Animal Handling', tame: 'Animal Handling', ride: 'Animal Handling', feed: 'Animal Handling',
+      horse: 'Animal Handling', dog: 'Animal Handling', soothe: 'Animal Handling', saddle: 'Animal Handling', 'whistle for': 'Animal Handling',
+      /* reading people */
+      lying: 'Insight', trust: 'Insight', honest: 'Insight', mood: 'Insight', 'read him': 'Insight', 'read her': 'Insight', 'read them': 'Insight', 'size up': 'Insight',
+      'tell if': 'Insight', 'telling the truth': 'Insight', 'really want': 'Insight',
+      /* patching up */
+      heal: 'Medicine', bandage: 'Medicine', wound: 'Medicine', treat: 'Medicine', patch: 'Medicine', tend: 'Medicine', medicine: 'Medicine', stitch: 'Medicine',
+      revive: 'Medicine', 'first aid': 'Medicine',
+      /* noticing */
+      look: 'Perception', listen: 'Perception', watch: 'Perception', notice: 'Perception', spot: 'Perception', hear: 'Perception', smell: 'Perception', peek: 'Perception',
+      scan: 'Perception', eavesdrop: 'Perception', peer: 'Perception', 'look around': 'Perception', 'keep watch': 'Perception',
+      /* the outdoors */
+      track: 'Survival', trail: 'Survival', hunt: 'Survival', forage: 'Survival', navigate: 'Survival', footprint: 'Survival', camp: 'Survival', shelter: 'Survival',
+      'find the way': 'Survival', 'which way': 'Survival',
+      /* not telling the truth */
+      lie: 'Deception', bluff: 'Deception', trick: 'Deception', fib: 'Deception', pretend: 'Deception', disguise: 'Deception', fake: 'Deception', distract: 'Deception',
+      mislead: 'Deception', fool: 'Deception', impersonate: 'Deception', 'make up': 'Deception',
+      /* being frightening */
+      threaten: 'Intimidation', scare: 'Intimidation', intimidate: 'Intimidation', frighten: 'Intimidation', menace: 'Intimidation', glare: 'Intimidation',
+      growl: 'Intimidation', bully: 'Intimidation', roar: 'Intimidation', shout: 'Intimidation', yell: 'Intimidation', loom: 'Intimidation', 'stare down': 'Intimidation', 'or else': 'Intimidation',
+      /* an audience */
+      sing: 'Performance', song: 'Performance', dance: 'Performance', perform: 'Performance', act: 'Performance', joke: 'Performance', recite: 'Performance',
+      entertain: 'Performance', mime: 'Performance', juggle: 'Performance', impress: 'Performance', 'show off': 'Performance', 'tell a story': 'Performance',
+      /* talking them round */
+      persuade: 'Persuasion', convince: 'Persuasion', ask: 'Persuasion', talk: 'Persuasion', negotiate: 'Persuasion', bargain: 'Persuasion', beg: 'Persuasion',
+      plead: 'Persuasion', charm: 'Persuasion', flatter: 'Persuasion', reason: 'Persuasion', haggle: 'Persuasion', compliment: 'Persuasion', apologise: 'Persuasion',
+      apologize: 'Persuasion', befriend: 'Persuasion', coax: 'Persuasion', 'make friends': 'Persuasion'
+    }
+  },
+
+  /* Ties: what links a hero to the others at the table and to the story. A cartridge that writes any of the
+     three lists replaces that list.
+       bonds   questions about another player's hero, asked once a hero is made at a table. {name} becomes that
+               hero's name; the answer is shown to the whole table.
+       hooks   a personal stake in the story, picked (or skipped) by each player and seen only by them and the DM.
+               `roles` keeps a hook for heroes of those roles; left out, it is for anyone.
+       voices  ways to talk, for a player who would like to try one: a word, and how to do it. */
+  ties: {
+    bonds: [
+      'What did {name} do, the day you met, that made you trust them?',
+      'Why do you owe {name} a favor?',
+      'What is {name} better at than you, and how do you feel about that?',
+      'What did {name} once talk you into, and are you glad?',
+      'What do you and {name} still argue about?',
+      'Which of your secrets does {name} already know?'
+    ],
+    hooks: [
+      { id: 'prove', text: 'Somebody back home said you would never amount to much. You mean to prove them wrong, and you would like there to be witnesses.' },
+      { id: 'debt', text: 'You owe someone a favor that money cannot repay. Doing some real good here might square it.' },
+      { id: 'promise', text: 'You promised someone you would look after the others. You have not told the others.', roles: ['Protector', 'Healer'] },
+      { id: 'curious', text: 'You are not here for glory. You simply cannot bear not knowing how things turn out.', roles: ['Thinker', 'Scout'] },
+      { id: 'tale', text: 'You want a story worth telling afterwards, and you would like to be the best part of it.', roles: ['Talker', 'Trickster'] }
+    ],
+    voices: [
+      { label: 'Gruff', tip: 'Short sentences. Long pauses. Never use three words where one will do.' },
+      { label: 'Bright', tip: 'Everything is wonderful, and you say so a little too fast.' },
+      { label: 'Careful', tip: 'Think before you speak. Start with “Well…” and choose each word.' },
+      { label: 'Grand', tip: 'Speak as if to a crowd, even when asking someone to pass the salt.' },
+      { label: 'Sly', tip: 'Speak low, smile a little, and never quite answer the question.' },
+      { label: 'Dreamy', tip: 'Trail off halfway. Notice something nobody else has.' }
+    ]
+  },
+
+  /* The kit: things a hero carries or can do, shown as cards with a "Use" button that tells the DM.
+       items   { id: { name, text, img, uses } }. `uses` is 'once' (used up) or 'always'. The base has none: a
+               cartridge brings its own, and each class lists what it starts with (kit: ['rope', 'torch']).
+       token   what a hero token is called here. The DM hands one out for a great moment; a player spends it to
+               roll again. */
+  kit: {
+    items: {},
+    token: { name: 'Hero token', plural: 'Hero tokens', text: 'Spend one to roll again when it matters. Your DM hands them out for great moments.' }
+  },
+
+  /* Soundscapes ("beds"): a quiet loop of sound behind a scene, chosen by the DM. Each is one of the engine's own
+     (synth: one of FR.AMBIENCE in src/registry.js, made on the spot by FR.Ambience in src/audio.js) or one of the
+     cartridge's audio files (file: 'audio/rain.mp3'). These seven are every cartridge's unless it says otherwise:
+     it may add its own beside them, reword one by writing it again, or take one away with null (sea: null). */
+  sound: {
+    beds: {
+      wind: { label: 'Wind', synth: 'wind' },
+      fire: { label: 'A crackling fire', synth: 'fire' },
+      storm: { label: 'Rain and far-off thunder', synth: 'storm' },
+      crowd: { label: 'A busy room', synth: 'crowd' },
+      cave: { label: 'Underground', synth: 'cave' },
+      night: { label: 'Night outdoors', synth: 'night' },
+      sea: { label: 'The sea', synth: 'sea' }
+    }
+  },
+
+  /* The rules a cartridge plays by, one of the profiles in src/rules.js:
+       'open-5e'  ability scores, hit points, armor, attack and damage dice, all hidden under plain words. A class
+                  brings its numbers (v, hd, prio, armor, skills, attacks) and a people brings its own.
+       'light'    one twenty-sided die and a bonus. A class says only what it is strong at and fair at.
+     A cartridge that names none plays by this one. */
+  rules: 'open-5e',
+
+  /* What only the light rules read. A cartridge on 'open-5e' never looks here.
+       fight   the ways to fight, listed on the fight tab. Each is a roll like any other: `skill` is the skill it
+               comes down to (or a list of them: the hero rolls whichever they are best at), so a hero who is
+               strong at it is strong at fighting that way. Whether it lands is the DM's call, and a hit moves
+               the foe one step closer to out of the fight. A cartridge that writes the list replaces it.
+       text    the lines only these rules say. A cartridge rewords any of them. */
+  light: {
+    fight: [
+      { id: 'strike', label: 'Hit it hard', hint: 'Fists, a blade, anything heavy', skill: 'Athletics' },
+      { id: 'dart', label: 'Strike fast', hint: 'Quick and nimble, in and out', skill: ['Acrobatics', 'Sleight of Hand'] },
+      { id: 'aim', label: 'Aim and let fly', hint: 'Throw it, shoot it, sling it', skill: ['Perception', 'Survival'] },
+      { id: 'ambush', label: 'Strike from hiding', hint: 'They never see it coming', skill: 'Stealth' },
+      { id: 'magic', label: 'Use magic', hint: 'A spell, a charm, a spark', skill: ['Arcana', 'Nature', 'Religion'] },
+      { id: 'rattle', label: 'Trick or scare them', hint: 'A feint, a taunt, a terrible glare', skill: ['Deception', 'Intimidation', 'Performance'] }
+    ],
+    text: {
+      /* the badge on a row, and the heading on the sheet, for what a hero is fair at (strong is goodAt and goodAtHead, in `text`) */
+      fairAt: 'Fair at this', fairAtHead: 'Fair at',
+      /* after a fight roll: whether it lands is for the DM to say */
+      hitSay: 'Tell the DM. If it lands, the foe takes a hit.',
+      hitNat20: 'A natural 20 always lands. Tell the DM: the foe takes a hit.',
+      /* the line under the fight tab: a bold start, then the rest */
+      fightHowB: 'How a fight goes. ', fightHow: 'Pick a way to fight and roll. If it lands, the foe takes a hit: a few hits and it is out of the fight. Your DM keeps track.',
+      /* what "Show rules details" does under these rules */
+      detailsNote: 'The bonus behind each roll, as a number',
+      /* under the choices when a hero is revealed: the classes carry a number, the peoples do not */
+      matchNote: 'The numbers show how closely each kind of hero fits your answers. Your people is yours to choose. Tap another to switch.'
+    }
+  },
+
   story: null,
   music: null,
   particles: null,
@@ -130,11 +354,14 @@ FR.scenario({
     origin: 'You write the opening of a roleplaying character\'s backstory. Exactly two sentences, 45 words at most, never use "you", use the character\'s name. Warm, a little wry, no cliches about destiny.',
     /* who to paint: the fixed features first, then the player's own words */
     subject: {
-      text: 'A {body}{raceLower} {clsLower} ({raceInfo.look}). Typical gear: {classInfo.gear}.{details}{also}',
+      text: 'A {body}{raceLower} {clsLower}{raceLook}.{gear}{details}{also}',
       parts: {
         body: { from: 'look.body', map: { Male: 'male ', Female: 'female ' }, or: 'androgynous ' },
         raceLower: { from: 'race', lower: true },
         clsLower: { from: 'cls', lower: true },
+        /* a people with no `look`, or a class with no `gear` (both may be left out under the light rules), leaves its part out */
+        raceLook: { from: 'raceInfo.look', wrap: ' ({value})' },
+        gear: { from: 'classInfo.gear', wrap: ' Typical gear: {value}.' },
         details: { join: '; ', wrap: ' Required details, each one clearly visible and taking priority over the typical gear and over anything said later: {value}.', list: [
           { from: 'look.age', map: { Young: 'young, barely an adult', 'In their prime': 'an adult in the prime of life', Weathered: 'middle-aged and weathered, lined face', Elder: 'elderly, deeply lined' }, wrap: 'age: {value}' },
           { from: 'look.build', map: { Slight: 'slight and small-framed', Lean: 'lean and wiry', Sturdy: 'sturdy and solid', Towering: 'towering and very large' }, wrap: 'build: {value}' },
@@ -187,6 +414,8 @@ FR.scenario({
     sheetTitle: 'Your character', nameLabel: 'Name', rollName: 'Roll a name', changePicture: 'Change the picture',
     originHead: 'Origin', originWait: 'The storyteller clears their throat…', toTable: 'Take your seat at the table',
     health: 'Health', healthHint: 'how much harm you can take', armor: 'Armor', armorHint: 'an attack has to roll this high to hit you',
+    /* health as a state rather than a number: all there, some harm taken, nearly out */
+    healthFine: 'Fine', healthHurt: 'Hurt', healthTrouble: 'In trouble',
     goodAtHead: 'Good at', fightsWith: 'Fights with', trait: 'Trait',
     /* with rules details on */
     skills: 'Skills', attacks: 'Attacks',
@@ -201,7 +430,7 @@ FR.scenario({
     free: 'Roll other dice', freeNote: 'Whatever dice the DM asks for', damage: 'damage',
     fromDM: 'From your DM', fromDMNew: '{n} new from your DM',
     menu: 'Menu', home: 'Home', storySoFar: 'The story so far', newCharacter: 'New character', settings: 'Settings', leaveTable: 'Leave table {code}', close: 'Close',
-    leaveTitle: 'Leave table {code}?', leaveText: 'Your hero stays on this phone. To come back, join with the same name and code.', leaveYes: 'Leave the table', stay: 'Stay',
+    leaveTitle: 'Leave table {code}?', leaveText: 'Your seat is freed and the table forgets your hero. Your hero stays on this phone.', leaveYes: 'Leave the table', stay: 'Stay',
     checkHints: { STR: 'Push, lift, break', DEX: 'Quick hands, quick feet', CON: 'Endure, hold your breath', INT: 'Recall, reason, puzzle it out', WIS: 'Notice, sense, trust your gut', CHA: 'Charm, command, perform' },
 
     /* ---- the dice ---- */
@@ -229,7 +458,7 @@ FR.scenario({
     railHint: 'Pick the dice the DM asks for, by how many sides they have.',
 
     /* ---- settings ---- */
-    music: 'Music', musicNote: 'Music for the title, the game and the fights', musicNone: 'This scenario has no music yet',
+    music: 'Music', musicNote: 'Music for the title, the game and the fights', musicNone: 'This cartridge has no music yet',
     musicTable: 'Starts off at a table, so the phones do not play over each other',
     sfx: 'Sound effects', sfxNote: 'Dice, bells and button taps',
     details: 'Show rules details', detailsNote: 'Bonuses, dice names and the full sheet, for players who know the rules',
@@ -249,7 +478,72 @@ FR.scenario({
     endGone: 'That table is no longer there. Ask your DM for a new code.', ok: 'OK',
     welcomeKicker: 'Welcome back', welcomeTitle: 'Welcome back, {name}!', welcomeText: '{hero}, your {race} {cls}, is still at table {code}.', welcomeNew: 'Make a new character',
     handoutPic: 'A picture from your DM', handoutNote: 'A note from your DM', older: 'Older', newer: 'Newer', gotIt: 'Got it', countOf: '{i} of {n}',
-    tablePlays: 'This table is playing {scenario}. Let’s make you a hero for it.', reconnecting: 'Reconnecting to the table…'
+    tablePlays: 'This table is playing {scenario}. Let’s make you a hero for it.', reconnecting: 'Reconnecting to the table…',
+    back: 'Back', cancel: 'Cancel',
+    /* who is at the table, and getting up from it for good */
+    whoHere: 'Who’s here', playedBy: 'Played by {name}', thatsYou: 'That’s you', noHeroYet: 'Still making a hero', moveTable: 'Move to another table',
+    leftTable: 'You have left table {code}.', leaveFailed: 'Could not reach the table, so you are still seated. Try again.',
+
+    /* ---- the story at a DM's table: where it is now, what the DM has shown you, what you could do ---- */
+    taleTitle: 'The story', tabStory: 'Story', tabQuests: 'Quests', tabClues: 'Clues', tabPeople: 'Who’s who',
+    happening: 'What’s happening?', soFar: 'Story so far', asItWent: 'As it happened',
+    feedEmpty: 'Nothing here yet. What your DM shows the table will land here.',
+    onlyYou: 'Only for you', sceneNow: 'The story moves on', questDone: 'Done', questCount: '{done} of {n} done',
+    rollYours: 'Your roll: {label}',
+    /* a ready-made hero the DM offers, mostly to someone who has just sat down */
+    heroOffer: 'Your DM offers you a ready-made hero', heroTake: 'Take this hero', heroLater: 'Not now', heroSwap: '{name} takes {old}’s place.',
+    heroAsk: 'Your DM suggests you play {name}.', heroNow: 'You are now playing {name}.',
+    /* things a player might try in this scene, and saying it in their own words */
+    cardsHead: 'Here you could…', cardWaiting: 'Asked. Waiting for your DM…', cardYes: 'Your DM says yes.', cardNo: 'Your DM says no.', cardRoll: 'Your DM wants a roll for that.',
+    askWait: 'Your DM is still thinking about three of your ideas. Give them a moment.', askFailed: 'That did not reach the table. Try again.',
+    intentLabel: 'Or say what you do', intentHint: 'I climb up to the window', intentSend: 'Tell the DM', youSaid: 'You said: “{text}”',
+    /* a roll the DM asks for */
+    reqKicker: 'Your DM asks for a roll', reqGo: 'Roll for it', reqSending: 'Telling the table…', reqDecide: 'Your DM will decide how that went.',
+    reqPassed: 'It worked.', reqFailed: 'It did not work.', reqLost: 'That did not reach the table. Tell your DM what you rolled.', reqOff: 'Your DM has called that roll off.',
+    reqKeep: 'Keep the 1', reqWaiting: 'Waiting for your DM: {label}',
+    /* dice rolled on the real table, typed in */
+    realDice: 'I rolled real dice', realTitle: 'What did your dice show?', realOne: 'The number on your {s}-sided die', realEach: 'Die {i}, {s}-sided',
+    realUse: 'Use this roll', realBad: 'Type the number each die shows, from 1 to {s}.',
+    /* marking how the hero is doing */
+    healthTitle: 'How is your hero doing?', healthNote: 'Your DM tells you when you are hurt or healed. Mark it here.', healthOf: '{now} of {max}',
+    healthLess: 'One less', healthMore: 'One more', healthSet: 'Health: {state}. Tap to change.',
+    /* armor as a word rather than a number (the number shows with rules details on): by how high an attack has to roll */
+    armorLight: 'Lightly protected', armorWell: 'Well protected', armorHeavy: 'Heavily protected',
+
+    /* ---- the player's side of the shared table (docs/PHASE2.md, section 4) ---- */
+    /* ties: three short, optional steps once a hero is made. A bond with another hero, a personal stake, a voice to try */
+    tiesMenu: 'Bond, stake and voice', tiesKicker: 'Optional · {i} of {n}', tiesKickerOne: 'Optional', skipStep: 'Skip', tiesLater: 'Not now',
+    choose: 'Choose', change: 'Change',
+    bondTitle: 'Who do you know here?', bondText: 'Pick another hero and answer one question about them. The whole table sees your answer.',
+    bondPick: 'Which hero?', bondOther: 'Ask me another', bondHint: 'One line is plenty', bondSave: 'Save this bond', bondNeed: 'Write a few words first, or skip.',
+    bondClear: 'Remove this bond', bondSaved: 'Bond saved. The table can see it under Who’s here.', bondHead: 'Your bond',
+    bondWith: 'Bond with {name}', bondFrom: '{name}’s bond with {hero}', bondAdd: 'Add a bond with another hero', bondChange: 'Change your bond',
+    hookTitle: 'Your stake in this', hookText: 'Why is {name} here? Pick one, or skip. Only you and your DM see it.', hookClear: 'Go without one', hookNone: 'Nothing chosen yet.',
+    voiceTitle: 'How you talk', voiceText: 'A voice to try for {name}. It is only a suggestion.', voiceClear: 'Use my own voice', voiceNone: 'No voice chosen yet.',
+    /* roles: what the party still lacks, said in the lobby and on the ready-made heroes */
+    partyMissing: 'Nobody is the {role} yet.', partyAnd: ', the ', partyOr: ' or the ', roleNeeded: 'Nobody at your table plays one yet',
+    /* things a hero carries: a card each, and a button that tells the DM. {item} is the thing's name */
+    kitHead: 'Things you carry', kitUse: 'Use', kitUndo: 'Undo', kitOnce: 'One use', kitUsed: 'Used',
+    kitSay: 'I use: {item}', kitTell: 'Tell your DM you are using: {item}',
+    /* hero tokens: {token} is the cartridge's word for one (kit.token) */
+    tokenSpend: 'Spend a {token}: roll again', tokenSpent: '{token} spent. Roll again.',
+    /* a vote the DM puts to the party */
+    voteKicker: 'Party vote', voteNote: 'Tap your choice. You can change it until your DM closes the vote.', voteMine: 'Your vote is in. Tap another to change it.',
+    voteHide: 'Hide', voteShow: 'Show', voteClosed: 'The vote is in', voteYours: 'Your pick', voteNone: 'Nobody voted.',
+    /* marks on things in the story, and the big rolls that land there */
+    marksLabel: 'React', markCheer: 'Cheer', markLaugh: 'Laugh', markGasp: 'Gasp', markHeart: 'Love it', markClap: 'Clap', markWow: 'Wow',
+    natRolled: '{name} rolled a natural {n}', natYou: 'You rolled a natural {n}',
+    /* notes, kept on this phone */
+    tabNotes: 'Notes', notesMenu: 'Your notes', pin: 'Pin to notes', pinned: 'In your notes', pinDone: 'Pinned to your notes.',
+    noteLabel: 'Write a note', noteHint: 'A name to remember, a plan, a hunch', noteAdd: 'Add note', noteYours: 'Your note', notePinned: 'Pinned from the story',
+    notesEmpty: 'Nothing here yet. Pin anything from the story, or write your own. Notes stay on this phone.',
+    noteDelete: 'Delete', noteDeleteTitle: 'Delete this note?', noteDeleteYes: 'Delete it', noteKeep: 'Keep it',
+    /* table moments: a picture held face down and flipped for everyone at once, the map, and the sound behind a scene */
+    revealWait: 'Wait for it…', revealHide: 'Hide for now',
+    tabMap: 'Map', mapAlt: 'Map: {title}', mapBigger: 'Bigger map', mapSmaller: 'Smaller map', mapFound: 'Uncovered so far', mapNone: 'Nothing is uncovered yet. Your DM opens the map as you explore.',
+    tableSound: 'Table sounds on this phone', tableSoundNote: 'The sound your DM sets behind a scene. Starts off, so the phones do not play over each other',
+    tableSoundMuted: 'Switch Sound effects on to hear them',
+    creditsHead: 'Credits'
   }
 });
 

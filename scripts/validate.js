@@ -1,7 +1,7 @@
 /* Checks every scenario pack against the contract and says, pack by pack and key by key, what is
    wrong. Exits with 1 if anything is, so it can gate a deploy (npm run check).
 
-     npm run validate                      every pack in scenarios/
+     npm run validate                      every pack in cartridges/
      npm run validate -- tavern            only the packs named
      npm run validate -- --quick tavern    also work out the best five questions for a short game
 
@@ -17,12 +17,14 @@ const say = (s) => process.stdout.write(s + '\n');
 
 const report = P.check();
 const shown = report.packs.filter((p) => !only.length || only.indexOf(p.id) >= 0);
-only.forEach((id) => { if (!report.packs.some((p) => p.id === id)) { report.errors.push('there is no pack called "' + id + '" in scenarios/'); } });
+only.forEach((id) => { if (!report.packs.some((p) => p.id === id)) { report.errors.push('there is no pack called "' + id + '" in cartridges/'); } });
 
-say('\nFirst Roll scenario packs (' + report.packs.length + ' in scenarios/, default: ' + (report.site.default || 'none set') + ')\n');
+say('\nFirst Roll scenario packs (' + report.packs.length + ' in cartridges/, default: ' + (report.site.default || 'none set') + ')\n');
 shown.forEach((p) => {
   const m = p.def && p.def.meta ? p.def.meta : null;
-  say((p.errors.length ? 'FAIL  ' : 'ok    ') + p.id + (m ? '   ' + m.name + ' ' + p.def.version + ' · ' + m.visibility + ' · ' + m.kind + ' · ' + m.access + ' · ' + (p.bytes / 1048576).toFixed(1) + ' MB' : ''));
+  /* which rules it plays by is said only when it is not the usual ones, so the line for an open-5e cartridge reads as it always has */
+  const light = !!(p.theme ? p.theme.rules === 'light' : p.def && p.def.rules === 'light');
+  say((p.errors.length ? 'FAIL  ' : 'ok    ') + p.id + (m ? '   ' + m.name + ' ' + p.def.version + ' · ' + m.visibility + ' · ' + m.kind + ' · ' + m.access + ' · ' + (p.bytes / 1048576).toFixed(1) + ' MB' + (light ? ' · light rules' : '') : ''));
   p.errors.forEach((e) => say('      x ' + e));
   p.warnings.forEach((w) => say('      ! ' + w));
   if (p.reach) {
@@ -30,16 +32,18 @@ shown.forEach((p) => {
       const r = p.reach[mode];
       if (!r) { return; }
       say('      reach, ' + (mode === 'full' ? 'all ' + p.theme.questions.length + ' questions (' + r.samples + ' random players)' : 'quick ' + JSON.stringify(p.theme.quick) + ' (all ' + r.samples + ' ways to answer)') + ':');
-      ['classes', 'races'].forEach((kind) => {
+      (light ? ['classes'] : ['classes', 'races']).forEach((kind) => {
         const s = r[kind];
         say('        ' + kind.padEnd(8) + pct(s.minShare) + ' ' + s.minName + ' … ' + pct(s.maxShare) + ' ' + s.maxName + '   (even share ' + pct(s.even) + '; allowed ' + pct(s.even * P.REACH[mode].min) + ' to ' + pct(s.even * P.REACH[mode].max) + ')');
       });
+      /* under the light rules the answers choose the class only */
+      if (light) { say('        races   not chosen by the answers: a hero starts as the people in their class\'s sample picture, and may change it'); }
     });
   }
   if (quick.indexOf(p.id) >= 0 && p.theme) {
     say('      best five questions for a short game (most even first):');
     P.bestQuick(report.FR, p.theme, 5, 5).forEach((b) => {
-      say('        quick: ' + JSON.stringify(b.quick).replace(/,/g, ', ') + '   classes ' + pct(b.classes.minShare) + ' to ' + pct(b.classes.maxShare) + ', races ' + pct(b.races.minShare) + ' to ' + pct(b.races.maxShare));
+      say('        quick: ' + JSON.stringify(b.quick).replace(/,/g, ', ') + '   classes ' + pct(b.classes.minShare) + ' to ' + pct(b.classes.maxShare) + (light ? '' : ', races ' + pct(b.races.minShare) + ' to ' + pct(b.races.maxShare)));
     });
   }
   say('');

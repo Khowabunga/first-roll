@@ -1,5 +1,5 @@
 /* North Pole: "Iced gingerbread at midnight".
-   Nearly all of the look is tokens in scenario.js (tokens: {...}): the colours, the type, the
+   Nearly all of the look is tokens in cartridge.js (tokens: {...}): the colours, the type, the
    corners, the candy stripe, the bite under a button, the cards on the play screen. This file is
    only for what a token cannot say: a shape drawn with a pseudo-element, or one rule for one thing.
    The build ships it as pack.css. Every rule must start with body[data-theme="northpole"]
